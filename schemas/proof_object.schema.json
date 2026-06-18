@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF v0.3.1 proof object",
+  "type": "object",
+  "required": ["proof_version", "case_id", "intake", "classification", "formula_bindings", "modulator", "transfer", "validation"],
+  "properties": {
+    "proof_version": {"const": "0.3.1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "intake": {"type": "object", "required": ["status", "normalized"]},
+    "classification": {"type": "object", "required": ["path"]},
+    "formula_bindings": {"type": "array"},
+    "modulator": {"type": "object", "required": ["model_type"]},
+    "transfer": {"type": "object", "required": ["target_transfer", "expression"]},
+    "validation": {"type": "object", "required": ["level", "completed", "missing"]}
+  },
+  "additionalProperties": false
+}

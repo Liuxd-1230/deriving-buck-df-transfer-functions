@@ -1,6 +1,14 @@
 {
   "model_id": "cot-cm-external-ramp-tian-2015",
   "target": "Gvc",
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 1,
+  "control_family": "C-COT",
+  "switching_events": [
+    {"name": "off_edge", "fixed_or_movable": "movable", "equation": "F_event=Ri*iL+vramp-vc=0"}
+  ],
+  "comparator_inputs": {"positive": "Ri*iL+vramp", "negative": "vc"},
   "parameters": {
     "Vin": 12.0, "Vo": 1.2, "fs": 300000.0,
     "L": 3e-7, "C": 0.00448, "R": 0.1, "rC": 0.00075,

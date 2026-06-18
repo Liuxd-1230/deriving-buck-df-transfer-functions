@@ -2,26 +2,22 @@
 
 面向单相 CCM Buck 的描述函数（describing function, DF）推导 skill，覆盖 COT current-mode、external ramp、V²/RBCOT 与 loop gain。
 
-v0.3 的重点不是宣称“任意 Buck 都能自动推导”，而是把推导过程约束成可审计的事件链：
+v0.3.1 是 ESSF（Event–Sampling–Sideband Framework）重构的第一阶段。它不实现 sampled-data/sideband 主干，而是先建立不可绕过的 intake、formula registry 和 proof object 闭环：
 
 ```text
-开关事件 F(x,u,t)=0
-        ↓
-边沿扰动 delta_t=-delta_F/Fdot_0
-        ↓
-等效开关函数扰动 d_hat
-        ↓
-a_c / a_g / a_o / a_i 或 direct transfer
-        ↓
-Buck 功率级联立与验证等级
+request/intake → intake_status.json → classification.json
+→ formula binding → proof_object.json → checkers → report
 ```
 
-如果比较器事件缺失，skill 只能分类并询问缺失信息，不能输出最终传函。新结构即使完整走完协议，也必须保持 `PROTOCOL_DERIVED_UNVERIFIED`，直到论文 benchmark 或开关仿真提供独立证据。
+任一五问信息缺失时，固定返回 `INCOMPLETE → ASK_USER_ONLY`，不能推导、自选参数或画 Bode 图。新结构即使完整走完协议，也必须保持 `PROTOCOL_DERIVED_UNVERIFIED`。
 
 ## 它解决什么问题
 
 - 从物理参数生成四个已注册论文模型，不要求用户预先填写 `a_*`。
-- 区分已知、相近、全新、信息不足和越界电路。
+- 用 `preflight_intake.py` 建立 intake 硬闸门。
+- 区分 `DF_REGISTERED_DIRECT`、`DF_REGISTERED_MULTIPORT`、`PROTOCOL_DERIVED_NEW`、信息不足和越界电路。
+- 以 `registries/formula_registry.yaml` 作为注册公式唯一真源。
+- 用 `check_proof_object.py` 和 `check_formula_consistency.py` 检查结构化证据。
 - 强制新模型写出 `F=0`、可移动边沿、`delta_t`、扰动路径与来源标签。
 - 检查平均模型冒充 DF、无来源系数、虚假验证声明及不支持的工作模式。
 - 在没有 Zotero 和论文 PDF 的电脑上复现公式、测试与离线 benchmark。
@@ -32,14 +28,15 @@ Buck 功率级联立与验证等级
 
 ```mermaid
 flowchart TD
-    A["输入：目标、工作模式、开关事件、比较器输入、参数"] --> B["classify"]
-    B -->|KNOWN_MODEL| C["使用注册论文模型生成 case"]
-    B -->|NEAR_MODEL| D["沿论文 proof skeleton 重新推导事件"]
-    B -->|NEW_MODEL| E["执行 12 步 DF reasoning protocol"]
-    B -->|INCOMPLETE| F["只询问缺失信息，不给最终传函"]
-    B -->|UNSUPPORTED| G["拒绝套用单相 CCM 模型"]
-    D --> H["UNVERIFIED_NEW_DF_MODEL"]
-    E --> H
+    A["五问 intake"] --> B["preflight"]
+    B -->|INCOMPLETE| C["ASK_USER_ONLY"]
+    B -->|COMPLETE| D["classify"]
+    D -->|DF_REGISTERED_DIRECT| E["registry direct transfer"]
+    D -->|DF_REGISTERED_MULTIPORT| F["registry a-star"]
+    D -->|PROTOCOL_DERIVED_NEW| G["event proof / UNVERIFIED"]
+    E --> H["proof_object.json + checkers"]
+    F --> H
+    G --> H
 ```
 
 ## 支持的论文模型
@@ -55,7 +52,7 @@ flowchart TD
 
 ## 明确不支持
 
-v0.3 不支持或不宣称支持：
+v0.3.1 不支持或不宣称支持：
 
 - DCM、临界导通模式；
 - multiphase overlap 或相位管理参与开关事件；
@@ -102,7 +99,7 @@ Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。
 
 ## 快速开始
 
-主要入口：`list-models`、`make-case`、`classify --intake`、`make-protocol-case`、`derive` 和 `df_protocol_checker.py`。
+主要入口：`preflight_intake.py`、`classify --intake-status`、`build_proof_object.py`、`check_proof_object.py`、`check_formula_consistency.py`、`make-protocol-case` 和 `derive --proof-object`。
 
 ### 1. 已知论文模型
 
@@ -112,20 +109,26 @@ Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。
 python scripts/df_buck_sympy.py list-models
 ```
 
-使用 Tian external-ramp 参数生成 case，并输出传函报告：
+使用 Tian external-ramp 完整 intake 生成 proof object，并输出传函报告：
 
 ```powershell
-python scripts/df_buck_sympy.py make-case `
-  --model cot-cm-external-ramp-tian-2015 `
-  --params benchmarks/tian2015_external_ramp/params.json `
-  --out generated-tian-case.json
+python scripts/preflight_intake.py --intake examples/intake_known_tian.json --out intake_status.json
+
+python scripts/df_buck_sympy.py classify `
+  --intake-status intake_status.json `
+  --out classification.json
+
+python scripts/build_proof_object.py `
+  --intake-status intake_status.json `
+  --classification classification.json `
+  --out proof_object.json
+
+python scripts/check_proof_object.py --proof proof_object.json
+python scripts/check_formula_consistency.py --proof proof_object.json
 
 python scripts/df_buck_sympy.py derive `
-  --case generated-tian-case.json `
+  --proof-object proof_object.json `
   --out generated-tian-derivation.md
-
-python scripts/df_buck_sympy.py check `
-  --case generated-tian-case.json
 ```
 
 这个路径复用已固化的论文公式；它不会要求用户手写 `a_c/a_g/a_o/a_i`。
@@ -133,54 +136,59 @@ python scripts/df_buck_sympy.py check `
 ### 2. 信息不足的电路
 
 ```powershell
-python scripts/df_buck_sympy.py classify `
-  --intake examples/intake_missing_event.json
+python scripts/preflight_intake.py `
+  --text tests/fixtures/forward_valley_vcot.txt `
+  --out intake_status.json
 ```
 
-输出应为 `INCOMPLETE`，并列出 `switching_events`、`comparator_inputs` 等缺失项。此时不允许生成最终传函。
+输出应为 `INCOMPLETE` / `ASK_USER_ONLY`，并列出目标传函、事件、比较器输入和参数等缺失项。
 
 ### 3. 相近或全新结构
 
 下面的示例类似 Tian external-ramp COT，但 ramp 由 RC 网络生成，因此不能直接套 Tian 的线性 ramp 系数：
 
 ```powershell
+python scripts/preflight_intake.py --intake examples/intake_new_rc_ramp_cot.json --out intake_status.json
+
 python scripts/df_buck_sympy.py classify `
-  --intake examples/intake_new_rc_ramp_cot.json
+  --intake-status intake_status.json `
+  --out classification.json
 
 python scripts/df_buck_sympy.py make-protocol-case `
   --intake examples/intake_new_rc_ramp_cot.json `
-  --out protocol-case.json
+  --out proof_object.json
 
 python scripts/df_buck_sympy.py derive `
-  --case protocol-case.json `
+  --proof-object proof_object.json `
   --out protocol-derivation.md
 
-python scripts/df_protocol_checker.py check-json `
-  --case protocol-case.json
-
-python scripts/df_protocol_checker.py check `
-  --report protocol-derivation.md
+python scripts/check_proof_object.py --proof proof_object.json
+python scripts/check_formula_consistency.py --proof proof_object.json
 ```
 
 该示例演示协议结构，不声称已经给出 RC-ramp 的闭式正确系数。必须重新求周期稳态 `vramp(t)`、总边沿斜率、边沿递推和 DF 路径，并保持 `UNVERIFIED_NEW_DF_MODEL`。
 
 ### 结构化主路径与当前自动化边界
 
-`make-protocol-case → check-json` 是机器检查的结构化主路径。`check --report` 对 Markdown 做启发式解析，只是兼容人工报告的兜底入口；关键验收应以 JSON case 为准。
+`preflight → classification → proof_object → two checkers` 是机器检查的结构化主路径。Markdown 不是证据，只是报告渲染层。
 
-对于 `case_version=0.3`，`derive` 是报告渲染器：它不需要 SymPy，也不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。当前责任划分是：
+对于 `proof_version=0.3.1`，`derive` 是报告渲染器：它不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。
 
 1. agent 按 12 步协议推导候选事件敏感度、DF 关系和传函；
-2. protocol case 保存候选式、来源和未验证项；
-3. checker 检查步骤完整性与声明诚实性；
+2. proof object 保存候选式、formula ID、来源和未验证项；
+3. proof/formula checker 检查结构和 registry 一致性；
 4. 只有注册 v0.2 模型走现有 SymPy 功率级消元器。
 
 把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.3 已实现能力。
 
-## Protocol checker 能抓什么
+## Proof/formula checker 能抓什么
 
 | 状态 | 含义 |
 |---|---|
+| `PASS` | proof 结构、注册接口和公式绑定通过 |
+| `FAIL_DIRECT_MODEL_FAKE_A_STAR` | direct model 伪造了 `a_*` |
+| `FAIL_REGISTERED_TARGET` | 请求了 registry 未支持的传函 |
+| `FAIL_FORMULA_CONSISTENCY` | 公式、来源或维度签名与 registry 不一致 |
 | `PASS_KNOWN_MODEL` | 使用注册模型 |
 | `PASS_PROTOCOL_UNVERIFIED` | 协议链完整，但新模型仍未验证 |
 | `WARNING_INCOMPLETE_VALIDATION` | 推导存在，但验证证据不足 |
@@ -221,6 +229,8 @@ python scripts/run_benchmarks.py --all
 ```text
 SKILL.md                         Codex 执行规则
 references/                      公式库、输入协议、schema、proof skeleton
+registries/                      machine-readable formula registry
+schemas/                         intake/classification/proof JSON schemas
 scripts/                         模型生成、分类、协议 case、检查器
 benchmarks/                      四套可离线复现的论文基准
 examples/                        已知、缺事件、RC-ramp、overlap 示例
@@ -230,8 +240,8 @@ VALIDATION.md                    证据等级和未验证项
 
 ## 最重要的使用原则
 
-1. 完全匹配注册模型时，优先复用论文公式。
-2. 只要连接或 ramp 路径改变，就退回事件方程重新推导。
-3. 没有 `F(x,u,t)=0`，不输出最终传函。
-4. 协议检查通过只说明推导步骤完整，不证明传函物理正确。
+1. 没有 `COMPLETE` intake artifact，不进入分类或推导。
+2. 完全匹配注册模型时，只从 formula registry 复用论文公式。
+3. `DF_REGISTERED_DIRECT` 不得构造 `a_*`或未注册的 `Gvg/Zout/Tloop`。
+4. 只要连接或 ramp 路径改变，就退回事件方程重新推导。
 5. 新模型在 benchmark 或开关仿真前始终保持未验证状态。

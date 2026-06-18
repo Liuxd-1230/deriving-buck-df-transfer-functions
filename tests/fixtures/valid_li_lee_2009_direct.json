@@ -1,0 +1,48 @@
+{
+  "proof_version": "0.3.1",
+  "case_id": "valid-li-lee-2009-direct",
+  "intake": {
+    "status": "COMPLETE",
+    "normalized": {
+      "model_id": "v2-cot-li-lee-2009",
+      "target_transfer": "Gvc",
+      "topology": "buck",
+      "conduction_mode": "CCM",
+      "phases": 1,
+      "control_family": "V-COT"
+    }
+  },
+  "classification": {
+    "path": "DF_REGISTERED_DIRECT",
+    "model_id": "v2-cot-li-lee-2009"
+  },
+  "formula_bindings": [
+    {
+      "formula_id": "li-lee-2009.q2",
+      "source_model_id": "v2-cot-li-lee-2009",
+      "dimension_signature": "dimensionless",
+      "expression": "Tsw/(pi*(rC*C-Ton/2))"
+    },
+    {
+      "formula_id": "li-lee-2009.gvc-pade",
+      "source_model_id": "v2-cot-li-lee-2009",
+      "dimension_signature": "output/control",
+      "template_bindings": {
+        "high_pair": "1+s/(Q1*w1)+s**2/w1**2",
+        "fs_pair": "1+s/(Q2*w2)+s**2/w2**2"
+      },
+      "expression": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
+    }
+  ],
+  "modulator": {"model_type": "direct-transfer"},
+  "transfer": {
+    "target_transfer": "Gvc",
+    "formula_id": "li-lee-2009.gvc-pade",
+    "expression": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
+  },
+  "validation": {
+    "level": "PAPER_GROUNDED_PARTIAL",
+    "completed": ["formula-registry", "paper-benchmark"],
+    "missing": ["switching-simulation"]
+  }
+}

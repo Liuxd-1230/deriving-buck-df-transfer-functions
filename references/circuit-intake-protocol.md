@@ -1,5 +1,7 @@
 # Circuit intake protocol
 
+`scripts/preflight_intake.py` is the mandatory gate. `INCOMPLETE` always means `ASK_USER_ONLY`; classification, proof construction, transfer-function generation, and plotting are forbidden.
+
 ## 5-question quick intake
 
 Ask only what is needed for the selected path:

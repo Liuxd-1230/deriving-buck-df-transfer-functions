@@ -8,13 +8,14 @@ class V03SkillContractTests(unittest.TestCase):
     def test_skill_enforces_event_first_and_unverified_new_models(self):
         text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         for token in ("F(x,u,t)=0", "UNVERIFIED_NEW_DF_MODEL", "circuit-intake-protocol.md",
-                      "df-reasoning-protocol.md", "df_protocol_checker.py"):
+                      "df-reasoning-protocol.md", "preflight_intake.py", "ASK_USER_ONLY",
+                      "proof_object.json", "formula_registry.yaml", "DF_REGISTERED_DIRECT"):
             self.assertIn(token, text)
 
     def test_core_references_exist_and_name_required_contracts(self):
         expected = {
             "circuit-intake-protocol.md": ["5-question quick intake", "AI internal intake checklist"],
-            "model-classification.md": ["KNOWN_MODEL", "NEAR_MODEL", "NEW_MODEL", "UNSUPPORTED"],
+            "model-classification.md": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "PROTOCOL_DERIVED_NEW", "UNSUPPORTED"],
             "df-reasoning-protocol.md": ["delta_t", "d_hat", "12-step"],
             "protocol-case-schema.md": ["case_version", "df_relation", "validation_status"],
             "validation-status.md": ["PAPER_GROUNDED_VERIFIED", "PROTOCOL_DERIVED_UNVERIFIED"],
@@ -46,9 +47,9 @@ class V03SkillContractTests(unittest.TestCase):
 
     def test_validation_keeps_v03_claims_honest(self):
         text = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
-        for token in ("v0.3", "PROTOCOL CHECKER", "SWITCHING SIMULATION",
-                      "NOT_VERIFIED", "INDEPENDENT AGENT FORWARD-TEST"):
-            self.assertIn(token, text.upper() if token != "v0.3" else text)
+        for token in ("v0.3.1", "PROOF OBJECT CHECKER", "FORMULA REGISTRY",
+                      "SWITCHING SIMULATION", "NOT_VERIFIED", "FORWARD-TEST"):
+            self.assertIn(token, text.upper() if token != "v0.3.1" else text)
 
 
 if __name__ == "__main__":

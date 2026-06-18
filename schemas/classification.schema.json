@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF v0.3.1 model classification",
+  "type": "object",
+  "required": ["path"],
+  "properties": {
+    "path": {"enum": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "PROTOCOL_DERIVED_NEW", "INCOMPLETE", "UNSUPPORTED"]},
+    "model_id": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

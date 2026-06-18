@@ -1,0 +1,21 @@
+{
+  "proof_version": "0.3.1",
+  "case_id": "invalid-direct-with-a-star",
+  "intake": {"status": "COMPLETE", "normalized": {"target_transfer": "Gvc"}},
+  "classification": {"path": "DF_REGISTERED_DIRECT", "model_id": "v2-cot-li-lee-2009"},
+  "formula_bindings": [
+    {
+      "formula_id": "li-lee-2009.gvc-pade",
+      "source_model_id": "v2-cot-li-lee-2009",
+      "dimension_signature": "output/control",
+      "template_bindings": {"high_pair": "1", "fs_pair": "1"},
+      "expression": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
+    }
+  ],
+  "modulator": {
+    "model_type": "direct-transfer",
+    "coefficients": {"a_c": "1", "a_g": "0", "a_o": "0", "a_i": "0"}
+  },
+  "transfer": {"target_transfer": "Gvc", "formula_id": "li-lee-2009.gvc-pade", "expression": "candidate"},
+  "validation": {"level": "PAPER_GROUNDED_PARTIAL", "completed": [], "missing": []}
+}

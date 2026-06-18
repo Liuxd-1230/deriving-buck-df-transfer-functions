@@ -31,8 +31,8 @@
   },
   "paper_model": {
     "Fc": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)",
-    "Fg": "(Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))",
-    "Fo": "(-Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))",
+    "Fg": "((Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))",
+    "Fo": "((-Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))",
     "k1": "Ton*Ri/(2*L)",
     "k2": "-Ton*Ri/(2*L)"
   },
@@ -48,10 +48,92 @@
     "Gvg",
     "Zout"
   ],
+  "formula_bindings": [
+    {
+      "formula_id": "li-lee-2010.fc-exact",
+      "source_model_id": "cot-cm-li-lee-2010",
+      "interface": "a-star",
+      "dimension_signature": "current/control",
+      "expression": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)"
+    },
+    {
+      "formula_id": "li-lee-2010.k1",
+      "source_model_id": "cot-cm-li-lee-2010",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "Ton*Ri/(2*L)"
+    },
+    {
+      "formula_id": "li-lee-2010.k2",
+      "source_model_id": "cot-cm-li-lee-2010",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "-Ton*Ri/(2*L)"
+    },
+    {
+      "formula_id": "li-lee-2010.fg",
+      "source_model_id": "cot-cm-li-lee-2010",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "((Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))",
+      "template_bindings": {
+        "k1": "Ton*Ri/(2*L)",
+        "Fc": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)"
+      }
+    },
+    {
+      "formula_id": "li-lee-2010.fo",
+      "source_model_id": "cot-cm-li-lee-2010",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "((-Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))",
+      "template_bindings": {
+        "k2": "-Ton*Ri/(2*L)",
+        "Fc": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-c",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/control",
+      "expression": "(s*L+rL)*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))/Vg",
+      "template_bindings": {
+        "Fc": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-g",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/voltage",
+      "expression": "((s*L+rL)*((((Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))))-D)/Vg",
+      "template_bindings": {
+        "Fg": "((Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-o",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/voltage",
+      "expression": "((s*L+rL)*((((-Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))))+1)/Vg",
+      "template_bindings": {
+        "Fo": "((-Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-i",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/current",
+      "expression": "0"
+    }
+  ],
   "modulator": {
-    "a_c": "(s*L+rL)*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))/Vg",
-    "a_g": "((s*L+rL)*((Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))-D)/Vg",
-    "a_o": "((s*L+rL)*((-Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))+1)/Vg",
+    "a_c": "(s*L+rL)*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))/Vg",
+    "a_g": "((s*L+rL)*((((Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))))-D)/Vg",
+    "a_o": "((s*L+rL)*((((-Ton*Ri/(2*L)))*(((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))))+1)/Vg",
     "a_i": "0"
   }
 }
