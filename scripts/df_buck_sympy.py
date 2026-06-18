@@ -32,6 +32,12 @@ from df_model_library import (  # noqa: E402
     generate_case,
     list_models,
 )
+from df_model_classifier import classify_intake  # noqa: E402
+from df_protocol_case import (  # noqa: E402
+    ProtocolCaseError,
+    build_protocol_case,
+    render_protocol_report,
+)
 
 
 IDENTIFIER = re.compile(r"\b[A-Za-z_]\w*\b")
@@ -335,6 +341,12 @@ def _markdown(case: dict[str, Any], model: dict[str, Any], report: dict[str, Any
 
 def command_derive(args: argparse.Namespace) -> int:
     case = load_case(args.case)
+    if str(case.get("case_version")) == "0.3":
+        output = Path(args.out)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(render_protocol_report(case), encoding="utf-8")
+        print(f"Wrote protocol derivation: {output.resolve()}")
+        return 0
     model = derive_model(case)
     report = build_check_report(case, model)
     output = Path(args.out)
@@ -374,6 +386,22 @@ def command_make_case(args: argparse.Namespace) -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(case, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Wrote generated case: {output.resolve()}")
+    return 0
+
+
+def command_classify(args: argparse.Namespace) -> int:
+    intake = load_case(args.intake)
+    print(json.dumps(classify_intake(intake), ensure_ascii=False, indent=2))
+    return 0
+
+
+def command_make_protocol_case(args: argparse.Namespace) -> int:
+    intake = load_case(args.intake)
+    case = build_protocol_case(intake)
+    output = Path(args.out)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(case, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Wrote protocol case: {output.resolve()}")
     return 0
 
 
@@ -421,6 +449,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     make_case.set_defaults(handler=command_make_case)
 
+    classify = subparsers.add_parser(
+        "classify", help="Classify circuit intake before selecting a DF path."
+    )
+    classify.add_argument("--intake", required=True, help="Circuit-intake JSON file.")
+    classify.set_defaults(handler=command_classify)
+
+    protocol_case = subparsers.add_parser(
+        "make-protocol-case", help="Build an event-evidence case for a near or new model."
+    )
+    protocol_case.add_argument("--intake", required=True, help="Complete circuit-intake JSON file.")
+    protocol_case.add_argument("--out", required=True, help="Protocol-case JSON path.")
+    protocol_case.set_defaults(handler=command_make_protocol_case)
+
     benchmark = subparsers.add_parser(
         "benchmark", help="Generate bundled offline paper benchmarks."
     )
@@ -446,7 +487,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return args.handler(args)
-    except (CaseError, ModelError) as exc:
+    except (CaseError, ModelError, ProtocolCaseError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 

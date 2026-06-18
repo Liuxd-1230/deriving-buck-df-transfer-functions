@@ -1,0 +1,9 @@
+{
+  "model_id": "cot-cm-external-ramp-tian-2015",
+  "target": "Gvc",
+  "parameters": {
+    "Vin": 12.0, "Vo": 1.2, "fs": 300000.0,
+    "L": 3e-7, "C": 0.00448, "R": 0.1, "rC": 0.00075,
+    "Ri": 0.01, "se_ratio": 1.0
+  }
+}

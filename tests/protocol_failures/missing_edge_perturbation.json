@@ -1,0 +1,9 @@
+{
+  "case_version": "0.3",
+  "mode": "derive-by-protocol",
+  "classification": {"path": "NEW_MODEL", "unsupported_effects": []},
+  "control_timing": {"fixed": "Ton", "variable": "Toff/Tsw"},
+  "switching_events": [{"name": "off_edge", "fixed_or_movable": "movable", "equation": "F_off=Ri*iL-vc=0", "edge_slope": "Fdot_0"}],
+  "df_relation": {"form": "d_hat=a_c*uc_hat", "a_c": "A(s)", "origin": "paper-inspired-new-derivation", "duty_caveat": "equivalent switching perturbation"},
+  "validation_status": {"level": "PROTOCOL_DERIVED_UNVERIFIED", "claim": "UNVERIFIED_NEW_DF_MODEL", "completed": [], "missing": ["switching-simulation"]}
+}

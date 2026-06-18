@@ -1,0 +1,8 @@
+{
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 4,
+  "multiphase_overlap": true,
+  "control_family": "cot-current-mode",
+  "target": "Gvc"
+}

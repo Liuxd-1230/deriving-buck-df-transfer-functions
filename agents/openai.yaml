@@ -1,4 +1,4 @@
 interface:
   display_name: "Buck DF Transfer Functions"
-  short_description: "Paper-grounded single-phase COT/RBCOT DF models."
-  default_prompt: "Use $deriving-buck-df-transfer-functions to generate and validate a paper-grounded CCM COT or RBCOT Buck model from physical parameters."
+  short_description: "Paper-grounded Buck DF models with event-protocol checks."
+  default_prompt: "Use $deriving-buck-df-transfer-functions to classify this CCM Buck, reuse an exact paper model when possible, or build an explicitly unverified event-based DF derivation without substituting an average model."
