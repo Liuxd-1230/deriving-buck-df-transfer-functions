@@ -1,0 +1,10 @@
+{
+  "case_version": "0.3",
+  "mode": "derive-by-protocol",
+  "classification": {"path": "NEW_MODEL", "unsupported_effects": []},
+  "control_timing": {"fixed": "Ton", "variable": "Toff/Tsw"},
+  "switching_events": [{"name": "off_edge", "fixed_or_movable": "movable", "equation": "F_off=Ri*iL+vramp-vc=0", "edge_slope": "Fdot_0=dF/dt", "delta_edge": "delta_t=-delta_F/Fdot_0"}],
+  "df_relation": {"form": "d_hat=a_c*uc_hat+a_i*iL_hat", "a_c": "A_c(s)", "a_i": "A_i(s)", "origin": "paper-inspired-new-derivation", "duty_caveat": "d_hat is an equivalent switching-function perturbation"},
+  "provenance": {"df_relation": "paper-inspired-new-derivation"},
+  "validation_status": {"level": "PROTOCOL_DERIVED_UNVERIFIED", "claim": "UNVERIFIED_NEW_DF_MODEL", "completed": ["bode-plot"], "missing": ["symbolic", "dc-limit", "paper-benchmark", "switching-simulation"]}
+}

@@ -1,0 +1,6 @@
+{
+  "case_version": "0.3",
+  "mode": "unsupported",
+  "classification": {"path": "UNSUPPORTED", "phases": 4, "unsupported_effects": ["multiphase-overlap"]},
+  "validation_status": {"level": "REJECTED_UNSUPPORTED", "claim": "rejected", "completed": [], "missing": []}
+}

@@ -1,0 +1,8 @@
+{
+  "case_version": "0.3",
+  "mode": "derive-by-protocol",
+  "classification": {"path": "NEW_MODEL", "unsupported_effects": ["average-model-as-df"]},
+  "method": "average-model",
+  "df_relation": {"form": "d_hat=Gavg*uc_hat", "origin": "model-invented"},
+  "validation_status": {"level": "PROTOCOL_DERIVED_UNVERIFIED", "claim": "UNVERIFIED_NEW_DF_MODEL", "completed": [], "missing": []}
+}

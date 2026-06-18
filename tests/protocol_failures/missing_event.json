@@ -1,0 +1,7 @@
+{
+  "case_version": "0.3",
+  "mode": "derive-by-protocol",
+  "classification": {"path": "NEW_MODEL", "unsupported_effects": []},
+  "df_relation": {"form": "d_hat=a_c*uc_hat", "a_c": "A(s)", "origin": "paper-inspired-new-derivation"},
+  "validation_status": {"level": "PROTOCOL_DERIVED_UNVERIFIED", "claim": "UNVERIFIED_NEW_DF_MODEL", "completed": [], "missing": ["switching-simulation"]}
+}

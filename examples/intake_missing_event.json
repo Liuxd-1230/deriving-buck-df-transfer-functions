@@ -1,0 +1,8 @@
+{
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 1,
+  "control_family": "custom-cot",
+  "target": "Gvc",
+  "parameters": {"Vin": 12.0, "Vo": 1.2, "fs": 300000.0, "L": 3e-7, "C": 0.00047, "R": 0.1, "rC": 0.001}
+}

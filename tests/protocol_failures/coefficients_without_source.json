@@ -1,0 +1,8 @@
+{
+  "case_version": "0.3",
+  "mode": "custom-unverified-df",
+  "classification": {"path": "NEW_MODEL", "unsupported_effects": []},
+  "switching_events": [{"name": "off_edge", "fixed_or_movable": "movable", "equation": "F=0", "edge_slope": "Fdot_0", "delta_edge": "delta_t=-delta_F/Fdot_0"}],
+  "df_relation": {"form": "d_hat=a_c*uc_hat", "a_c": "1", "a_o": "0", "origin": "user-supplied", "duty_caveat": "equivalent switching perturbation"},
+  "validation_status": {"level": "CUSTOM_COEFFICIENT_UNVERIFIED", "claim": "CUSTOM_UNVERIFIED_DF", "completed": [], "missing": []}
+}
