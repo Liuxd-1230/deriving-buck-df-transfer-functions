@@ -1,0 +1,4 @@
+interface:
+  display_name: "Buck DF Transfer Functions"
+  short_description: "Paper-grounded single-phase COT/RBCOT DF models."
+  default_prompt: "Use $deriving-buck-df-transfer-functions to generate and validate a paper-grounded CCM COT or RBCOT Buck model from physical parameters."

@@ -1,0 +1,6 @@
+{
+  "status": "PARTIALLY_VERIFIED",
+  "evidence": "Li/Lee Eqs. (9)-(10); no raw SIMPLIS vectors bundled.",
+  "max_exact_vs_pade_magnitude_error_db_below_0p49fs": 0.014481665670423638,
+  "max_exact_vs_pade_phase_error_deg_below_0p49fs": 0.014835192705586309
+}

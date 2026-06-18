@@ -1,0 +1,33 @@
+{
+  "name": "single-phase-rbcot-example",
+  "topology": "buck-ccm",
+  "phases": 1,
+  "df_source": "Demonstration coefficients only; replace with an edge-condition derivation or matching literature model.",
+  "valid_frequency": "Demonstration only; no physical accuracy claim.",
+  "parameters": {
+    "L": "500e-9",
+    "C": "470e-6",
+    "R": "0.05",
+    "rL": "500e-6",
+    "rC": "1e-3",
+    "Vg": "12",
+    "D": "0.1",
+    "Fm": "0.02",
+    "Ri": "1e-3",
+    "Hvo": "1",
+    "tau_m": "50e-9",
+    "Gc": "1",
+    "H": "1"
+  },
+  "modulator": {
+    "a_c": "Fm/(1+s*tau_m)",
+    "a_g": "0",
+    "a_o": "-Fm*Hvo/(1+s*tau_m)",
+    "a_i": "-Fm*Ri/(1+s*tau_m)"
+  },
+  "feedback": {
+    "Gc": "Gc",
+    "H": "H"
+  },
+  "targets": ["Gvc", "Gvg", "Zout", "Tloop"]
+}

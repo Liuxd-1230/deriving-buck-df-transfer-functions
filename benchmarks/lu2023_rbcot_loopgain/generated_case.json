@@ -1,0 +1,173 @@
+{
+  "model_id": "rbcot-esr-lu-2023",
+  "cases": {
+    "0p5m": {
+      "name": "rbcot-esr-lu-2023",
+      "model_id": "rbcot-esr-lu-2023",
+      "method": "describing-function",
+      "topology": "buck-ccm",
+      "phases": 1,
+      "df_source": "Lu et al., IEEE TPEL 2023",
+      "valid_frequency": {
+        "max_hz": 200000.0,
+        "basis": "Lu-2023-Pade-validation-to-fs-over-2"
+      },
+      "parameters": {
+        "Vin": 12.0,
+        "Vo": 1.2,
+        "fs": 400000.0,
+        "L": 6.6e-07,
+        "C": 0.00025,
+        "R": 0.12,
+        "rL": 0.0,
+        "rC": 0.0005,
+        "Vg": 12.0,
+        "D": 0.09999999999999999,
+        "Tsw": 2.5e-06,
+        "Ton": 2.5e-07,
+        "Toff": 2.25e-06,
+        "sf": 909.090909090909
+      },
+      "paper_model": {
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
+        "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
+        "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
+      },
+      "coefficient_origin": "paper-duty-df-with-sign-adapter",
+      "component_fidelity": {
+        "Fdx": "paper-equation-5",
+        "Fodx": "paper-equation-8",
+        "Fox": "paper-equation-9",
+        "Fp": "paper-equation-10",
+        "Floop": "paper-equation-11",
+        "delay": "paper-exponential",
+        "a_o": "derived-sign-adapter-from-Fox"
+      },
+      "targets": [
+        "Gvc",
+        "Gvg",
+        "Zout"
+      ],
+      "modulator": {
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "a_g": "0",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
+        "a_i": "0"
+      }
+    },
+    "3p2m": {
+      "name": "rbcot-esr-lu-2023",
+      "model_id": "rbcot-esr-lu-2023",
+      "method": "describing-function",
+      "topology": "buck-ccm",
+      "phases": 1,
+      "df_source": "Lu et al., IEEE TPEL 2023",
+      "valid_frequency": {
+        "max_hz": 200000.0,
+        "basis": "Lu-2023-Pade-validation-to-fs-over-2"
+      },
+      "parameters": {
+        "Vin": 12.0,
+        "Vo": 1.2,
+        "fs": 400000.0,
+        "L": 6.6e-07,
+        "C": 0.00025,
+        "R": 0.12,
+        "rL": 0.0,
+        "rC": 0.0032,
+        "Vg": 12.0,
+        "D": 0.09999999999999999,
+        "Tsw": 2.5e-06,
+        "Ton": 2.5e-07,
+        "Toff": 2.25e-06,
+        "sf": 5818.181818181818
+      },
+      "paper_model": {
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
+        "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
+        "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
+      },
+      "coefficient_origin": "paper-duty-df-with-sign-adapter",
+      "component_fidelity": {
+        "Fdx": "paper-equation-5",
+        "Fodx": "paper-equation-8",
+        "Fox": "paper-equation-9",
+        "Fp": "paper-equation-10",
+        "Floop": "paper-equation-11",
+        "delay": "paper-exponential",
+        "a_o": "derived-sign-adapter-from-Fox"
+      },
+      "targets": [
+        "Gvc",
+        "Gvg",
+        "Zout"
+      ],
+      "modulator": {
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "a_g": "0",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
+        "a_i": "0"
+      }
+    },
+    "10m": {
+      "name": "rbcot-esr-lu-2023",
+      "model_id": "rbcot-esr-lu-2023",
+      "method": "describing-function",
+      "topology": "buck-ccm",
+      "phases": 1,
+      "df_source": "Lu et al., IEEE TPEL 2023",
+      "valid_frequency": {
+        "max_hz": 200000.0,
+        "basis": "Lu-2023-Pade-validation-to-fs-over-2"
+      },
+      "parameters": {
+        "Vin": 12.0,
+        "Vo": 1.2,
+        "fs": 400000.0,
+        "L": 6.6e-07,
+        "C": 0.00025,
+        "R": 0.12,
+        "rL": 0.0,
+        "rC": 0.01,
+        "Vg": 12.0,
+        "D": 0.09999999999999999,
+        "Tsw": 2.5e-06,
+        "Ton": 2.5e-07,
+        "Toff": 2.25e-06,
+        "sf": 18181.81818181818
+      },
+      "paper_model": {
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
+        "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
+        "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
+      },
+      "coefficient_origin": "paper-duty-df-with-sign-adapter",
+      "component_fidelity": {
+        "Fdx": "paper-equation-5",
+        "Fodx": "paper-equation-8",
+        "Fox": "paper-equation-9",
+        "Fp": "paper-equation-10",
+        "Floop": "paper-equation-11",
+        "delay": "paper-exponential",
+        "a_o": "derived-sign-adapter-from-Fox"
+      },
+      "targets": [
+        "Gvc",
+        "Gvg",
+        "Zout"
+      ],
+      "modulator": {
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "a_g": "0",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
+        "a_i": "0"
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "dc_gain_a_per_v": 100.0,
+  "pade_double_pole_hz": 1500000.0000000002,
+  "benchmark_limit_hz": 150000.0
+}

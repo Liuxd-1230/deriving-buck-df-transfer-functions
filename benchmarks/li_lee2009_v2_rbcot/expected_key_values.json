@@ -1,0 +1,5 @@
+{
+  "oscon_stable": true,
+  "ceramic_stable": false,
+  "criterion": "rC*C > Ton/2"
+}

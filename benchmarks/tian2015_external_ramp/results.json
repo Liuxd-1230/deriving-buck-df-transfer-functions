@@ -1,0 +1,8 @@
+{
+  "status": "PARTIALLY_VERIFIED",
+  "evidence": "Paper equations and published fs/2 validity range; no raw SIMPLIS data bundled.",
+  "moving_pole_hz": 31830.98861837907,
+  "stationary_zero_hz": 95492.96585513721,
+  "max_exact_vs_low_order_magnitude_error_db_below_0p49fs": 1.481898387340383,
+  "max_exact_vs_low_order_phase_error_deg_below_0p49fs": 10.77036812397049
+}

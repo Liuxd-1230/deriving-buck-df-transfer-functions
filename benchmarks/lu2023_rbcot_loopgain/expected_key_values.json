@@ -1,0 +1,6 @@
+{
+  "paper_parameters": "Fig. 9 except RL is not reported in the caption",
+  "optimum_esr_ohm": 0.0032,
+  "optimum_phase_margin_deg_approx": 45.0,
+  "valid_to_hz": 200000.0
+}

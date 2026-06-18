@@ -1,0 +1,10 @@
+{
+  "status": "VERIFIED",
+  "evidence": "Published stability boundary and the two capacitor examples in the paper.",
+  "oscon_stable": true,
+  "ceramic_stable": false,
+  "margins_seconds": {
+    "oscon": 3.193333333333333e-06,
+    "ceramic": -2.666666666666664e-08
+  }
+}

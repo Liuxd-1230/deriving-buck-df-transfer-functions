@@ -1,0 +1,57 @@
+{
+  "name": "cot-cm-li-lee-2010",
+  "model_id": "cot-cm-li-lee-2010",
+  "method": "describing-function",
+  "topology": "buck-ccm",
+  "phases": 1,
+  "df_source": "Li and Lee, IEEE TPEL 2010",
+  "valid_frequency": {
+    "max_hz": 150000.0,
+    "basis": "Li-Lee-2010-Eq9",
+    "paper_pade_limit_hz": 1500000.0000000002,
+    "excluded_frequencies": "fm = n*fs/2"
+  },
+  "parameters": {
+    "Vin": 12.0,
+    "Vo": 1.2,
+    "fs": 300000.0,
+    "L": 3e-07,
+    "C": 0.00448,
+    "R": 0.1,
+    "rL": 0.0,
+    "rC": 0.00075,
+    "Ri": 0.01,
+    "Vg": 12.0,
+    "D": 0.09999999999999999,
+    "Tsw": 3.3333333333333333e-06,
+    "Ton": 3.333333333333333e-07,
+    "sf": 40000.0,
+    "w1": "pi/Ton",
+    "Q1": "2/pi"
+  },
+  "paper_model": {
+    "Fc": "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)",
+    "Fg": "(Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))",
+    "Fo": "(-Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))",
+    "k1": "Ton*Ri/(2*L)",
+    "k2": "-Ton*Ri/(2*L)"
+  },
+  "coefficient_origin": "derived-adapter",
+  "component_fidelity": {
+    "Fc": "paper-equation",
+    "Fg": "paper-low-order-ratio-Eq14",
+    "Fo": "paper-low-order-ratio-Eq15",
+    "a_*": "derived-adapter"
+  },
+  "targets": [
+    "Gvc",
+    "Gvg",
+    "Zout"
+  ],
+  "modulator": {
+    "a_c": "(s*L+rL)*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s))/Vg",
+    "a_g": "((s*L+rL)*((Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))-D)/Vg",
+    "a_o": "((s*L+rL)*((-Ton*Ri/(2*L))*((fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)))+1)/Vg",
+    "a_i": "0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "status": "PARTIALLY_VERIFIED",
+  "evidence": "Exact paper Eqs. (5), (8)-(11); RL=0.12 ohm is an explicit benchmark assumption because Fig. 9 does not report RL.",
+  "crossovers": {
+    "0p5m": {
+      "crossover_hz": 200281.56246403093,
+      "phase_deg": -178.44897878756663,
+      "phase_margin_deg": 1.551021212433369
+    },
+    "3p2m": {
+      "crossover_hz": 223326.8762178231,
+      "phase_deg": -139.4163736972958,
+      "phase_margin_deg": 40.583626302704204
+    },
+    "10m": {
+      "crossover_hz": 308926.42438403063,
+      "phase_deg": -112.08235378208843,
+      "phase_margin_deg": 67.91764621791157
+    }
+  },
+  "pade_comparison_3p2m": {
+    "max_magnitude_error_db_to_fs_over_2": 1.4682942276512634,
+    "max_phase_error_deg_to_fs_over_2": 0.056072434642572944,
+    "pade_crossover": {
+      "crossover_hz": 231740.726232259,
+      "phase_deg": -138.72468250113002,
+      "phase_margin_deg": 41.27531749886998
+    }
+  }
+}

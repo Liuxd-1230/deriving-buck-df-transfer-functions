@@ -1,0 +1,60 @@
+{
+  "name": "cot-cm-external-ramp-tian-2015",
+  "model_id": "cot-cm-external-ramp-tian-2015",
+  "method": "describing-function",
+  "topology": "buck-ccm",
+  "phases": 1,
+  "df_source": "Tian et al., IEEE TPEL 2016 (early access 2015)",
+  "valid_frequency": {
+    "max_hz": 150000.0,
+    "basis": "Tian-2015-Eq8-and-validation",
+    "approximation": "Eq. (8) first-order control-current path"
+  },
+  "parameters": {
+    "Vin": 12.0,
+    "Vo": 1.2,
+    "fs": 300000.0,
+    "L": 3e-07,
+    "C": 0.00448,
+    "R": 0.1,
+    "rL": 0.0,
+    "rC": 0.00075,
+    "Ri": 0.01,
+    "se_ratio": 1.0,
+    "Vg": 12.0,
+    "D": 0.09999999999999999,
+    "Tsw": 3.3333333333333333e-06,
+    "Ton": 3.333333333333333e-07,
+    "sf": 40000.0,
+    "se": 40000.0
+  },
+  "paper_model": {
+    "Fc": "fs*(1-exp(-s*Ton))*Vg/(L*s*((sf+se)-se*exp(-s*Tsw)))",
+    "Fg": "-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((sf+se)-se*exp(-s*Tsw)))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)",
+    "Fo": "1/(L*s)*(fs*(1-exp(-s*Ton))/((sf+se)-se*exp(-s*Tsw))*(1/(s*L/Ri))*Vg-1)",
+    "Fc_low_order": "(1/Ri)*(1+s*Tsw/2)/(1+(se/sf+1/2)*Tsw*s)"
+  },
+  "coefficient_origin": "derived-adapter",
+  "component_fidelity": {
+    "Fc": "paper-equation-4",
+    "Fg": "paper-equation-6",
+    "Fo": "paper-equation-7",
+    "Fc_low_order": "paper-equation-8",
+    "a_*": "derived-adapter"
+  },
+  "targets": [
+    "Gvc",
+    "Gvg",
+    "Zout"
+  ],
+  "modulator": {
+    "a_c": "(s*L+rL)*(fs*(1-exp(-s*Ton))*Vg/(L*s*((sf+se)-se*exp(-s*Tsw))))/Vg",
+    "a_g": "((s*L+rL)*(-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((sf+se)-se*exp(-s*Tsw)))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D))-D)/Vg",
+    "a_o": "((s*L+rL)*(1/(L*s)*(fs*(1-exp(-s*Ton))/((sf+se)-se*exp(-s*Tsw))*(1/(s*L/Ri))*Vg-1))+1)/Vg",
+    "a_i": "0"
+  },
+  "features_hz": {
+    "moving_pole": 31830.98861837907,
+    "stationary_zero": 95492.96585513721
+  }
+}
