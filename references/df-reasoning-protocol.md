@@ -22,3 +22,7 @@ Steps 4–8 are indivisible. Analogy to a paper is not a derivation. For an RC r
 Use these headings: Model classification; Assumptions and unsupported effects; State variables and switching states; Steady-state trajectory; Switching event equation; Edge perturbation; Describing-function relation; Mapping to a_c/a_g/a_o/a_i; Buck power-stage coupling; Transfer function; Sanity checks; Validation status; What is paper-derived vs newly derived.
 
 Run `python scripts/df_protocol_checker.py check --report derivation.md`. A passing protocol proves completeness and claim discipline, not physical correctness.
+
+## Automation boundary
+
+Treat `make-protocol-case` plus `check-json` as the canonical structured path. Markdown checking is a best-effort fallback. For `case_version=0.3`, `derive` renders the evidence report; it does not infer `a_*` from an arbitrary event equation or run the v0.2 SymPy elimination. The agent must supply the candidate event-derived relation and transfer function, both marked unverified until independent validation.

@@ -67,6 +67,29 @@ class ModelClassifierTests(unittest.TestCase):
         self.assertEqual(result["path"], "UNSUPPORTED")
         self.assertIn("average-model-as-df", result["unsupported_effects"])
 
+    def test_protocol_intake_requires_fs_or_ton(self):
+        result = classify_intake({
+            "topology": "buck", "conduction_mode": "CCM", "phases": 1,
+            "control_family": "custom-cot", "target": "Gvc",
+            "switching_events": [{"name": "off_edge", "fixed_or_movable": "movable",
+                                  "equation": "F_off=Ri*iL-vc=0"}],
+            "comparator_inputs": {"positive": "vc", "negative": "Ri*iL"},
+            "parameters": {"Vin": 12, "Vo": 1.2, "L": 3e-7,
+                           "C": 470e-6, "R": 0.1, "rC": 0.001},
+        })
+        self.assertEqual(result["path"], "INCOMPLETE")
+        self.assertIn("parameters:fs-or-Ton", result["missing_information"])
+
+    def test_bcm_and_boundary_modes_are_unsupported(self):
+        for mode in ("BCM", "BOUNDARY", "boundary conduction"):
+            with self.subTest(mode=mode):
+                result = classify_intake({
+                    "topology": "buck", "conduction_mode": mode, "phases": 1,
+                    "control_family": "custom-cot", "target": "Gvc",
+                })
+                self.assertEqual(result["path"], "UNSUPPORTED")
+                self.assertIn("boundary-conduction", result["unsupported_effects"])
+
 
 if __name__ == "__main__":
     unittest.main()

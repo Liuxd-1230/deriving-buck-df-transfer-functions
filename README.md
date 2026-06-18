@@ -164,6 +164,19 @@ python scripts/df_protocol_checker.py check `
 
 该示例演示协议结构，不声称已经给出 RC-ramp 的闭式正确系数。必须重新求周期稳态 `vramp(t)`、总边沿斜率、边沿递推和 DF 路径，并保持 `UNVERIFIED_NEW_DF_MODEL`。
 
+### 结构化主路径与当前自动化边界
+
+`make-protocol-case → check-json` 是机器检查的结构化主路径。`check --report` 对 Markdown 做启发式解析，只是兼容人工报告的兜底入口；关键验收应以 JSON case 为准。
+
+对于 `case_version=0.3`，`derive` 是报告渲染器：它不需要 SymPy，也不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。当前责任划分是：
+
+1. agent 按 12 步协议推导候选事件敏感度、DF 关系和传函；
+2. protocol case 保存候选式、来源和未验证项；
+3. checker 检查步骤完整性与声明诚实性；
+4. 只有注册 v0.2 模型走现有 SymPy 功率级消元器。
+
+把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.3 已实现能力。
+
 ## Protocol checker 能抓什么
 
 | 状态 | 含义 |

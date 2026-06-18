@@ -37,3 +37,5 @@ A v0.3 case is an evidence record, not merely a coefficient container.
 ```
 
 Allowed modes are `known-model`, `derive-by-protocol`, `custom-unverified-df`, and `unsupported`. User coefficients require top-level `df_source`, `event_equation`, and `valid_frequency`.
+
+`validation_status.level` stores the evidence class (`PROTOCOL_DERIVED_UNVERIFIED`); `validation_status.claim` stores the mandatory safety label (`UNVERIFIED_NEW_DF_MODEL`). These names are intentionally separate and are the canonical v0.3 schema.

@@ -29,6 +29,8 @@ def _unsupported(intake: dict[str, Any]) -> list[str]:
         effects.append("non-buck-topology")
     if mode == "DCM":
         effects.append("DCM")
+    if mode in {"BCM", "BOUNDARY", "BOUNDARY CONDUCTION"}:
+        effects.append("boundary-conduction")
     if intake.get("multiphase_overlap") or (isinstance(phases, int) and phases > 1 and intake.get("overlap", False)):
         effects.append("multiphase-overlap")
     for key, label in (("pulse_skipping", "pulse-skipping"), ("burst", "burst"),
@@ -55,6 +57,8 @@ def _missing_for_protocol(intake: dict[str, Any]) -> list[str]:
         absent = [name for name in BASE_PARAMETERS if name not in parameters]
         if absent:
             missing.append("parameters:" + ",".join(absent))
+        if "fs" not in parameters and "Ton" not in parameters:
+            missing.append("parameters:fs-or-Ton")
     return missing
 
 

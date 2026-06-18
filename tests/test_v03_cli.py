@@ -33,7 +33,7 @@ def protocol_intake():
 
 class V03CliTests(unittest.TestCase):
     def run_cli(self, *args):
-        return subprocess.run([sys.executable, str(CLI), *args], cwd=ROOT,
+        return subprocess.run([sys.executable, "-S", str(CLI), *args], cwd=ROOT,
                               text=True, capture_output=True, timeout=30)
 
     def test_classify_prints_structured_result(self):

@@ -123,7 +123,7 @@ def render_protocol_report(case: dict[str, Any]) -> str:
         "## Edge perturbation", "", timing_line, *edge_lines, "",
         "## Describing-function relation", "", f"`{case['df_relation']['form']}`",
         f"Equivalent-duty caveat: {case['df_relation'].get('duty_caveat', 'not supplied')}", "",
-        "## Mapping to a_c/a_g/a_o/a_i", "", str({k: v for k, v in case["df_relation"].items() if k.startswith("a_")}), "",
+        "## Mapping to a_c/a_g/a_o/a_i", "", str({key: val for key, val in case["df_relation"].items() if key.startswith("a_")}), "",
         "## Buck power-stage coupling", "", str(case["buck_power_stage_coupling"]), "",
         "## Transfer function", "", str(case["transfer_function"]), "",
         "## Sanity checks", "", str(case["sanity_checks"]), "",

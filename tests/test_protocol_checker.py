@@ -66,6 +66,35 @@ class ProtocolCheckerTests(unittest.TestCase):
         result = check_report_text("## Model classification\nNEW_MODEL\n## Validation status\nPROTOCOL_DERIVED_UNVERIFIED")
         self.assertEqual(result["status"], "FAIL_MISSING_EVENT")
 
+    def test_markdown_does_not_treat_arbitrary_f_variable_as_event(self):
+        text = """## Model classification
+NEW_MODEL
+F_gain = 0.40
+D = 0.4
+## Validation status
+PROTOCOL_DERIVED_UNVERIFIED
+"""
+        result = check_report_text(text)
+        self.assertEqual(result["status"], "FAIL_MISSING_EVENT")
+        self.assertFalse(result["checks"]["event_equation"])
+
+    def test_markdown_recognizes_explicit_edge_event_ending_in_zero(self):
+        text = """## Model classification
+NEW_MODEL
+Switching event: F_off = Ri*iL + vramp - vc = 0
+movable edge; Ton fixed
+delta_t = -delta_F/Fdot_0
+## Describing-function relation
+d_hat is an equivalent switching perturbation
+## What is paper-derived vs newly derived
+paper-inspired-new-derivation
+## Validation status
+PROTOCOL_DERIVED_UNVERIFIED
+missing: switching-simulation
+"""
+        result = check_report_text(text)
+        self.assertTrue(result["checks"]["event_equation"])
+
 
 if __name__ == "__main__":
     unittest.main()

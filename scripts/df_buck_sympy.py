@@ -10,16 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-try:
-    import sympy as sp
-except Exception as exc:  # pragma: no cover - environment dependent
-    print(
-        "SymPy is required. Install it in the active Python environment "
-        "(for example: python -m pip install sympy). "
-        f"Import error: {exc}",
-        file=sys.stderr,
-    )
-    raise SystemExit(2) from exc
+sp: Any = None
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -41,22 +32,44 @@ from df_protocol_case import (  # noqa: E402
 
 
 IDENTIFIER = re.compile(r"\b[A-Za-z_]\w*\b")
-KNOWN_FUNCTIONS = {
-    "exp": sp.exp,
-    "sqrt": sp.sqrt,
-    "sin": sp.sin,
-    "cos": sp.cos,
-    "tan": sp.tan,
-    "log": sp.log,
-    "pi": sp.pi,
-    "I": sp.I,
-}
 BASE_SYMBOLS = ("s", "L", "C", "R", "rL", "rC", "Vg", "D")
 SUPPORTED_TARGETS = {"Gvd", "Gvg_open", "Zout_open", "Gvc", "Gvg", "Zout", "Tloop"}
 
 
 class CaseError(ValueError):
     """Raised when a case cannot be interpreted safely."""
+
+
+def _require_sympy() -> Any:
+    """Import SymPy only for commands that perform symbolic algebra."""
+
+    global sp
+    if sp is not None:
+        return sp
+    try:
+        import sympy as sympy_module
+    except Exception as exc:  # pragma: no cover - environment dependent
+        raise CaseError(
+            "SymPy is required for algebra, checks, and benchmarks. Install it in the "
+            "active Python environment (for example: python -m pip install sympy). "
+            f"Import error: {exc}"
+        ) from exc
+    sp = sympy_module
+    return sp
+
+
+def _known_functions() -> dict[str, Any]:
+    sympy = _require_sympy()
+    return {
+        "exp": sympy.exp,
+        "sqrt": sympy.sqrt,
+        "sin": sympy.sin,
+        "cos": sympy.cos,
+        "tan": sympy.tan,
+        "log": sympy.log,
+        "pi": sympy.pi,
+        "I": sympy.I,
+    }
 
 
 def load_case(path: str | Path) -> dict[str, Any]:
@@ -81,21 +94,24 @@ def _all_expression_text(case: dict[str, Any]) -> list[str]:
 
 
 def build_symbol_table(case: dict[str, Any]) -> dict[str, Any]:
+    sympy = _require_sympy()
+    known_functions = _known_functions()
     names = set(BASE_SYMBOLS)
     names.update(str(k) for k in case.get("parameters", {}).keys())
     for text in _all_expression_text(case):
         names.update(IDENTIFIER.findall(text))
-    names.difference_update(KNOWN_FUNCTIONS)
-    table: dict[str, Any] = {name: sp.Symbol(name) for name in sorted(names)}
-    table.update(KNOWN_FUNCTIONS)
+    names.difference_update(known_functions)
+    table: dict[str, Any] = {name: sympy.Symbol(name) for name in sorted(names)}
+    table.update(known_functions)
     return table
 
 
 def parse_expr(value: Any, table: dict[str, Any]) -> sp.Expr:
+    sympy = _require_sympy()
     if isinstance(value, bool):
         raise CaseError("Boolean values are not valid symbolic expressions.")
     try:
-        return sp.sympify(value, locals=table)
+        return sympy.sympify(value, locals=table)
     except Exception as exc:
         raise CaseError(f"Cannot parse expression {value!r}: {exc}") from exc
 
@@ -153,6 +169,7 @@ def _clean(expr: sp.Expr) -> sp.Expr:
 
 
 def derive_model(case: dict[str, Any]) -> dict[str, Any]:
+    _require_sympy()
     diagnostics = validate_case(case)
     if diagnostics["errors"]:
         raise CaseError("; ".join(diagnostics["errors"]))
@@ -406,6 +423,7 @@ def command_make_protocol_case(args: argparse.Namespace) -> int:
 
 
 def command_benchmark(args: argparse.Namespace) -> int:
+    _require_sympy()
     from run_benchmarks import BENCHMARK_NAMES, run_benchmark
 
     names = BENCHMARK_NAMES if args.all else (args.benchmark,)

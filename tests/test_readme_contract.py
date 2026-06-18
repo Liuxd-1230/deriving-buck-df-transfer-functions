@@ -23,6 +23,9 @@ class ReadmeContractTests(unittest.TestCase):
             "Zotero",
             "协议完整性",
             "物理正确性",
+            "结构化主路径",
+            "报告渲染器",
+            "不会自动",
         )
         for token in required:
             self.assertIn(token, text, token)

@@ -145,7 +145,12 @@ def check_report_text(text: str) -> dict[str, Any]:
             "missing": re.findall(r"missing[^\n]*", lower),
         },
     }
-    event = re.search(r"(?:f(?:_[a-z]+)?\s*\([^\n]*\)|f_[a-z]+)\s*=\s*[^\n]*0", lower)
+    event = re.search(
+        r"\b(?:f\s*\([^\n)]*\)|f_(?:on|off|event|edge)(?:_[a-z0-9]+)*)"
+        r"\s*=\s*(?:0|[^\n]*?=\s*0)\s*`?[.;,]?\s*$",
+        lower,
+        flags=re.MULTILINE,
+    )
     delta = re.search(r"delta_t[^\n]*-?delta_f[^\n]*fdot", lower)
     if event:
         pseudo["switching_events"] = [{
