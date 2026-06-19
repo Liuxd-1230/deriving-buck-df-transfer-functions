@@ -1,18 +1,18 @@
 {
   "case": "yan_2022_part_ii_ccot_buck_zero_ramp",
   "targets": [
-    "Tloop"
+    "Tc"
   ],
   "fs_hz": 98000.0,
   "fs_half_hz": 49000.0,
   "valid_frequency_limit_hz": 49000.0,
   "evaluator": "sampled-data-numeric",
   "results": {
-    "Tloop": {
-      "response_kind": "return_ratio",
-      "stability_margins_status": "APPLICABLE_RETURN_RATIO",
-      "zero_db_crossing_hz": 219.27208980375292,
-      "phase_margin_deg": 276.8560842176576,
+    "Tc": {
+      "response_kind": "closed_loop",
+      "stability_margins_status": "NOT_APPLICABLE_NON_RETURN_RATIO",
+      "zero_db_crossing_hz": 2803.5097619679254,
+      "phase_margin_deg": null,
       "gain_margin_db": null,
       "phase_180_crossing_hz": null,
       "validity": "WITHIN_DECLARED_RANGE",
@@ -20,9 +20,7 @@
         "fs",
         "fs/2",
         "valid_frequency_limit",
-        "0 dB crossing",
-        "phase margin",
-        "gain margin"
+        "0 dB crossing"
       ]
     }
   },

@@ -43,7 +43,6 @@
         "mc": 0.0,
         "Hv": 0.36,
         "H": 0.36,
-        "SidebandPulse": 0.05,
         "C": 0.0002,
         "rC": 0.01
       },
@@ -117,25 +116,11 @@
       "expression": "Hv*Gvd*GPWM"
     },
     {
-      "formula_id": "yan-2022-part-ii.vcot-tloop",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "return-ratio",
-      "expression": "Tv"
-    },
-    {
       "formula_id": "yan-2022-part-ii.vcot-tc",
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Tv/(1+Tv)"
-    },
-    {
-      "formula_id": "yan-2022-part-ii.vcot-gvc",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "output/control",
-      "expression": "Gvd*GPWM/(1+Tv)"
     }
   ],
   "formula_object_bindings": {
@@ -147,10 +132,9 @@
     "GPWM": "yan-2022-part-ii.vcot-gpwm",
     "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
     "Tv": "yan-2022-part-ii.vcot-tv",
-    "Tloop": "yan-2022-part-ii.vcot-tloop",
-    "Tc": "yan-2022-part-ii.vcot-tc",
-    "Gvc": "yan-2022-part-ii.vcot-gvc"
+    "Tc": "yan-2022-part-ii.vcot-tc"
   },
+  "control_contract": "voltage",
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "vfb",
@@ -208,9 +192,7 @@
     "available_registered_outputs": [
       "GPWM",
       "Tv",
-      "Tloop",
-      "Tc",
-      "Gvc"
+      "Tc"
     ],
     "requested_target": "Tc",
     "mapping_rule": "Tc=Tv/(1+Tv)",
@@ -260,8 +242,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "43f9a531d36a7e9b4c492e4c606b2f65890b0e46ac79a2ca5274ffaf30e4c9e4"
+      "sha256": "503a4266b82d3af07fda13496797f825dcce19d1c47175214dfe7c65a063e300"
     },
-    "artifact_sha256": "96ff186017347eb86cf81eb1fef1b83146f23c617bf822821a7a4bc00732e7ce"
+    "artifact_sha256": "df25fc59bf671b9e89ee69a32c9aed5270b4a1ff73a64ad38a494f38e866033e"
   }
 }

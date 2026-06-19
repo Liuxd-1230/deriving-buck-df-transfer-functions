@@ -150,6 +150,7 @@ def build_proof_object(
             },
             "formula_bindings": [formula_binding(formula_id) for formula_id in binding_ids],
             "formula_object_bindings": formula_object_bindings,
+            "control_contract": sampled["control_contract"],
             "sampling": sampled["sampling"],
             "pulse_structure": sampled["pulse_structure"],
             "Fm": sampled["Fm"],

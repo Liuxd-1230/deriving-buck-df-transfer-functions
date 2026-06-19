@@ -14,13 +14,22 @@ class SampledDerivationError(ValueError):
     """Raised when a proof cannot enter the registered derivation stage."""
 
 
-def expand_registered_expressions(contract: dict[str, Any]) -> dict[str, str]:
+def expand_registered_expressions(
+    contract: dict[str, Any],
+    *,
+    object_overrides: dict[str, str] | None = None,
+    simplify: bool = True,
+) -> dict[str, str]:
     import sympy as sp
 
     expanded: dict[str, Any] = {}
+    object_overrides = object_overrides or {}
     aliases = {"pulse_factor": "PulseFactor", "pulse_relation": "PulseRelation"}
     for object_name in contract["derivation_order"]:
-        formula = get_formula(contract["formula_objects"][object_name])["canonical_sympy_expr"]
+        formula = object_overrides.get(
+            object_name,
+            get_formula(contract["formula_objects"][object_name])["canonical_sympy_expr"],
+        )
         names = {
             str(symbol)
             for prior in expanded.values()
@@ -31,11 +40,53 @@ def expand_registered_expressions(contract: dict[str, Any]) -> dict[str, str]:
         expression = sp.sympify(formula, locals=local)
         substitutions = {}
         for name, value in expanded.items():
-            symbol = sp.Symbol(aliases.get(name, name))
-            if symbol in expression.free_symbols:
-                substitutions[symbol] = value
-        expanded[object_name] = sp.factor(expression.subs(substitutions))
+            candidate_symbols = [sp.Symbol(aliases.get(name, name)), sp.Symbol(name)]
+            if name == "sideband":
+                candidate_symbols.extend([sp.Symbol("SidebandPulse"), sp.Symbol("SumG")])
+            for symbol in candidate_symbols:
+                if symbol in expression.free_symbols:
+                    substitutions[symbol] = value
+        substituted = expression.subs(substitutions)
+        expanded[object_name] = sp.factor(substituted) if simplify else substituted
     return {name: str(value) for name, value in expanded.items()}
+
+
+def numeric_sideband_overrides(proof: dict[str, Any]) -> dict[str, str]:
+    import sympy as sp
+
+    sideband = proof.get("sideband") or {}
+    mode = sideband.get("mode")
+    numeric = sideband.get("numeric_approximation")
+    if mode in {"TRUNCATED_SUM_M", "PAPER_SIMPLIFIED_FORM"} and numeric:
+        text = str(numeric)
+        control_contract = proof.get("control_contract")
+        power_stage = proof.get("power_stage") or {}
+        stage_name = "Gid" if control_contract == "current" else "Gvd"
+        stage = power_stage.get(stage_name) if isinstance(power_stage, dict) else None
+        if isinstance(stage, dict) and "G(" in text:
+            s = sp.Symbol("s")
+            ws = sp.Symbol("ws")
+            j = sp.I
+            identifiers = set()
+            import re
+
+            for expression in (text, str(stage.get("expression", ""))):
+                identifiers.update(re.findall(r"\b[A-Za-z_]\w*\b", expression))
+            local = {
+                name: sp.Symbol(name)
+                for name in identifiers
+                if name not in {"G", "exp", "sin", "cos", "sqrt", "pi", "j"}
+            }
+            local.update({"s": s, "ws": ws, "j": j, "exp": sp.exp, "sin": sp.sin, "cos": sp.cos, "sqrt": sp.sqrt, "pi": sp.pi})
+            stage_expr = sp.sympify(stage["expression"], locals=local)
+
+            def _g(argument: Any) -> Any:
+                return stage_expr.subs(s, argument)
+
+            local["G"] = _g
+            text = str(sp.sympify(text, locals=local))
+        return {"sideband": text}
+    return {}
 
 
 def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
@@ -57,6 +108,12 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
         for name, formula_id in formula_objects.items()
     }
     expanded_expressions = expand_registered_expressions(contract)
+    numeric_overrides = numeric_sideband_overrides(proof)
+    numeric_expanded_expressions = expand_registered_expressions(
+        contract,
+        object_overrides=numeric_overrides,
+        simplify=False,
+    )
     control_contract = contract["control_contract"]
     selected_loop = "Ti" if control_contract == "current" else "Tv"
     target = proof["transfer"]["target_transfer"]
@@ -95,6 +152,8 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
         "expressions": expressions,
         "expanded_expressions": expanded_expressions,
         "expanded_target_expression": expanded_expressions[target_object],
+        "numeric_expanded_expressions": numeric_expanded_expressions,
+        "numeric_expanded_target_expression": numeric_expanded_expressions[target_object],
         "reasoning_method": {
             "name": "12-step Yan sampled-data reasoning",
             "independent_derivation_path": [
@@ -108,8 +167,8 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
                 "8. attach sideband summation policy",
                 "9. build GPWM/Gm sampled modulator",
                 "10. bind Buck ESR power stage Gid/Gvd",
-                "11. form return ratio Ti/Tv and Tloop",
-                "12. close the loop for Tc or Gvc and verify against registry",
+                "11. form return ratio Ti/Tv",
+                "12. close the loop for Tc or another explicitly registered target and verify against registry",
             ],
             "registry_formula_path": [
                 step["formula_id"] for step in steps

@@ -8,9 +8,9 @@
   },
   "control_contract": "current",
   "selected_loop": "Ti",
-  "target_transfer": "Tloop",
-  "target_formula_id": "yan-2022-part-ii.ccot-tloop",
-  "response_kind": "return_ratio",
+  "target_transfer": "Tc",
+  "target_formula_id": "yan-2022-part-ii.ccot-tc",
+  "response_kind": "closed_loop",
   "expressions": {
     "sampling": "(x_left+x_right)/2",
     "Fm": "1/((m2-m1)*Ts/2)",
@@ -20,9 +20,7 @@
     "GPWM": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
     "Gid": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
     "Ti": "Hi*Gid*GPWM",
-    "Tloop": "Ti",
-    "Tc": "Ti/(1+Ti)",
-    "Gvc": "Gid*GPWM/(1+Ti)"
+    "Tc": "Ti/(1+Ti)"
   },
   "expanded_expressions": {
     "sampling": "(x_left + x_right)/2",
@@ -33,11 +31,21 @@
     "GPWM": "-2*(exp(T0*s) - 1)*exp(-T0*s)/(-2*H*SidebandPulse + Ts*m1 - Ts*m2)",
     "Gid": "Vin*(C*R*s + 1)/(C*L*R*s**2 + C*R*rC*s + L*s + R)",
     "Ti": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + C*R*rC*s + L*s + R))",
-    "Tloop": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + C*R*rC*s + L*s + R))",
-    "Tc": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*H*R*SidebandPulse*rC*s*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) + C*R*Ts*m1*rC*s*exp(T0*s) - C*R*Ts*m2*rC*s*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))",
-    "Gvc": "-2*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*H*R*SidebandPulse*rC*s*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) + C*R*Ts*m1*rC*s*exp(T0*s) - C*R*Ts*m2*rC*s*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))"
+    "Tc": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*H*R*SidebandPulse*rC*s*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) + C*R*Ts*m1*rC*s*exp(T0*s) - C*R*Ts*m2*rC*s*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))"
   },
-  "expanded_target_expression": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + C*R*rC*s + L*s + R))",
+  "expanded_target_expression": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*H*R*SidebandPulse*rC*s*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) + C*R*Ts*m1*rC*s*exp(T0*s) - C*R*Ts*m2*rC*s*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))",
+  "numeric_expanded_expressions": {
+    "sampling": "x_left/2 + x_right/2",
+    "Fm": "2/(Ts*(-m1 + m2))",
+    "pulse_relation": "-exp(-T0*s)",
+    "pulse_factor": "1 - exp(-T0*s)",
+    "sideband": "Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1)",
+    "GPWM": "2*(1 - exp(-T0*s))/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1))",
+    "Gid": "Vin*(C*s + 1/R)/(C*L*s**2 + s*(C*rC + L/R) + 1)",
+    "Ti": "2*Hi*Vin*(1 - exp(-T0*s))*(C*s + 1/R)/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1))",
+    "Tc": "2*Hi*Vin*(1 - exp(-T0*s))*(C*s + 1/R)/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1)*(2*Hi*Vin*(1 - exp(-T0*s))*(C*s + 1/R)/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1))"
+  },
+  "numeric_expanded_target_expression": "2*Hi*Vin*(1 - exp(-T0*s))*(C*s + 1/R)/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1)*(2*Hi*Vin*(1 - exp(-T0*s))*(C*s + 1/R)/(Ts*(-m1 + m2)*(2*H*(Vin*(1 - exp(T0*(-s - 10*I*ws)))*(C*(s + 10*I*ws) + 1/R)/(C*L*(s + 10*I*ws)**2 + (s + 10*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 9*I*ws)))*(C*(s + 9*I*ws) + 1/R)/(C*L*(s + 9*I*ws)**2 + (s + 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 8*I*ws)))*(C*(s + 8*I*ws) + 1/R)/(C*L*(s + 8*I*ws)**2 + (s + 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 7*I*ws)))*(C*(s + 7*I*ws) + 1/R)/(C*L*(s + 7*I*ws)**2 + (s + 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 6*I*ws)))*(C*(s + 6*I*ws) + 1/R)/(C*L*(s + 6*I*ws)**2 + (s + 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 5*I*ws)))*(C*(s + 5*I*ws) + 1/R)/(C*L*(s + 5*I*ws)**2 + (s + 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 4*I*ws)))*(C*(s + 4*I*ws) + 1/R)/(C*L*(s + 4*I*ws)**2 + (s + 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 3*I*ws)))*(C*(s + 3*I*ws) + 1/R)/(C*L*(s + 3*I*ws)**2 + (s + 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - 2*I*ws)))*(C*(s + 2*I*ws) + 1/R)/(C*L*(s + 2*I*ws)**2 + (s + 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s - I*ws)))*(C*(s + I*ws) + 1/R)/(C*L*(s + I*ws)**2 + (s + I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + I*ws)))*(C*(s - I*ws) + 1/R)/(C*L*(s - I*ws)**2 + (s - I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 2*I*ws)))*(C*(s - 2*I*ws) + 1/R)/(C*L*(s - 2*I*ws)**2 + (s - 2*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 3*I*ws)))*(C*(s - 3*I*ws) + 1/R)/(C*L*(s - 3*I*ws)**2 + (s - 3*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 4*I*ws)))*(C*(s - 4*I*ws) + 1/R)/(C*L*(s - 4*I*ws)**2 + (s - 4*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 5*I*ws)))*(C*(s - 5*I*ws) + 1/R)/(C*L*(s - 5*I*ws)**2 + (s - 5*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 6*I*ws)))*(C*(s - 6*I*ws) + 1/R)/(C*L*(s - 6*I*ws)**2 + (s - 6*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 7*I*ws)))*(C*(s - 7*I*ws) + 1/R)/(C*L*(s - 7*I*ws)**2 + (s - 7*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 8*I*ws)))*(C*(s - 8*I*ws) + 1/R)/(C*L*(s - 8*I*ws)**2 + (s - 8*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 9*I*ws)))*(C*(s - 9*I*ws) + 1/R)/(C*L*(s - 9*I*ws)**2 + (s - 9*I*ws)*(C*rC + L/R) + 1) + Vin*(1 - exp(T0*(-s + 10*I*ws)))*(C*(s - 10*I*ws) + 1/R)/(C*L*(s - 10*I*ws)**2 + (s - 10*I*ws)*(C*rC + L/R) + 1))/(Ts*(-m1 + m2)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1))",
   "reasoning_method": {
     "name": "12-step Yan sampled-data reasoning",
     "independent_derivation_path": [
@@ -51,8 +59,8 @@
       "8. attach sideband summation policy",
       "9. build GPWM/Gm sampled modulator",
       "10. bind Buck ESR power stage Gid/Gvd",
-      "11. form return ratio Ti/Tv and Tloop",
-      "12. close the loop for Tc or Gvc and verify against registry"
+      "11. form return ratio Ti/Tv",
+      "12. close the loop for Tc or another explicitly registered target and verify against registry"
     ],
     "registry_formula_path": [
       "yan-2022-part-ii.ccot-dirichlet-value",
@@ -63,9 +71,7 @@
       "yan-2022-part-ii.ccot-gpwm",
       "yan-2022-part-ii.ccot-gid-buck",
       "yan-2022-part-ii.ccot-ti",
-      "yan-2022-part-ii.ccot-tloop",
-      "yan-2022-part-ii.ccot-tc",
-      "yan-2022-part-ii.ccot-gvc"
+      "yan-2022-part-ii.ccot-tc"
     ],
     "dual_path_check": "independent step composition must match registry-bound expanded_target_expression"
   },
@@ -144,30 +150,12 @@
     },
     {
       "index": 9,
-      "object": "Tloop",
-      "formula_id": "yan-2022-part-ii.ccot-tloop",
-      "expression": "Ti",
-      "source_equation": "loop-break-return-ratio-identification",
-      "approximation": "exact-block-composition",
-      "dimension_signature": "return-ratio"
-    },
-    {
-      "index": 10,
       "object": "Tc",
       "formula_id": "yan-2022-part-ii.ccot-tc",
       "expression": "Ti/(1+Ti)",
       "source_equation": "negative-feedback-closure",
       "approximation": "exact-feedback-identity",
       "dimension_signature": "closed-loop"
-    },
-    {
-      "index": 11,
-      "object": "Gvc",
-      "formula_id": "yan-2022-part-ii.ccot-gvc",
-      "expression": "Gid*GPWM/(1+Ti)",
-      "source_equation": "closed-loop-control-to-output-composition",
-      "approximation": "exact-feedback-identity",
-      "dimension_signature": "output/control"
     }
   ],
   "approximation_policy": {
@@ -239,8 +227,8 @@
     "predecessor": {
       "artifact_type": "proof_object",
       "state": "FORMULA_BINDING",
-      "sha256": "e9c1320343e215edb9798bbe6eea0507d14311dce585d74ee06dc20f5988fd8e"
+      "sha256": "fa838aa539260c05ff693a3d821ff88ed214bec938b1073e9694d72a4f411f64"
     },
-    "artifact_sha256": "274db0ddc5e0289b111a2616c516d059a617f62cd45878bc31c36061bda936de"
+    "artifact_sha256": "c8f45c3f2f0e868655785700a1ef9e6a2ae962ad405a8132886ad439374fa56d"
   }
 }

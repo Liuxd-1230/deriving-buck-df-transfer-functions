@@ -25,7 +25,7 @@
 | Dirichlet checker | VERIFIED_STATIC | `Fm.origin=sampled_data_derivation` without a Dirichlet reference returns `FAIL_FM_WITHOUT_DIRICHLET_REFERENCE` |
 | COT/COFT pulse structure | VERIFIED_STATIC | Part II proofs missing `d1/d2/d2(t)=-d1(t-T0)/1-exp(-s*T0)` return `FAIL_COT_TWO_PULSE_TRAINS` |
 | Zero-ramp Fm hard rejection | VERIFIED_STATIC | external/internal ramp, delay, RC injection and sense-filter cases reject with explicit v0.4/v0.5 boundary codes |
-| Sampled-data target mapping | VERIFIED_STATIC | `Gvc/Tloop` are registered-derived only through `Gm/GPWM → Gid/Gvd → Ti/Tv/Tloop → Gvc`; unsupported targets are rejected or unverified |
+| Sampled-data target mapping | VERIFIED_STATIC | Yan v0.4 registers `Gm/GPWM/Ti/Tv/Tc`; `Gvc/Tloop/Gvg/Zout` are not claimed as Yan 2022 benchmark targets and are rejected or left unverified unless separately registered |
 | Sideband numeric evaluator | VERIFIED_STATIC | `plot-bode` supports `exp(-s*T)`, `TRUNCATED_SUM_M`, and `PAPER_SIMPLIFIED_FORM`; `SYMBOLIC_FULL_SUM` is rejected for numeric plots |
 | Sideband substitution | VERIFIED_STATIC | SymPy `subs(n,Integer(k))` preserves identifiers; default truncation is `[-M,-1]∪[1,M]` with explicit positive integer `M` |
 | Stability-margin semantics | VERIFIED_STATIC | PM/GM are computed only for `Ti/Tv/Tloop` return ratios; other responses return `NOT_APPLICABLE_NON_RETURN_RATIO` |
@@ -54,7 +54,7 @@
 
 - Part I: Dirichlet sampling contract and zero-ramp sampled `Fm` proof fragment are registered. Runtime artifacts do not require the PDF.
 - Part II C-COT/C-COFT: proof object requires two pulse trains and `1-exp(-s*T0)`; benchmark uses unified `plot-bode`.
-- Part II V-COT/V-COFT: proof object separates `GPWM/Tv/Tc/Gvc/Tloop`; `Gvc` is closed-loop control-to-output, `Tloop` is return ratio, and the trend benchmark protects `rC*C > T0/2`.
+- Part II V-COT/V-COFT: proof object separates `GPWM/Tv/Tc`; `Gvc/Tloop` are not v0.4 Yan registered benchmark targets. The trend benchmark protects `rC*C > T0/2`.
 - Sideband policy: registry stores symbolic/paper skeletons; numeric Bode must declare `TRUNCATED_SUM_M` or `PAPER_SIMPLIFIED_FORM`.
 - Power-stage coupling: current contracts use `Gid/Hi/Ti`; voltage contracts use `Gvd/Hv/Tv`; `Tc` is generated only as `Ti/(1+Ti)` or `Tv/(1+Tv)`.
 - Margin policy: only `Ti/Tv/Tloop` are return ratios. `Gm/GPWM/Gvc/Gvg/Zout/Tc` report `NOT_APPLICABLE_NON_RETURN_RATIO` for PM/GM.

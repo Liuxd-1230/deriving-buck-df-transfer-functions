@@ -41,8 +41,7 @@
         "m2": 1.0,
         "mc": 0.0,
         "Hi": 0.1,
-        "H": 0.1,
-        "SumG": 0.05
+        "H": 0.1
       },
       "sideband": {
         "mode": "PAPER_SIMPLIFIED_FORM",
@@ -100,25 +99,11 @@
       "expression": "Hi*Gid*GPWM"
     },
     {
-      "formula_id": "yan-2022-part-i.tloop-current",
-      "source_model_id": "yan-2022-part-i-pcm-buck",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "return-ratio",
-      "expression": "Ti"
-    },
-    {
       "formula_id": "yan-2022-part-i.tc-current",
       "source_model_id": "yan-2022-part-i-pcm-buck",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Ti/(1+Ti)"
-    },
-    {
-      "formula_id": "yan-2022-part-i.gvc-current",
-      "source_model_id": "yan-2022-part-i-pcm-buck",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "output/control",
-      "expression": "Gid*GPWM/(1+Ti)"
     }
   ],
   "formula_object_bindings": {
@@ -128,10 +113,9 @@
     "GPWM": "yan-2022-part-i.gpwm",
     "Gid": "yan-2022-part-i.gid-buck",
     "Ti": "yan-2022-part-i.ti",
-    "Tloop": "yan-2022-part-i.tloop-current",
-    "Tc": "yan-2022-part-i.tc-current",
-    "Gvc": "yan-2022-part-i.gvc-current"
+    "Tc": "yan-2022-part-i.tc-current"
   },
+  "control_contract": "current",
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "is",
@@ -183,9 +167,7 @@
       "Gm",
       "GPWM",
       "Ti",
-      "Tloop",
-      "Tc",
-      "Gvc"
+      "Tc"
     ],
     "requested_target": "Tc",
     "mapping_rule": "Tc=Ti/(1+Ti)",
@@ -235,8 +217,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "7d544689711382617994858f38a13f5edfbb463753c6ae9e918e3b13847aee8a"
+      "sha256": "f9124a4bd0c7ca9dcf434f1f454c7b1d2625baa5a813eb8acb044c018f672e8b"
     },
-    "artifact_sha256": "60c15cecfdfac3c55c05aafa1cd5cd78bd863a17dded0e2677eb71d5167b34db"
+    "artifact_sha256": "af303f9687b94a5050ef742157065fe6e20defb59b7ac29ce3770b6d0bd167d2"
   }
 }

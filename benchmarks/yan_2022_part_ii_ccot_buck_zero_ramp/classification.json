@@ -8,7 +8,7 @@
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
   "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-  "target_transfer": "Tloop",
+  "target_transfer": "Tc",
   "model_match": {
     "known_model": true,
     "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
@@ -29,8 +29,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "d79f2af884ce83cb2d4882fd2bf9d08ffb468b9a6bbbd4dc7b8a48c66c64d448"
+      "sha256": "dd401178f45b9bf2de8d1dd2044f581ea63262e3776269d26e1836ae65defef3"
     },
-    "artifact_sha256": "800214286e868b9e7d5a6e71dbba8545558d60b4ac295724d06be52d3b78537f"
+    "artifact_sha256": "11d18c6b6b322594dfa242bdad95bb398703c4c1925892dcebadf7bbfd371942"
   }
 }

@@ -13,11 +13,9 @@
         "GPWM": "yan-2022-part-i.gpwm",
         "Gid": "yan-2022-part-i.gid-buck",
         "Ti": "yan-2022-part-i.ti",
-        "Tloop": "yan-2022-part-i.tloop-current",
-        "Tc": "yan-2022-part-i.tc-current",
-        "Gvc": "yan-2022-part-i.gvc-current"
+        "Tc": "yan-2022-part-i.tc-current"
       },
-      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gid", "Ti", "Tloop", "Tc", "Gvc"]
+      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gid", "Ti", "Tc"]
     },
     "yan-2022-part-i-voltage-buck": {
       "paper": "Yan/Ruan/Li 2022 Part I",
@@ -31,11 +29,9 @@
         "GPWM": "yan-2022-part-i-voltage.gpwm",
         "Gvd": "yan-2022-part-i-voltage.gvd-buck",
         "Tv": "yan-2022-part-i-voltage.tv",
-        "Tloop": "yan-2022-part-i-voltage.tloop-voltage",
-        "Tc": "yan-2022-part-i-voltage.tc-voltage",
-        "Gvc": "yan-2022-part-i-voltage.gvc-voltage"
+        "Tc": "yan-2022-part-i-voltage.tc-voltage"
       },
-      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gvd", "Tv", "Tloop", "Tc", "Gvc"]
+      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gvd", "Tv", "Tc"]
     },
     "yan-2022-part-ii-ccot-buck-zero-ramp": {
       "paper": "Yan/Ruan/Li 2022 Part II",
@@ -52,11 +48,9 @@
         "GPWM": "yan-2022-part-ii.ccot-gpwm",
         "Gid": "yan-2022-part-ii.ccot-gid-buck",
         "Ti": "yan-2022-part-ii.ccot-ti",
-        "Tloop": "yan-2022-part-ii.ccot-tloop",
-        "Tc": "yan-2022-part-ii.ccot-tc",
-        "Gvc": "yan-2022-part-ii.ccot-gvc"
+        "Tc": "yan-2022-part-ii.ccot-tc"
       },
-      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gid", "Ti", "Tloop", "Tc", "Gvc"]
+      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gid", "Ti", "Tc"]
     },
     "yan-2022-part-ii-vcot-buck-zero-ramp": {
       "paper": "Yan/Ruan/Li 2022 Part II",
@@ -73,11 +67,9 @@
         "GPWM": "yan-2022-part-ii.vcot-gpwm",
         "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
         "Tv": "yan-2022-part-ii.vcot-tv",
-        "Tloop": "yan-2022-part-ii.vcot-tloop",
-        "Tc": "yan-2022-part-ii.vcot-tc",
-        "Gvc": "yan-2022-part-ii.vcot-gvc"
+        "Tc": "yan-2022-part-ii.vcot-tc"
       },
-      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gvd", "Tv", "Tloop", "Tc", "Gvc"]
+      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gvd", "Tv", "Tc"]
     }
   }
 }

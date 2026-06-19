@@ -43,7 +43,6 @@
       "mc": 0.0,
       "Hv": 0.36,
       "H": 0.36,
-      "SidebandPulse": 0.05,
       "C": 0.0002,
       "rC": 0.01
     },
@@ -62,6 +61,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "6c699489a79183bbdd370bf1de0022f47204cc533823db98db9e34aa98a38f4c"
+    "artifact_sha256": "84badddcfe557a526b22d3b72d44b50a138384413caa03e4a2121d1363b8d616"
   }
 }

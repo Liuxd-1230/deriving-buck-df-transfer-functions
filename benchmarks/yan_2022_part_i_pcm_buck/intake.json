@@ -41,8 +41,7 @@
       "m2": 1.0,
       "mc": 0.0,
       "Hi": 0.1,
-      "H": 0.1,
-      "SumG": 0.05
+      "H": 0.1
     },
     "sideband": {
       "mode": "PAPER_SIMPLIFIED_FORM",
@@ -59,6 +58,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "e0037aa12d9271bbc8cfc0fe167f8edd94a5411d6841ab2764c508eefbc8dbc9"
+    "artifact_sha256": "c32d7acc2ab26370c8b66bda7a628b9d8ed77748d4301aa376722d8bfbaf2f9c"
   }
 }

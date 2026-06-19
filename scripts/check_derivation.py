@@ -12,11 +12,24 @@ from artifact_workflow import WorkflowError, attach_workflow, verify_workflow
 from check_formula_consistency import check_binding
 from formula_registry import FormulaRegistryError, formula_binding, get_paper_contract
 from schema_validation import ArtifactSchemaError, validate_artifact
-from sampled_derivation import expand_registered_expressions
+from sampled_derivation import expand_registered_expressions, numeric_sideband_overrides
 
 
 def _result(status: str, errors: list[str]) -> dict[str, Any]:
     return {"status": status, "errors": errors}
+
+
+def _sideband_placeholder(contract: dict[str, Any]) -> str | None:
+    formula_id = (contract.get("formula_objects") or {}).get("sideband")
+    if not formula_id:
+        return None
+    from formula_registry import get_formula
+
+    formula = get_formula(formula_id)
+    expression = str(formula.get("canonical_sympy_expr", ""))
+    if expression in {"SidebandPulse", "SumG"}:
+        return expression
+    return None
 
 
 def check_derivation_artifact(
@@ -42,6 +55,28 @@ def check_derivation_artifact(
     expanded_expected = expand_registered_expressions(contract)
     if derivation.get("expanded_expressions") != expanded_expected:
         errors.append("expanded expressions do not match the registered derivation chain")
+    numeric_expanded = derivation.get("numeric_expanded_expressions")
+    numeric_target = derivation.get("numeric_expanded_target_expression")
+    placeholder = _sideband_placeholder(contract)
+    sideband_mode = sideband_policy.get("mode")
+    if sideband_mode in {"TRUNCATED_SUM_M", "PAPER_SIMPLIFIED_FORM"}:
+        if not isinstance(numeric_expanded, dict) or not numeric_target:
+            errors.append("numeric sideband approximation requires numeric expanded expressions")
+        expected_numeric = expand_registered_expressions(
+            contract,
+            object_overrides=numeric_sideband_overrides(proof),
+            simplify=False,
+        )
+        if numeric_expanded != expected_numeric:
+            errors.append("numeric expanded expressions do not match proof sideband approximation")
+        if numeric_target != expected_numeric.get(derivation.get("target_transfer")):
+            target_object_for_numeric = "GPWM" if derivation.get("target_transfer") == "Gm" else derivation.get("target_transfer")
+            if numeric_target != expected_numeric.get(target_object_for_numeric):
+                errors.append("numeric expanded target expression does not match proof sideband approximation")
+        if placeholder and placeholder in str(numeric_target):
+            errors.append(
+                f"numeric expanded target still contains sideband placeholder {placeholder}"
+            )
     for object_name, formula_id in contract["formula_objects"].items():
         binding = formula_binding(formula_id)
         binding["expression"] = expressions.get(object_name)

@@ -18,9 +18,7 @@
     "GPWM": "Fm/(1+Fm*H*SumG)",
     "Gid": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
     "Ti": "Hi*Gid*GPWM",
-    "Tloop": "Ti",
-    "Tc": "Ti/(1+Ti)",
-    "Gvc": "Gid*GPWM/(1+Ti)"
+    "Tc": "Ti/(1+Ti)"
   },
   "expanded_expressions": {
     "sampling": "(x_left + x_right)/2",
@@ -29,11 +27,19 @@
     "GPWM": "2/(2*H*SumG + Ts*m1 - Ts*m2 + 2*Ts*mc)",
     "Gid": "Vin*(C*R*s + 1)/(C*L*R*s**2 + C*R*rC*s + L*s + R)",
     "Ti": "2*Hi*Vin*(C*R*s + 1)/((2*H*SumG + Ts*m1 - Ts*m2 + 2*Ts*mc)*(C*L*R*s**2 + C*R*rC*s + L*s + R))",
-    "Tloop": "2*Hi*Vin*(C*R*s + 1)/((2*H*SumG + Ts*m1 - Ts*m2 + 2*Ts*mc)*(C*L*R*s**2 + C*R*rC*s + L*s + R))",
-    "Tc": "2*Hi*Vin*(C*R*s + 1)/(2*C*H*L*R*SumG*s**2 + 2*C*H*R*SumG*rC*s + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 + 2*C*L*R*Ts*mc*s**2 + C*R*Ts*m1*rC*s - C*R*Ts*m2*rC*s + 2*C*R*Ts*mc*rC*s + 2*H*L*SumG*s + 2*H*R*SumG + 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + 2*L*Ts*mc*s + R*Ts*m1 - R*Ts*m2 + 2*R*Ts*mc)",
-    "Gvc": "2*Vin*(C*R*s + 1)/(2*C*H*L*R*SumG*s**2 + 2*C*H*R*SumG*rC*s + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 + 2*C*L*R*Ts*mc*s**2 + C*R*Ts*m1*rC*s - C*R*Ts*m2*rC*s + 2*C*R*Ts*mc*rC*s + 2*H*L*SumG*s + 2*H*R*SumG + 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + 2*L*Ts*mc*s + R*Ts*m1 - R*Ts*m2 + 2*R*Ts*mc)"
+    "Tc": "2*Hi*Vin*(C*R*s + 1)/(2*C*H*L*R*SumG*s**2 + 2*C*H*R*SumG*rC*s + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 + 2*C*L*R*Ts*mc*s**2 + C*R*Ts*m1*rC*s - C*R*Ts*m2*rC*s + 2*C*R*Ts*mc*rC*s + 2*H*L*SumG*s + 2*H*R*SumG + 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + 2*L*Ts*mc*s + R*Ts*m1 - R*Ts*m2 + 2*R*Ts*mc)"
   },
   "expanded_target_expression": "2*Hi*Vin*(C*R*s + 1)/(2*C*H*L*R*SumG*s**2 + 2*C*H*R*SumG*rC*s + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 + 2*C*L*R*Ts*mc*s**2 + C*R*Ts*m1*rC*s - C*R*Ts*m2*rC*s + 2*C*R*Ts*mc*rC*s + 2*H*L*SumG*s + 2*H*R*SumG + 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + 2*L*Ts*mc*s + R*Ts*m1 - R*Ts*m2 + 2*R*Ts*mc)",
+  "numeric_expanded_expressions": {
+    "sampling": "x_left/2 + x_right/2",
+    "Fm": "1/(Ts*(m1/2 - m2/2 + mc))",
+    "sideband": "1/(Ts*(m1/2 - m2/2 + mc))",
+    "GPWM": "1/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(m1/2 - m2/2 + mc))",
+    "Gid": "Vin*(C*s + 1/R)/(C*L*s**2 + s*(C*rC + L/R) + 1)",
+    "Ti": "Hi*Vin*(C*s + 1/R)/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(m1/2 - m2/2 + mc)*(C*L*s**2 + s*(C*rC + L/R) + 1))",
+    "Tc": "Hi*Vin*(C*s + 1/R)/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(Hi*Vin*(C*s + 1/R)/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(m1/2 - m2/2 + mc)*(C*L*s**2 + s*(C*rC + L/R) + 1)) + 1)*(m1/2 - m2/2 + mc)*(C*L*s**2 + s*(C*rC + L/R) + 1))"
+  },
+  "numeric_expanded_target_expression": "Hi*Vin*(C*s + 1/R)/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(Hi*Vin*(C*s + 1/R)/(Ts*(H/(Ts**2*(m1/2 - m2/2 + mc)**2) + 1)*(m1/2 - m2/2 + mc)*(C*L*s**2 + s*(C*rC + L/R) + 1)) + 1)*(m1/2 - m2/2 + mc)*(C*L*s**2 + s*(C*rC + L/R) + 1))",
   "reasoning_method": {
     "name": "12-step Yan sampled-data reasoning",
     "independent_derivation_path": [
@@ -47,8 +53,8 @@
       "8. attach sideband summation policy",
       "9. build GPWM/Gm sampled modulator",
       "10. bind Buck ESR power stage Gid/Gvd",
-      "11. form return ratio Ti/Tv and Tloop",
-      "12. close the loop for Tc or Gvc and verify against registry"
+      "11. form return ratio Ti/Tv",
+      "12. close the loop for Tc or another explicitly registered target and verify against registry"
     ],
     "registry_formula_path": [
       "yan-2022-part-i.dirichlet-value",
@@ -57,9 +63,7 @@
       "yan-2022-part-i.gpwm",
       "yan-2022-part-i.gid-buck",
       "yan-2022-part-i.ti",
-      "yan-2022-part-i.tloop-current",
-      "yan-2022-part-i.tc-current",
-      "yan-2022-part-i.gvc-current"
+      "yan-2022-part-i.tc-current"
     ],
     "dual_path_check": "independent step composition must match registry-bound expanded_target_expression"
   },
@@ -120,30 +124,12 @@
     },
     {
       "index": 7,
-      "object": "Tloop",
-      "formula_id": "yan-2022-part-i.tloop-current",
-      "expression": "Ti",
-      "source_equation": "loop-break-return-ratio-identification",
-      "approximation": "exact-block-composition",
-      "dimension_signature": "return-ratio"
-    },
-    {
-      "index": 8,
       "object": "Tc",
       "formula_id": "yan-2022-part-i.tc-current",
       "expression": "Ti/(1+Ti)",
       "source_equation": "negative-feedback-closure",
       "approximation": "exact-feedback-identity",
       "dimension_signature": "closed-loop"
-    },
-    {
-      "index": 9,
-      "object": "Gvc",
-      "formula_id": "yan-2022-part-i.gvc-current",
-      "expression": "Gid*GPWM/(1+Ti)",
-      "source_equation": "closed-loop-control-to-output-composition",
-      "approximation": "exact-feedback-identity",
-      "dimension_signature": "output/control"
     }
   ],
   "approximation_policy": {
@@ -189,8 +175,8 @@
     "predecessor": {
       "artifact_type": "proof_object",
       "state": "FORMULA_BINDING",
-      "sha256": "60c15cecfdfac3c55c05aafa1cd5cd78bd863a17dded0e2677eb71d5167b34db"
+      "sha256": "af303f9687b94a5050ef742157065fe6e20defb59b7ac29ce3770b6d0bd167d2"
     },
-    "artifact_sha256": "54f7e99a30e7339aa68e9cc78d548893fcbb17c2ac6b2a30553a737ce6e6fabf"
+    "artifact_sha256": "f3cccde246253df66da9e7fa25673d239c611c7e19c3e6a890dbb41619d370a7"
   }
 }

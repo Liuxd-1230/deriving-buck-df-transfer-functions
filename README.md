@@ -56,7 +56,7 @@ flowchart TD
 | `yan-2022-part-ii-ccot-buck-zero-ramp` | C-COT/C-COFT zero-ramp sampled-data | two pulse trains + `1-exp(-s*T0)` | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 | `yan-2022-part-ii-vcot-buck-zero-ramp` | V-COT/V-COFT zero-ramp sampled-data | `GPWM/Tv/Tc` mapping + trend boundary | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 
-前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → derivation → checkers` 进入报告。`Gvc/Tloop` 只有在 registry 明确给出 `Gm/GPWM → Gid/Gvd → Ti/Tv/Tloop → Gvc` 映射时才可输出；未注册的 `Gvg/Zout` 仍必须拒绝或标为 unverified。
+前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → derivation → checkers` 进入报告。v0.4 的 Yan registered path 只注册论文主链路 `Gm/GPWM → Gid/Gvd → Ti/Tv → Tc`；`Gvc/Tloop/Gvg/Zout` 未作为 Yan 2022 benchmark 交付目标，必须拒绝或标为 unverified。
 
 论文公式、适用范围和重排过程见 [DF coefficient library](references/df-coefficient-library.md)，来源与 DOI 见 [Zotero DF source map](references/zotero-df-source-map.md)，逐篇推理结构见 [paper proof skeletons](references/paper-proof-skeletons/)。
 
@@ -314,4 +314,4 @@ VALIDATION.md                    证据等级和未验证项
 3. `DF_REGISTERED_DIRECT` 不得构造 `a_*`或未注册的 `Gvg/Zout/Tloop`。
 4. 只要连接或 ramp 路径改变，就退回事件方程重新推导。
 5. 新模型在 benchmark 或开关仿真前始终保持未验证状态。
-6. sampled-data 论文给出的 `GPWM/Gm/Ti/Tv/Tc` 必须显式 target mapping；`Gvc/Tloop` 只能由注册的 power-stage coupling 和 return-ratio 关系派生，不能把 `Tc`、`Gvc`、`Tloop` 偷换成同一个量。
+6. sampled-data 论文给出的 `GPWM/Gm/Ti/Tv/Tc` 必须显式 target mapping；未注册的 `Gvc/Tloop/Gvg/Zout` 不能被 `Tc` 或调制器表达式偷换，若后续版本注册这些目标，必须绑定独立 registry formula 和 benchmark。

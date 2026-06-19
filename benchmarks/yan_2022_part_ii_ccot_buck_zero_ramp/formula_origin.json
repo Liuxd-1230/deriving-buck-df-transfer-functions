@@ -9,9 +9,132 @@
     "yan-2022-part-ii.ccot-gpwm",
     "yan-2022-part-ii.ccot-gid-buck",
     "yan-2022-part-ii.ccot-ti",
-    "yan-2022-part-ii.ccot-tloop",
-    "yan-2022-part-ii.ccot-tc",
-    "yan-2022-part-ii.ccot-gvc"
+    "yan-2022-part-ii.ccot-tc"
+  ],
+  "formulas": [
+    {
+      "formula_id": "yan-2022-part-ii.ccot-dirichlet-value",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-sampling",
+      "canonical_sympy_expr": "(x_left+x_right)/2",
+      "dimension_signature": "sampled-variable",
+      "numeric_probe_values": {
+        "x_left": 1,
+        "x_right": 3
+      },
+      "source_equation": "Yan-2022-Part-II-Dirichlet-condition",
+      "approximation": "exact-sampling-definition"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-fm-zero-ramp",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-modulator",
+      "canonical_sympy_expr": "1/((m2-m1)*Ts/2)",
+      "dimension_signature": "1/slope_time",
+      "numeric_probe_values": {
+        "m1": 1,
+        "m2": 4,
+        "Ts": 1e-05
+      },
+      "source_equation": "Yan-2022-Part-II-zero-ramp-Fm",
+      "approximation": "zero-ramp-only"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-pulse-relation",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-pulse",
+      "canonical_sympy_expr": "-exp(-s*T0)",
+      "dimension_signature": "D2/D1",
+      "numeric_probe_values": {
+        "s": 1100,
+        "T0": 3e-06
+      },
+      "source_equation": "Yan-2022-Part-II-d2-delayed-inverse-d1",
+      "approximation": "exact-delay-relation"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-pulse-factor",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-pulse",
+      "canonical_sympy_expr": "1-exp(-s*T0)",
+      "dimension_signature": "dimensionless",
+      "numeric_probe_values": {
+        "s": 1100,
+        "T0": 3e-06
+      },
+      "source_equation": "Yan-2022-Part-II-d1-plus-d2",
+      "approximation": "exact-two-pulse-factor"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-sideband-value",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-sideband",
+      "canonical_sympy_expr": "SidebandPulse",
+      "dimension_signature": "pulse-weighted-sideband-sum",
+      "numeric_probe_values": {
+        "SidebandPulse": 0.05
+      },
+      "source_equation": "Yan-2022-Part-II-nonzero-sideband-sum-with-pulse-factor",
+      "approximation": "symbolic-full-sum"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-gpwm",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-modulator",
+      "canonical_sympy_expr": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+      "dimension_signature": "duty/input",
+      "numeric_probe_values": {
+        "Fm": 3,
+        "PulseFactor": 0.1,
+        "H": 0.1,
+        "SidebandPulse": 0.05
+      },
+      "source_equation": "Yan-2022-Part-II-sampled-modulator",
+      "approximation": "registered-sideband-form"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-gid-buck",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-power-stage",
+      "canonical_sympy_expr": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "dimension_signature": "current/duty",
+      "numeric_probe_values": {
+        "Vin": 12,
+        "C": 0.0001,
+        "s": 1100,
+        "R": 1,
+        "L": 1e-05,
+        "rC": 0.01
+      },
+      "source_equation": "Yan-2022-Part-II-Eq9",
+      "approximation": "paper-esr-power-stage"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-ti",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "canonical_sympy_expr": "Hi*Gid*GPWM",
+      "dimension_signature": "return-ratio",
+      "numeric_probe_values": {
+        "Hi": 0.1,
+        "Gid": 5,
+        "GPWM": 2
+      },
+      "source_equation": "current-loop-block-composition",
+      "approximation": "exact-block-composition"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-tc",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "canonical_sympy_expr": "Ti/(1+Ti)",
+      "dimension_signature": "closed-loop",
+      "numeric_probe_values": {
+        "Ti": 2
+      },
+      "source_equation": "negative-feedback-closure",
+      "approximation": "exact-feedback-identity"
+    }
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

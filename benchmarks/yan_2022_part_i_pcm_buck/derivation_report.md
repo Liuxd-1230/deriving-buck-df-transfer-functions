@@ -20,8 +20,8 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - 8. attach sideband summation policy
 - 9. build GPWM/Gm sampled modulator
 - 10. bind Buck ESR power stage Gid/Gvd
-- 11. form return ratio Ti/Tv and Tloop
-- 12. close the loop for Tc or Gvc and verify against registry
+- 11. form return ratio Ti/Tv
+- 12. close the loop for Tc or another explicitly registered target and verify against registry
 
 ### Registry formula path
 
@@ -31,9 +31,7 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - `yan-2022-part-i.gpwm`
 - `yan-2022-part-i.gid-buck`
 - `yan-2022-part-i.ti`
-- `yan-2022-part-i.tloop-current`
 - `yan-2022-part-i.tc-current`
-- `yan-2022-part-i.gvc-current`
 
 Dual-path check: independent step composition must match registry-bound expanded_target_expression.
 
@@ -85,29 +83,13 @@ Dual-path check: independent step composition must match registry-bound expanded
 - Approximation: `exact-block-composition`
 - Dimension: `return-ratio`
 
-### 7. Tloop
-
-- `formula_id`: `yan-2022-part-i.tloop-current`
-- Expression: `$Ti$`
-- Provenance: loop-break-return-ratio-identification
-- Approximation: `exact-block-composition`
-- Dimension: `return-ratio`
-
-### 8. Tc
+### 7. Tc
 
 - `formula_id`: `yan-2022-part-i.tc-current`
 - Expression: `$Ti/(1+Ti)$`
 - Provenance: negative-feedback-closure
 - Approximation: `exact-feedback-identity`
 - Dimension: `closed-loop`
-
-### 9. Gvc
-
-- `formula_id`: `yan-2022-part-i.gvc-current`
-- Expression: `$Gid*GPWM/(1+Ti)$`
-- Provenance: closed-loop-control-to-output-composition
-- Approximation: `exact-feedback-identity`
-- Dimension: `output/control`
 
 ## Requested result
 

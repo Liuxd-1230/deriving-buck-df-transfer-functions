@@ -11,6 +11,16 @@ from schema_validation import ArtifactSchemaError, validate_artifact
 from artifact_workflow import WorkflowError, verify_workflow
 
 
+def _validate_formula_origin_consistency(formula_origin: dict) -> None:
+    ids = formula_origin.get("formula_ids")
+    formulas = formula_origin.get("formulas")
+    if not isinstance(ids, list) or not isinstance(formulas, list):
+        return
+    formula_ids = [item.get("formula_id") for item in formulas if isinstance(item, dict)]
+    if ids != formula_ids:
+        raise ArtifactSchemaError("formula_origin formula_ids must match formulas[].formula_id order")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate ESSF artifacts with Draft 2020-12 schemas.")
     parser.add_argument("--schema")
@@ -40,6 +50,8 @@ def main() -> int:
                 )
                 for artifact, schema in artifacts:
                     validate_artifact(artifact, schema)
+                    if schema == "formula_origin.schema.json":
+                        _validate_formula_origin_consistency(artifact)
                     checked += 1
                 verify_workflow(classification, expected_state="MODEL_CLASSIFY", predecessor=intake)
                 verify_workflow(proof, expected_state="FORMULA_BINDING", predecessor=classification)
@@ -52,6 +64,8 @@ def main() -> int:
             raise ArtifactSchemaError("--schema and --artifact are required")
         artifact = json.loads(Path(args.artifact).read_text(encoding="utf-8"))
         validate_artifact(artifact, args.schema)
+        if args.schema == "formula_origin.schema.json":
+            _validate_formula_origin_consistency(artifact)
         print(json.dumps({"status": "PASS", "schema": args.schema}, indent=2))
         return 0
     except (OSError, json.JSONDecodeError, ArtifactSchemaError, WorkflowError) as exc:

@@ -20,8 +20,8 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - 8. attach sideband summation policy
 - 9. build GPWM/Gm sampled modulator
 - 10. bind Buck ESR power stage Gid/Gvd
-- 11. form return ratio Ti/Tv and Tloop
-- 12. close the loop for Tc or Gvc and verify against registry
+- 11. form return ratio Ti/Tv
+- 12. close the loop for Tc or another explicitly registered target and verify against registry
 
 ### Registry formula path
 
@@ -33,9 +33,7 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - `yan-2022-part-ii.ccot-gpwm`
 - `yan-2022-part-ii.ccot-gid-buck`
 - `yan-2022-part-ii.ccot-ti`
-- `yan-2022-part-ii.ccot-tloop`
 - `yan-2022-part-ii.ccot-tc`
-- `yan-2022-part-ii.ccot-gvc`
 
 Dual-path check: independent step composition must match registry-bound expanded_target_expression.
 
@@ -103,15 +101,7 @@ Dual-path check: independent step composition must match registry-bound expanded
 - Approximation: `exact-block-composition`
 - Dimension: `return-ratio`
 
-### 9. Tloop
-
-- `formula_id`: `yan-2022-part-ii.ccot-tloop`
-- Expression: `$Ti$`
-- Provenance: loop-break-return-ratio-identification
-- Approximation: `exact-block-composition`
-- Dimension: `return-ratio`
-
-### 10. Tc
+### 9. Tc
 
 - `formula_id`: `yan-2022-part-ii.ccot-tc`
 - Expression: `$Ti/(1+Ti)$`
@@ -119,22 +109,14 @@ Dual-path check: independent step composition must match registry-bound expanded
 - Approximation: `exact-feedback-identity`
 - Dimension: `closed-loop`
 
-### 11. Gvc
-
-- `formula_id`: `yan-2022-part-ii.ccot-gvc`
-- Expression: `$Gid*GPWM/(1+Ti)$`
-- Provenance: closed-loop-control-to-output-composition
-- Approximation: `exact-feedback-identity`
-- Dimension: `output/control`
-
 ## Requested result
 
-- Target: `Tloop`
-- Response kind: `return_ratio`
+- Target: `Tc`
+- Response kind: `closed_loop`
 - Selected return ratio: `Ti`
-- Target mapping: `Tloop=Ti`
-- Registered relation: `$Ti$`
-- Expanded engineering expression: `$-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + C*R*rC*s + L*s + R))$`
+- Target mapping: `Tc=Ti/(1+Ti)`
+- Registered relation: `$Ti/(1+Ti)$`
+- Expanded engineering expression: `$-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*H*R*SidebandPulse*rC*s*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) + C*R*Ts*m1*rC*s*exp(T0*s) - C*R*Ts*m2*rC*s*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))$`
 
 ## Approximation and validity
 

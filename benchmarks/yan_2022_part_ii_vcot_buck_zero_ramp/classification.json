@@ -8,7 +8,7 @@
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
   "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-  "target_transfer": "Gvc",
+  "target_transfer": "Tc",
   "model_match": {
     "known_model": true,
     "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
@@ -29,8 +29,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "e1fba7578a79830bf846d42fedb5eadabc05a8ea0c84be26fc7efa4988062ac9"
+      "sha256": "d4ccfb25855195c21e0aa80aa84fc1f005acab5ab794a92ea9e1c637f2f688fc"
     },
-    "artifact_sha256": "1c699ab277505e1bc8c380faffc48913c9ae8fc968f30231ffa0981c4ba715b4"
+    "artifact_sha256": "c31d7e08fe3214c16ba653b8e7c4ca1037a819f7cb4cbc7407257d8544b7d986"
   }
 }

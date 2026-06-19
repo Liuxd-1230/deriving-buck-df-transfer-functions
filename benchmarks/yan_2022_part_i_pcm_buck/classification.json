@@ -29,8 +29,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "e0037aa12d9271bbc8cfc0fe167f8edd94a5411d6841ab2764c508eefbc8dbc9"
+      "sha256": "c32d7acc2ab26370c8b66bda7a628b9d8ed77748d4301aa376722d8bfbaf2f9c"
     },
-    "artifact_sha256": "7d544689711382617994858f38a13f5edfbb463753c6ae9e918e3b13847aee8a"
+    "artifact_sha256": "f9124a4bd0c7ca9dcf434f1f454c7b1d2625baa5a813eb8acb044c018f672e8b"
   }
 }
