@@ -2,7 +2,7 @@
 
 面向单相 CCM Buck 的描述函数（describing function, DF）推导 skill，覆盖 COT current-mode、external ramp、V²/RBCOT 与 loop gain。
 
-v0.3.1 是 ESSF（Event–Sampling–Sideband Framework）重构的第一阶段。它不实现 sampled-data/sideband 主干，而是先建立不可绕过的 intake、formula registry 和 proof object 闭环：
+v0.4 是 ESSF（Event–Sampling–Sideband Framework）的 Yan 2022 sampled-data registered path 最小闭环。它先建立不可绕过的 intake、formula registry 和 proof object 闭环，再把 Yan/Ruan/Li 2022 Part I/II 的 Dirichlet、sideband、COT/COFT 双脉冲和 zero-ramp `Fm` proof fragment 固化成可检查 artifact：
 
 ```text
 request/intake → intake_status.json → classification.json
@@ -16,8 +16,10 @@ request/intake → intake_status.json → classification.json
 - 从物理参数生成四个已注册论文模型，不要求用户预先填写 `a_*`。
 - 用 `preflight_intake.py` 建立 intake 硬闸门。
 - 区分 `DF_REGISTERED_DIRECT`、`DF_REGISTERED_MULTIPORT`、`PROTOCOL_DERIVED_NEW`、信息不足和越界电路。
+- 区分 `SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM`、`SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT`、`SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT`。
 - 以 `registries/formula_registry.yaml` 作为注册公式唯一真源。
 - 用 `check_proof_object.py` 和 `check_formula_consistency.py` 检查结构化证据。
+- 用 `sampling/Fm/sideband/pulse_structure/modulator_io/target_mapping` 防止 sampled-data 推导把 `Tc/Gvc/Tloop` 混称。
 - 强制新模型写出 `F=0`、可移动边沿、`delta_t`、扰动路径与来源标签。
 - 检查平均模型冒充 DF、无来源系数、虚假验证声明及不支持的工作模式。
 - 在没有 Zotero 和论文 PDF 的电脑上复现公式、测试与离线 benchmark。
@@ -33,13 +35,15 @@ flowchart TD
     B -->|COMPLETE| D["classify"]
     D -->|DF_REGISTERED_DIRECT| E["registry direct transfer"]
     D -->|DF_REGISTERED_MULTIPORT| F["registry a-star"]
+    D -->|SAMPLED_DATA_REGISTERED| S["Yan 2022 sampled-data proof"]
     D -->|PROTOCOL_DERIVED_NEW| G["event proof / UNVERIFIED"]
     E --> H["proof_object.json + checkers"]
     F --> H
+    S --> H
     G --> H
 ```
 
-## 支持的论文模型
+## 支持的论文模型与 sampled-data 注册路径
 
 | 模型 ID | 控制方式 | 接口 | 当前证据等级 |
 |---|---|---|---|
@@ -47,12 +51,17 @@ flowchart TD
 | `cot-cm-external-ramp-tian-2015` | COT current-mode + linear external ramp | `Fc/Fg/Fo → a_*` | `PAPER_GROUNDED_PARTIAL` |
 | `v2-cot-li-lee-2009` | V² COT capacitor-ripple control | paper direct `Gvc` | paper-grounded benchmark |
 | `rbcot-esr-lu-2023` | ESR-ripple RBCOT loop gain | `Fdx/Fodx/Fox/Fp` | `PAPER_GROUNDED_PARTIAL` |
+| `yan-2022-part-i-pcm-buck` | PCM/VCM/PVM/VVM sampled-data | Dirichlet + sideband proof fragment | `SAMPLED_DATA_REGISTERED_PARTIAL` |
+| `yan-2022-part-ii-ccot-buck-zero-ramp` | C-COT/C-COFT zero-ramp sampled-data | two pulse trains + `1-exp(-s*T0)` | `SAMPLED_DATA_REGISTERED_PARTIAL` |
+| `yan-2022-part-ii-vcot-buck-zero-ramp` | V-COT/V-COFT zero-ramp sampled-data | `GPWM/Tv/Tc` mapping + trend boundary | `SAMPLED_DATA_REGISTERED_PARTIAL` |
+
+前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → checkers` 进入报告，并且不得直接输出未注册的 `Gvc/Gvg/Zout/Tloop`。
 
 论文公式、适用范围和重排过程见 [DF coefficient library](references/df-coefficient-library.md)，来源与 DOI 见 [Zotero DF source map](references/zotero-df-source-map.md)，逐篇推理结构见 [paper proof skeletons](references/paper-proof-skeletons/)。
 
 ## 明确不支持
 
-v0.3.1 不支持或不宣称支持：
+v0.4 不支持或不宣称支持：
 
 - DCM、临界导通模式；
 - multiphase overlap 或相位管理参与开关事件；
@@ -60,10 +69,12 @@ v0.3.1 不支持或不宣称支持：
 - 从电路图片自动识别比较器连接；
 - 从任意 SPICE netlist 自动生成 DF；
 - 把平均模型包装成描述函数；
-- COT 双脉冲列车、sideband/Dirichlet 或动态 `Fm(s)`；
+- 2026 external-ramp C-COT dynamic `Fm(s)`；
+- internal ramp、comparator delay、RC injection、sense filter；
+- 多相 nonoverlap/overlap sampled-data；
 - 把新推公式直接标成 verified。
 
-Huang 2025 internal-ramp/DC-extractor 模型采用平均模型，因此在本 DF 注册库中标记为 `EXCLUDED_NON_DF`。
+Huang 2025 internal-ramp/DC-extractor 模型采用平均模型，因此在本 DF 注册库中标记为 `EXCLUDED_NON_DF`。Yan 2026 external-ramp 和多相论文属于 v0.5，不在 v0.4 半实现。
 
 ## 安装
 
@@ -96,7 +107,7 @@ git -C "$HOME\.codex\skills\deriving-buck-df-transfer-functions" pull
 python -m pip install sympy numpy matplotlib
 ```
 
-Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。
+Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。v0.4 开发阶段阅读了 Yan 2022 Part I/II PDF 来提取 proof skeleton、公式片段和 benchmark 边界；交付物只保留可执行 registry、proof object、benchmark 和短 provenance。
 
 ## 快速开始
 
@@ -110,7 +121,7 @@ python scripts/df_buck_sympy.py check --case legacy_case.json
 python scripts/df_buck_sympy.py plot-bode --case case.json --targets Gvc,Gvg,Zout,Tloop --out plots/
 ```
 
-`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不会伪装成 v0.3.1 proof。最终 ESSF 报告仍必须走 `derive --proof-object`。
+`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不会伪装成 v0.4 proof。最终 ESSF 报告仍必须走 `derive --proof-object`。
 
 ### 1. 已知论文模型
 
@@ -192,6 +203,8 @@ python scripts/df_buck_sympy.py plot-bode `
 
 每张图和 summary 必须标出 `fs`、`fs/2`、`valid_frequency_limit`、0 dB crossing、phase margin 和可得的 gain margin。若交越超过有效频率边界，summary 标为 `EXTRAPOLATED_BEYOND_VALID_RANGE`；不能把这种相位裕度当可信稳定性结论。
 
+v0.4 sampled-data case 的 `plot-bode` 支持 `Gm/GPWM/Ti/Tv/Tc`、`exp(-s*T)`、`TRUNCATED_SUM_M` 和 `PAPER_SIMPLIFIED_FORM`。`SYMBOLIC_FULL_SUM` 不能数值画图，必须先选择截断项数或论文简化式。
+
 补偿器不要手写任意 `Gc(s)`，优先用 [compensator templates](references/compensator-templates.md)：`SIMPLIS_LAPLACE`、`OTA_GM_RO`、`PI`、`TYPE_II`、`TYPE_III` 或显式 `CUSTOM_EXPRESSION_UNVERIFIED`。SIMPLIS Laplace block 固定解释为：
 
 ```text
@@ -206,14 +219,14 @@ KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))
 
 `preflight → classification → proof_object → two checkers` 是机器检查的结构化主路径。Markdown 不是证据，只是报告渲染层。
 
-对于 `proof_version=0.3.1`，`derive` 是报告渲染器：它不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。
+对于 `proof_version=0.3.1/0.4`，`derive` 是报告渲染器：它不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。
 
 1. agent 按 12 步协议推导候选事件敏感度、DF 关系和传函；
 2. proof object 保存候选式、formula ID、来源和未验证项；
 3. proof/formula checker 检查结构和 registry 一致性；
-4. 只有注册 v0.2 模型走现有 SymPy 功率级消元器。
+4. 只有注册 v0.2/v0.3.1 DF 模型走现有 SymPy 功率级消元器；v0.4 sampled-data 模型走 proof-fragment + target mapping。
 
-把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.3 已实现能力。
+把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.4 已实现能力。
 
 ## Proof/formula checker 能抓什么
 
@@ -232,17 +245,25 @@ KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))
 | `FAIL_FALSE_DF` | 平均模型被冒充为 DF |
 | `FAIL_MISSING_DF_SOURCE` | 用户 `a_*` 缺少事件、来源或有效频率 |
 | `FAIL_FALSE_VERIFICATION_CLAIM` | 证据不足却声称 verified/correct |
+| `FAIL_FM_WITHOUT_DIRICHLET_REFERENCE` | sampled-data `Fm` 没有引用 Dirichlet value |
+| `FAIL_COT_TWO_PULSE_TRAINS` | Part II COT/COFT proof 缺 `d1/d2/1-exp(-s*T0)` |
+| `FAIL_TARGET_MAPPING` | `Gm/GPWM/Ti/Tv/Tc/Gvc/Tloop` 映射状态缺失或非法 |
+| `FAIL_SIDEBAND_MODE_MISSING` | sampled-data proof 没有声明 sideband 模式 |
 
 失败样例位于 [tests/protocol_failures](tests/protocol_failures/)。
 
 ## 验证证据
 
-仓库包含四套离线 benchmark：
+仓库包含八套离线 benchmark：
 
 - Li/Lee 2010 COT current-mode；
 - Tian 2015 external ramp；
 - Li/Lee 2009 V²/RBCOT；
 - Lu 2023 RBCOT loop gain。
+- Yan 2022 Part I PCM sampled-data contract；
+- Yan 2022 Part II C-COT zero-ramp pulse factor；
+- Yan 2022 Part II V-COT zero-ramp pulse factor；
+- Yan 2022 Part II V-COT time-constant trend。
 
 运行全部测试与 benchmark：
 
@@ -266,7 +287,7 @@ references/                      公式库、输入协议、schema、proof skele
 registries/                      machine-readable formula registry
 schemas/                         intake/classification/proof JSON schemas
 scripts/                         模型生成、分类、协议 case、检查器
-benchmarks/                      四套可离线复现的论文基准
+benchmarks/                      可离线复现的论文/contract/trend 基准
 examples/                        已知、缺事件、RC-ramp、overlap 示例
 tests/                           v0.3 契约与失败样例
 VALIDATION.md                    证据等级和未验证项
@@ -279,3 +300,4 @@ VALIDATION.md                    证据等级和未验证项
 3. `DF_REGISTERED_DIRECT` 不得构造 `a_*`或未注册的 `Gvg/Zout/Tloop`。
 4. 只要连接或 ramp 路径改变，就退回事件方程重新推导。
 5. 新模型在 benchmark 或开关仿真前始终保持未验证状态。
+6. sampled-data 论文给出的 `GPWM/Gm/Ti/Tv/Tc` 必须显式 target mapping；不能偷换成 `Gvc/Tloop`。

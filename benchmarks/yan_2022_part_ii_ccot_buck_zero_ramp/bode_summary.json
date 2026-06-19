@@ -1,0 +1,32 @@
+{
+  "case": "yan_2022_part_ii_ccot_buck_zero_ramp",
+  "targets": [
+    "Gm"
+  ],
+  "fs_hz": 98000.0,
+  "fs_half_hz": 49000.0,
+  "valid_frequency_limit_hz": 49000.0,
+  "evaluator": "sampled-data-numeric",
+  "results": {
+    "Gm": {
+      "zero_db_crossing_hz": 0.8120653784146288,
+      "phase_margin_deg": 269.999561484786,
+      "gain_margin_db": null,
+      "phase_180_crossing_hz": null,
+      "validity": "WITHIN_DECLARED_RANGE",
+      "plot_markers": [
+        "fs",
+        "fs/2",
+        "valid_frequency_limit",
+        "0 dB crossing",
+        "phase margin",
+        "gain margin"
+      ]
+    }
+  },
+  "sideband": {
+    "mode": "TRUNCATED_SUM_M",
+    "M": 10,
+    "numeric_evaluable": true
+  }
+}

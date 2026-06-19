@@ -1,0 +1,125 @@
+{
+  "proof_version": "0.4",
+  "case_id": "yan_2022_part_ii_vcot_time_constant_trend",
+  "intake": {
+    "status": "COMPLETE",
+    "normalized": {
+      "case_id": "yan_2022_part_ii_vcot_time_constant_trend",
+      "topology": "buck",
+      "conduction_mode": "CCM",
+      "phases": 1,
+      "control_family": "V-COT",
+      "target": "GPWM",
+      "target_transfer": "GPWM",
+      "sampling_event": "modulator input intersection",
+      "switching_events": [
+        {
+          "name": "sample",
+          "equation": "input-reference=0"
+        }
+      ],
+      "comparator_inputs": {
+        "positive": "vfb",
+        "negative": "reference"
+      },
+      "sampled_variable": "vfb",
+      "has_external_ramp": false,
+      "has_internal_ramp": false,
+      "has_delay": false,
+      "has_rc_injection": false,
+      "has_filter_in_sense_path": false,
+      "parameters": {
+        "fs": 98000.0,
+        "Ts": 1.0204081632653061e-05,
+        "Ton": 3e-06,
+        "T0": 3e-06,
+        "Fm": 25.0,
+        "C": 0.0002,
+        "rC": 0.01
+      }
+    }
+  },
+  "classification": {
+    "path": "SAMPLED_DATA_REGISTERED",
+    "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+    "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+    "target_transfer": "GPWM",
+    "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL"
+  },
+  "formula_bindings": [
+    {
+      "formula_id": "yan-2022-part-ii.vcot-gpwm-pulse-factor",
+      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+      "interface": "sampled-data-modulator",
+      "dimension_signature": "duty/voltage",
+      "expression": "Fm*(1-exp(-s*T0))"
+    }
+  ],
+  "sampling": {
+    "sampling_instant": "modulator input intersection",
+    "sampled_variable": "vfb",
+    "left_limit": "vfb(k-)",
+    "right_limit": "vfb(k+)",
+    "dirichlet_value": "(vfb(k-)+vfb(k+))/2",
+    "dirichlet_required": true
+  },
+  "Fm": {
+    "type": "constant",
+    "expression": "1/((m2-m1)*Ts/2)",
+    "origin": "sampled_data_derivation",
+    "depends_on": [
+      "m1",
+      "m2",
+      "Ts"
+    ],
+    "dirichlet_reference": "sampling.dirichlet_value"
+  },
+  "sideband": {
+    "mode": "PAPER_SIMPLIFIED_FORM",
+    "numeric_evaluable": true,
+    "expression": "Fm*(1-exp(-s*Ton))"
+  },
+  "modulator_io": {
+    "input": "vfb",
+    "output": "dsum",
+    "definition": "GPWM=-d_hat/input_hat",
+    "sign_convention": "negative"
+  },
+  "target_mapping": {
+    "available_registered_outputs": [
+      "GPWM"
+    ],
+    "requested_target": "GPWM",
+    "mapping_rule": "registered sampled-data benchmark expression from formula registry fragments",
+    "mapping_status": "REGISTERED_DIRECT"
+  },
+  "modulator": {
+    "model_type": "sampled-data",
+    "expression": "Fm*(1-exp(-s*Ton))"
+  },
+  "transfer": {
+    "target_transfer": "GPWM",
+    "formula_id": null,
+    "expression": "Fm*(1-exp(-s*Ton))"
+  },
+  "validation": {
+    "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+    "completed": [
+      "sampled-data-contract",
+      "dirichlet-reference",
+      "unified-plot-bode"
+    ],
+    "missing": [
+      "paper-figure-digitization",
+      "switching-simulation"
+    ]
+  },
+  "pulse_structure": {
+    "type": "COT_TWO_PULSE_TRAINS",
+    "d1": "narrow pulse train at sampling instant",
+    "d2": "delayed inverse pulse train by Ton",
+    "relation": "d2(t)=-d1(t-Ton)",
+    "frequency_factor": "1-exp(-s*Ton)",
+    "T0": "Ton"
+  }
+}

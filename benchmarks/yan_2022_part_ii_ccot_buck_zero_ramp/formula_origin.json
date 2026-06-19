@@ -1,0 +1,10 @@
+{
+  "source": "formula_registry.yaml",
+  "formula_ids": [
+    "yan-2022-part-ii.ccot-gpwm-pulse-factor",
+    "yan-2022-part-ii.ccot-ti-truncated"
+  ],
+  "handwritten_formula_variants": false,
+  "pdf_bundled": false,
+  "notes": "PDFs were used during development only; benchmark artifacts are self-contained."
+}

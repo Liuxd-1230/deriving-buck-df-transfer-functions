@@ -1,0 +1,11 @@
+{
+  "source": "formula_registry.yaml",
+  "formula_ids": [
+    "yan-2022-part-i.dirichlet-value",
+    "yan-2022-part-i.pcm-fm-zero-ramp",
+    "yan-2022-part-i.sideband-symbolic"
+  ],
+  "handwritten_formula_variants": false,
+  "pdf_bundled": false,
+  "notes": "PDFs were used during development only; benchmark artifacts are self-contained."
+}

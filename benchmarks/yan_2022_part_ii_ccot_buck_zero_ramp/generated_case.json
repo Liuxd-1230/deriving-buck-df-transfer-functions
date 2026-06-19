@@ -1,0 +1,25 @@
+{
+  "case_version": "0.4-sampled-data",
+  "name": "yan_2022_part_ii_ccot_buck_zero_ramp",
+  "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+  "parameters": {
+    "fs": 98000.0,
+    "Ts": 1.0204081632653061e-05,
+    "Ton": 3e-06,
+    "T0": 3e-06,
+    "m1": 1.0,
+    "m2": 4.0,
+    "Fm": 65333.333333333336
+  },
+  "valid_frequency": {
+    "max_hz": 49000.0
+  },
+  "transfer_functions": {
+    "Gm": "Fm*(1-exp(-s*Ton))"
+  },
+  "sideband": {
+    "mode": "TRUNCATED_SUM_M",
+    "M": 10,
+    "numeric_evaluable": true
+  }
+}

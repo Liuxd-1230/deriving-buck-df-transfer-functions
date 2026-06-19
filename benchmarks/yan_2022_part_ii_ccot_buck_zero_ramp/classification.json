@@ -1,0 +1,7 @@
+{
+  "path": "SAMPLED_DATA_REGISTERED",
+  "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
+  "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+  "target_transfer": "Gm",
+  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL"
+}

@@ -9,9 +9,10 @@ from pathlib import Path
 from typing import Any
 
 from df_model_library import ModelError, generate_case
-from formula_registry import get_formula, load_registry
+from formula_registry import formula_binding, get_formula, load_registry
 from preflight_intake import IntakeGateError, require_complete_intake
 from compensator_templates import CompensatorTemplateError, build_compensator
+from sampled_modulator import build_sampled_modulator_proof
 
 
 class ProofBuildError(ValueError):
@@ -108,6 +109,49 @@ def build_proof_object(
     path = classification.get("path")
     if path in {"DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"}:
         return _registered_proof(normalized, classification)
+    if path == "SAMPLED_DATA_REGISTERED":
+        spec = {
+            **normalized,
+            "part_family": classification.get("part_family"),
+            "model_id": classification.get("model_id"),
+        }
+        sampled = build_sampled_modulator_proof(spec)
+        if sampled.get("status") != "OK":
+            raise ProofBuildError(sampled.get("status", "sampled-data proof construction failed"))
+        target = normalized.get("target_transfer") or normalized.get("target")
+        return {
+            "proof_version": "0.4",
+            "case_id": normalized.get("case_id", classification.get("model_id", "sampled-data-case")),
+            "intake": {"status": "COMPLETE", "normalized": normalized},
+            "classification": {
+                "path": path,
+                "part_family": classification.get("part_family"),
+                "model_id": classification.get("model_id"),
+            },
+            "formula_bindings": [formula_binding(sampled["formula_id"])],
+            "sampling": sampled["sampling"],
+            "pulse_structure": sampled["pulse_structure"],
+            "Fm": sampled["Fm"],
+            "sideband": sampled["sideband"],
+            "modulator_io": sampled["modulator_io"],
+            "target_mapping": sampled["target_mapping"],
+            "modulator": sampled["modulator"],
+            "transfer": {
+                "target_transfer": target,
+                "formula_id": None,
+                "expression": sampled["modulator"]["expression"],
+                "origin": "sampled-data-registered-modulator",
+            },
+            "validation": {
+                "level": classification.get("validation_level", "SAMPLED_DATA_REGISTERED_PARTIAL"),
+                "completed": [
+                    "sampled-data-contract",
+                    "dirichlet-reference",
+                    "cot-pulse-structure" if "PART_II" in str(classification.get("part_family")) else "single-pulse-structure",
+                ],
+                "missing": ["paper-figure-reproduction", "switching-simulation"],
+            },
+        }
     if path != "PROTOCOL_DERIVED_NEW":
         raise ProofBuildError(f"Cannot build proof object for classification path {path!r}.")
     relation = normalized.get("df_relation")

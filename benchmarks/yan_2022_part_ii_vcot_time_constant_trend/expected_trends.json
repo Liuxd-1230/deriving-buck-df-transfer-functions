@@ -1,0 +1,6 @@
+{
+  "criterion": "rC*C > T0/2",
+  "increase_rC": "stability_margin_increases",
+  "increase_C": "stability_margin_increases",
+  "increase_Ton": "stability_margin_decreases"
+}

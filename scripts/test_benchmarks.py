@@ -14,12 +14,19 @@ from pathlib import Path
 
 
 RUNNER = Path(__file__).with_name("run_benchmarks.py")
-BENCHMARK_NAMES = {
+LEGACY_BENCHMARK_NAMES = {
     "tian2015_external_ramp",
     "li_lee2010_cot_cm",
     "li_lee2009_v2_rbcot",
     "lu2023_rbcot_loopgain",
 }
+SAMPLED_DATA_BENCHMARK_NAMES = {
+    "yan_2022_part_i_pcm_buck",
+    "yan_2022_part_ii_ccot_buck_zero_ramp",
+    "yan_2022_part_ii_vcot_buck_zero_ramp",
+    "yan_2022_part_ii_vcot_time_constant_trend",
+}
+BENCHMARK_NAMES = LEGACY_BENCHMARK_NAMES | SAMPLED_DATA_BENCHMARK_NAMES
 
 
 class OfflineBenchmarkTests(unittest.TestCase):
@@ -50,7 +57,7 @@ class OfflineBenchmarkTests(unittest.TestCase):
                     self.assertTrue(artifact.is_file(), str(artifact))
                     self.assertGreater(artifact.stat().st_size, 0, str(artifact))
                 results = json.loads((benchmark / "results.json").read_text(encoding="utf-8"))
-                self.assertIn(results["status"], {"VERIFIED", "PARTIALLY_VERIFIED"})
+                self.assertIn(results["status"], {"VERIFIED", "PARTIALLY_VERIFIED", "SAMPLED_DATA_REGISTERED_PARTIAL"})
                 with (benchmark / "bode_model.csv").open(encoding="utf-8", newline="") as handle:
                     rows = list(csv.DictReader(handle))
                 self.assertGreater(len(rows), 100)
@@ -61,6 +68,19 @@ class OfflineBenchmarkTests(unittest.TestCase):
                 if name == "lu2023_rbcot_loopgain":
                     self.assertIn("pade_comparison_3p2m", results)
                     self.assertIn("esr_3p2m_pade_magnitude_db", rows[0])
+                if name in SAMPLED_DATA_BENCHMARK_NAMES:
+                    for filename in (
+                        "intake.json",
+                        "classification.json",
+                        "proof_object.json",
+                        "formula_origin.json",
+                        "bode_summary.json",
+                    ):
+                        artifact = benchmark / filename
+                        self.assertTrue(artifact.is_file(), str(artifact))
+                    origin = json.loads((benchmark / "formula_origin.json").read_text(encoding="utf-8"))
+                    self.assertEqual(origin["source"], "formula_registry.yaml")
+                    self.assertFalse(origin["handwritten_formula_variants"])
 
 
 if __name__ == "__main__":

@@ -25,8 +25,8 @@ def load_registry() -> dict[str, Any]:
         registry = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise FormulaRegistryError(f"Cannot load formula registry: {exc}") from exc
-    if registry.get("registry_version") != "0.3.1":
-        raise FormulaRegistryError("formula_registry.yaml must declare registry_version=0.3.1")
+    if registry.get("registry_version") not in {"0.3.1", "0.4"}:
+        raise FormulaRegistryError("formula_registry.yaml must declare registry_version=0.3.1 or 0.4")
     if not isinstance(registry.get("models"), dict) or not isinstance(registry.get("formulas"), dict):
         raise FormulaRegistryError("Formula registry requires models and formulas objects.")
     return registry

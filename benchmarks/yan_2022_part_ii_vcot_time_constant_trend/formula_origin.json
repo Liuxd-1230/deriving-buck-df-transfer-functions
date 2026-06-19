@@ -1,0 +1,10 @@
+{
+  "source": "formula_registry.yaml",
+  "formula_ids": [
+    "yan-2022-part-ii.vcot-time-constant-boundary",
+    "yan-2022-part-ii.vcot-gpwm-pulse-factor"
+  ],
+  "handwritten_formula_variants": false,
+  "pdf_bundled": false,
+  "notes": "PDFs were used during development only; benchmark artifacts are self-contained."
+}

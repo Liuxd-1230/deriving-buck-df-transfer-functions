@@ -33,6 +33,21 @@ class FormulaConsistencyTests(unittest.TestCase):
         ):
             self.assertIn(key, q2)
 
+    def test_registry_contains_sampled_data_formula_fragments(self):
+        registry_path = ROOT / "registries" / "formula_registry.yaml"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        self.assertEqual(registry["registry_version"], "0.4")
+        for model_id in (
+            "yan-2022-part-i-pcm-buck",
+            "yan-2022-part-ii-ccot-buck-zero-ramp",
+            "yan-2022-part-ii-vcot-buck-zero-ramp",
+        ):
+            self.assertIn(model_id, registry["models"])
+            self.assertEqual(registry["models"][model_id]["method"], "sampled-data")
+        ccot = registry["formulas"]["yan-2022-part-ii.ccot-gpwm-pulse-factor"]
+        self.assertEqual(ccot["canonical_sympy_expr"], "Fm*(1-exp(-s*T0))")
+        self.assertEqual(ccot["interface"], "sampled-data-modulator")
+
 
 if __name__ == "__main__":
     unittest.main()

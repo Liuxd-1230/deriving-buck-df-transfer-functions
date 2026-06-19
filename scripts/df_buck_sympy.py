@@ -38,7 +38,7 @@ from preflight_intake import IntakeGateError, build_intake_status  # noqa: E402
 
 IDENTIFIER = re.compile(r"\b[A-Za-z_]\w*\b")
 BASE_SYMBOLS = ("s", "L", "C", "R", "rL", "rC", "Vg", "D")
-SUPPORTED_TARGETS = {"Gvd", "Gvg_open", "Zout_open", "Gvc", "Gvg", "Zout", "Tloop"}
+SUPPORTED_TARGETS = {"Gvd", "Gvg_open", "Zout_open", "Gvc", "Gvg", "Zout", "Tloop", "Gm", "GPWM", "Ti", "Tv", "Tc"}
 
 
 class CaseError(ValueError):
@@ -492,6 +492,8 @@ def command_benchmark(args: argparse.Namespace) -> int:
     _require_sympy()
     from run_benchmarks import BENCHMARK_NAMES, run_benchmark
 
+    if args.benchmark and args.benchmark not in BENCHMARK_NAMES:
+        raise CaseError(f"Unknown benchmark {args.benchmark!r}. Supported benchmarks: {', '.join(BENCHMARK_NAMES)}")
     names = BENCHMARK_NAMES if args.all else (args.benchmark,)
     output_root = Path(args.output_root) if args.output_root else SCRIPT_DIR.parent / "benchmarks"
     summary = {name: run_benchmark(name, output_root) for name in names}
@@ -510,6 +512,65 @@ def _frequency_limits(case: dict[str, Any]) -> tuple[float, float]:
     valid = case.get("valid_frequency", {})
     valid_limit = valid.get("max_hz") if isinstance(valid, dict) else None
     return fs_hz, float(valid_limit) if valid_limit is not None else fs_hz / 2
+
+
+def _is_sampled_data_numeric_case(case: dict[str, Any]) -> bool:
+    return str(case.get("case_version", "")).startswith("0.4-sampled-data") or isinstance(
+        case.get("transfer_functions"), dict
+    )
+
+
+def _sampled_symbolic_context(case: dict[str, Any], expressions: list[str]) -> tuple[dict[str, Any], dict[Any, Any]]:
+    sympy = _require_sympy()
+    known = _known_functions()
+    names = set(case.get("parameters", {})) | {"s", "ws"}
+    for expression in expressions:
+        names.update(IDENTIFIER.findall(str(expression)))
+    names.difference_update(known)
+    names.discard("j")
+    table: dict[str, Any] = {name: sympy.Symbol(name) for name in sorted(names)}
+    table.update(known)
+    table["j"] = sympy.I
+    parameters = dict(case.get("parameters", {}))
+    if "fs" in parameters and "ws" not in parameters:
+        parameters["ws"] = 2 * math.pi * float(parameters["fs"])
+    if "Tsw" in parameters and "fs" not in parameters:
+        parameters["fs"] = 1 / float(parameters["Tsw"])
+    substitutions = {
+        table[str(name)]: parse_expr(value, table) for name, value in parameters.items()
+        if str(name) in table
+    }
+    for _ in range(len(substitutions) + 1):
+        updated = {key: sympy.simplify(value.subs(substitutions)) for key, value in substitutions.items()}
+        if updated == substitutions:
+            break
+        substitutions = updated
+    return table, substitutions
+
+
+def _sampled_expression_values(
+    *, case: dict[str, Any], target: str, frequencies: Any
+) -> tuple[Any, Any]:
+    import numpy as np
+
+    sympy = _require_sympy()
+    transfer_functions = case.get("transfer_functions")
+    if not isinstance(transfer_functions, dict) or target not in transfer_functions:
+        raise CaseError(f"Sampled-data plot-bode target {target} is not in transfer_functions.")
+    sideband = case.get("sideband")
+    if isinstance(sideband, dict) and sideband.get("mode") == "SYMBOLIC_FULL_SUM":
+        raise CaseError("plot-bode cannot numerically evaluate sideband.mode=SYMBOLIC_FULL_SUM; use TRUNCATED_SUM_M or PAPER_SIMPLIFIED_FORM.")
+    table, substitutions = _sampled_symbolic_context(case, [str(v) for v in transfer_functions.values()])
+    s_symbol = table["s"]
+    expression = parse_expr(transfer_functions[target], table).subs(substitutions)
+    remaining = expression.free_symbols - {s_symbol}
+    if remaining:
+        raise CaseError(f"Target {target} has unresolved symbols: {', '.join(map(str, sorted(remaining, key=str)))}")
+    fn = sympy.lambdify(s_symbol, expression, modules=["numpy"])
+    values = np.asarray(fn(1j * 2 * math.pi * frequencies), dtype=complex)
+    if values.ndim == 0:
+        values = np.full(frequencies.shape, values, dtype=complex)
+    return expression, values
 
 
 def _crossing(x: list[float], y: list[float], threshold: float) -> float | None:
@@ -606,28 +667,32 @@ def command_plot_bode(args: argparse.Namespace) -> int:
 
     sympy = _require_sympy()
     case = load_case(args.case)
-    model = derive_model(case)
     requested = [target.strip() for target in args.targets.split(",") if target.strip()]
     if not requested:
         raise CaseError("plot-bode requires at least one target.")
-    unsupported = sorted(set(requested) - {"Gvc", "Gvg", "Zout", "Tloop"})
+    sampled_case = _is_sampled_data_numeric_case(case)
+    supported_targets = {"Gm", "GPWM", "Ti", "Tv", "Tc"} if sampled_case else {"Gvc", "Gvg", "Zout", "Tloop"}
+    unsupported = sorted(set(requested) - supported_targets)
     if unsupported:
         raise CaseError(f"plot-bode unsupported targets: {', '.join(unsupported)}")
+    model = None if sampled_case else derive_model(case)
     fs_hz, valid_limit_hz = _frequency_limits(case)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     max_frequency = max(fs_hz * 2, valid_limit_hz * 2, 10.0)
     min_frequency = max(0.1, max_frequency / 1e6)
     frequencies = np.logspace(math.log10(min_frequency), math.log10(max_frequency), 600)
-    s_symbol = model["symbols"]["s"]
     summary: dict[str, Any] = {
         "case": case.get("name", "unnamed"),
         "targets": requested,
         "fs_hz": fs_hz,
         "fs_half_hz": fs_hz / 2,
         "valid_frequency_limit_hz": valid_limit_hz,
+        "evaluator": "sampled-data-numeric" if sampled_case else "buck-df-a-star",
         "results": {},
     }
+    if sampled_case and isinstance(case.get("sideband"), dict):
+        summary["sideband"] = case["sideband"]
     if "Tloop" in requested:
         feedback = case.get("feedback", {})
         loop_break = feedback.get("loop_break") if isinstance(feedback, dict) else None
@@ -640,14 +705,19 @@ def command_plot_bode(args: argparse.Namespace) -> int:
             "notes": loop_break.get("notes", ""),
         }
     for target in requested:
-        if target not in model["evaluated"]:
-            raise CaseError(f"Target {target} is not available for this case.")
-        expr = model["evaluated"][target]
-        remaining = expr.free_symbols - {s_symbol}
-        if remaining:
-            raise CaseError(f"Target {target} has unresolved symbols: {', '.join(map(str, sorted(remaining, key=str)))}")
-        fn = sympy.lambdify(s_symbol, expr, modules=["numpy"])
-        values = np.asarray(fn(1j * 2 * math.pi * frequencies), dtype=complex)
+        if sampled_case:
+            expr, values = _sampled_expression_values(case=case, target=target, frequencies=frequencies)
+        else:
+            assert model is not None
+            if target not in model["evaluated"]:
+                raise CaseError(f"Target {target} is not available for this case.")
+            expr = model["evaluated"][target]
+            s_symbol = model["symbols"]["s"]
+            remaining = expr.free_symbols - {s_symbol}
+            if remaining:
+                raise CaseError(f"Target {target} has unresolved symbols: {', '.join(map(str, sorted(remaining, key=str)))}")
+            fn = sympy.lambdify(s_symbol, expr, modules=["numpy"])
+            values = np.asarray(fn(1j * 2 * math.pi * frequencies), dtype=complex)
         magnitude_db = (20 * np.log10(np.maximum(np.abs(values), 1e-300))).tolist()
         phase_deg = np.unwrap(np.angle(values)) * 180 / math.pi
         phase_list = phase_deg.tolist()
@@ -727,12 +797,6 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark_selection.add_argument("--all", action="store_true", help="Run all benchmarks.")
     benchmark_selection.add_argument(
         "--benchmark",
-        choices=(
-            "tian2015_external_ramp",
-            "li_lee2010_cot_cm",
-            "li_lee2009_v2_rbcot",
-            "lu2023_rbcot_loopgain",
-        ),
         help="Run one benchmark.",
     )
     benchmark.add_argument("--output-root", help="Optional benchmark output directory.")

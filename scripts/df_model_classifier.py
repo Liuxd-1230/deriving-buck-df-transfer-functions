@@ -10,6 +10,7 @@ from typing import Any
 
 from df_model_library import MODEL_SPECS
 from preflight_intake import require_complete_intake
+from fm_models import build_fm_model
 
 
 BASE_PARAMETERS = ("Vin", "Vo", "L", "C", "R", "rC")
@@ -19,6 +20,9 @@ MODEL_FAMILIES = {
     "rbcot-esr-lu-2023": "rbcot",
     "v2-cot-li-lee-2009": "v2-cot",
 }
+SAMPLED_PART_I = {"PCM", "VCM", "PVM", "VVM"}
+SAMPLED_PART_II_CURRENT = {"C-COT", "C-COFT", "CCOT", "CCOFT"}
+SAMPLED_PART_II_VOLTAGE = {"V-COT", "V-COFT", "VCOT", "VCOFT"}
 
 
 def _unsupported(intake: dict[str, Any]) -> list[str]:
@@ -41,7 +45,32 @@ def _unsupported(intake: dict[str, Any]) -> list[str]:
                        ("dynamic_Fm_s", "dynamic-Fm-s")):
         if intake.get(key):
             effects.append(label)
+    fm_result = build_fm_model(intake)
+    if fm_result["status"].startswith("REJECT_"):
+        effects.append(fm_result["status"])
     return effects
+
+
+def _normalized_family(value: Any) -> str:
+    text = str(value or "").upper().replace("_", "-").replace(" ", "-")
+    aliases = {
+        "CURRENT-MODE-COT": "C-COT",
+        "CURRENT-MODE-CONSTANT-ON-TIME": "C-COT",
+        "VOLTAGE-MODE-COT": "V-COT",
+        "VOLTAGE-MODE-CONSTANT-ON-TIME": "V-COT",
+    }
+    return aliases.get(text, text)
+
+
+def _sampled_data_part_family(intake: dict[str, Any]) -> str | None:
+    family = _normalized_family(intake.get("control_family"))
+    if family in SAMPLED_PART_I:
+        return "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM"
+    if family in SAMPLED_PART_II_CURRENT:
+        return "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT"
+    if family in SAMPLED_PART_II_VOLTAGE:
+        return "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT"
+    return None
 
 
 def _missing_for_protocol(intake: dict[str, Any]) -> list[str]:
@@ -100,6 +129,22 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                 "model_match": {"known_model": True,
                 "model_id": model_id, "confidence": "high"}, "action": "use_registered_model",
                 "validation_level": "PAPER_GROUNDED_PARTIAL", "missing_information": []}
+
+    part_family = _sampled_data_part_family(intake)
+    if part_family:
+        target = intake.get("target_transfer") or intake.get("target")
+        model_id = {
+            "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM": "yan-2022-part-i-pcm-buck",
+            "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT": "yan-2022-part-ii-ccot-buck-zero-ramp",
+            "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT": "yan-2022-part-ii-vcot-buck-zero-ramp",
+        }[part_family]
+        return {**base, "path": "SAMPLED_DATA_REGISTERED",
+                "part_family": part_family, "model_id": model_id,
+                "target_transfer": target,
+                "model_match": {"known_model": True, "model_id": model_id, "confidence": "medium"},
+                "action": "use_sampled_data_registered_model",
+                "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+                "missing_information": []}
 
     similar = intake.get("similar_model") or (model_id if model_id in MODEL_SPECS else None)
     missing = _missing_for_protocol(intake)

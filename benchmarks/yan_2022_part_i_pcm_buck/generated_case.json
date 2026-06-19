@@ -1,0 +1,23 @@
+{
+  "case_version": "0.4-sampled-data",
+  "name": "yan_2022_part_i_pcm_buck",
+  "model_id": "yan-2022-part-i-pcm-buck",
+  "parameters": {
+    "fs": 100000.0,
+    "Ts": 1e-05,
+    "m1": 1.0,
+    "m2": 4.0,
+    "Fm": 66666.66666666666
+  },
+  "valid_frequency": {
+    "max_hz": 50000.0
+  },
+  "transfer_functions": {
+    "Gm": "Fm"
+  },
+  "sideband": {
+    "mode": "PAPER_SIMPLIFIED_FORM",
+    "numeric_evaluable": true,
+    "expression": "Fm"
+  }
+}

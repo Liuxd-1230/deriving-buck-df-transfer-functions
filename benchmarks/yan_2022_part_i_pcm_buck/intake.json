@@ -1,0 +1,39 @@
+{
+  "intake_version": "0.3.1",
+  "status": "COMPLETE",
+  "missing": [],
+  "action": "CONTINUE_TO_CLASSIFICATION",
+  "normalized": {
+    "case_id": "yan_2022_part_i_pcm_buck",
+    "topology": "buck",
+    "conduction_mode": "CCM",
+    "phases": 1,
+    "control_family": "PCM",
+    "target": "Gm",
+    "target_transfer": "Gm",
+    "sampling_event": "modulator input intersection",
+    "switching_events": [
+      {
+        "name": "sample",
+        "equation": "input-reference=0"
+      }
+    ],
+    "comparator_inputs": {
+      "positive": "is",
+      "negative": "reference"
+    },
+    "sampled_variable": "is",
+    "has_external_ramp": false,
+    "has_internal_ramp": false,
+    "has_delay": false,
+    "has_rc_injection": false,
+    "has_filter_in_sense_path": false,
+    "parameters": {
+      "fs": 100000.0,
+      "Ts": 1e-05,
+      "m1": 1.0,
+      "m2": 4.0,
+      "Fm": 66666.66666666666
+    }
+  }
+}

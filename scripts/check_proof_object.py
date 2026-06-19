@@ -13,6 +13,12 @@ from formula_registry import FormulaRegistryError, load_registry
 
 
 REGISTERED_PATHS = {"DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"}
+SAMPLED_DATA_PATH = "SAMPLED_DATA_REGISTERED"
+SAMPLED_PART_FAMILIES = {
+    "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
+    "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
+    "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+}
 A_STAR_KEYS = {"a_c", "a_g", "a_o", "a_i"}
 
 
@@ -28,15 +34,97 @@ def _contains_a_star_key(value: Any) -> bool:
     return False
 
 
+def _check_sampled_data_contract(proof: dict[str, Any]) -> dict[str, Any] | None:
+    classification = proof.get("classification") or {}
+    if classification.get("part_family") not in SAMPLED_PART_FAMILIES:
+        return _result("FAIL_SAMPLED_DATA_PART_FAMILY", ["sampled-data proof requires a recognized part_family"])
+
+    sampling = proof.get("sampling")
+    required_sampling = {
+        "sampling_instant",
+        "sampled_variable",
+        "left_limit",
+        "right_limit",
+        "dirichlet_value",
+        "dirichlet_required",
+    }
+    if not isinstance(sampling, dict) or any(sampling.get(key) in (None, "") for key in required_sampling):
+        return _result("FAIL_DIRICHLET_INCOMPLETE", ["sampling must include left/right limits and Dirichlet value"])
+
+    fm = proof.get("Fm")
+    if not isinstance(fm, dict) or not fm.get("expression") or not fm.get("type"):
+        return _result("FAIL_FM_INCOMPLETE", ["sampled-data proof requires Fm type and expression"])
+    if fm.get("origin") == "sampled_data_derivation":
+        steps = " ".join(str(item) for item in fm.get("derivation_steps", []))
+        reference = str(fm.get("dirichlet_reference", ""))
+        if "dirichlet" not in (reference + " " + steps).lower():
+            return _result("FAIL_FM_WITHOUT_DIRICHLET_REFERENCE", [
+                "Fm derived by sampled-data method must reference sampling.dirichlet_value"
+            ])
+
+    sideband = proof.get("sideband")
+    if not isinstance(sideband, dict) or sideband.get("mode") not in {
+        "SYMBOLIC_FULL_SUM",
+        "TRUNCATED_SUM_M",
+        "PAPER_SIMPLIFIED_FORM",
+    }:
+        return _result("FAIL_SIDEBAND_MODE_MISSING", ["sampled-data proof requires explicit sideband mode"])
+
+    part_family = classification.get("part_family")
+    if part_family in {
+        "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
+        "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+    }:
+        pulse = proof.get("pulse_structure")
+        factor_text = ""
+        if isinstance(pulse, dict):
+            factor_text = " ".join(str(pulse.get(key, "")) for key in ("frequency_factor", "relation", "d1", "d2"))
+        if (
+            not isinstance(pulse, dict)
+            or pulse.get("type") not in {"COT_TWO_PULSE_TRAINS", "COFT_TWO_PULSE_TRAINS"}
+            or any(pulse.get(key) in (None, "") for key in ("d1", "d2", "relation", "frequency_factor"))
+            or "1-exp(-s*" not in factor_text.replace(" ", "")
+        ):
+            return _result("FAIL_COT_TWO_PULSE_TRAINS", [
+                "COT/COFT sampled-data proof requires d1, d2, relation, and 1-exp(-s*T0)"
+            ])
+
+    modulator_io = proof.get("modulator_io")
+    if not isinstance(modulator_io, dict) or any(
+        modulator_io.get(key) in (None, "") for key in ("input", "output", "definition", "sign_convention")
+    ):
+        return _result("FAIL_MODULATOR_IO_MISSING", ["sampled-data proof requires modulator_io"])
+
+    target_mapping = proof.get("target_mapping")
+    if not isinstance(target_mapping, dict) or target_mapping.get("mapping_status") not in {
+        "REGISTERED_DIRECT",
+        "REGISTERED_DERIVED",
+        "PROTOCOL_DERIVED_UNVERIFIED",
+        "UNSUPPORTED",
+    }:
+        return _result("FAIL_TARGET_MAPPING", ["sampled-data proof requires target_mapping.mapping_status"])
+    if target_mapping.get("mapping_status") == "UNSUPPORTED":
+        return _result("FAIL_TARGET_MAPPING", ["unsupported sampled-data target cannot be reported as a checked transfer"])
+
+    validation = proof.get("validation") or {}
+    if validation.get("level") not in {
+        "SAMPLED_DATA_CONTRACT_ONLY",
+        "SAMPLED_DATA_REGISTERED_PARTIAL",
+        "SAMPLED_DATA_REGISTERED_BENCHMARKED",
+    }:
+        return _result("FAIL_VALIDATION_LEVEL", ["sampled-data proof has invalid validation level"])
+    return None
+
+
 def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
-    if not isinstance(proof, dict) or proof.get("proof_version") != "0.3.1":
-        return _result("FAIL_NOT_PROOF_OBJECT", ["proof_version=0.3.1 is required"])
+    if not isinstance(proof, dict) or proof.get("proof_version") not in {"0.3.1", "0.4"}:
+        return _result("FAIL_NOT_PROOF_OBJECT", ["proof_version=0.3.1 or 0.4 is required"])
     intake = proof.get("intake") or {}
     if intake.get("status") != "COMPLETE":
         return _result("FAIL_INCOMPLETE_INTAKE", ["intake status must be COMPLETE"])
     classification = proof.get("classification") or {}
     path = classification.get("path")
-    if path not in REGISTERED_PATHS | {"PROTOCOL_DERIVED_NEW"}:
+    if path not in REGISTERED_PATHS | {"PROTOCOL_DERIVED_NEW", SAMPLED_DATA_PATH}:
         return _result("FAIL_MISSING_CLASSIFICATION", ["recognized classification.path is required"])
 
     model_id = classification.get("model_id")
@@ -44,6 +132,32 @@ def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
     target = transfer.get("target_transfer")
     modulator = proof.get("modulator") or {}
     registry = load_registry()
+
+    if path == SAMPLED_DATA_PATH:
+        sampled_error = _check_sampled_data_contract(proof)
+        if sampled_error is not None:
+            return sampled_error
+        bindings = proof.get("formula_bindings")
+        if not isinstance(bindings, list) or not bindings:
+            return _result("FAIL_FORMULA_CONSISTENCY", ["sampled-data registered proof requires registry formula_bindings"])
+        allowed_interfaces = {
+            "sampled-data-sampling",
+            "sampled-data-modulator",
+            "sampled-data-sideband",
+            "sampled-data-target-mapping",
+            "sampled-data-stability-boundary",
+        }
+        model_id = classification.get("model_id")
+        for binding in bindings:
+            formula = registry["formulas"].get(binding.get("formula_id"), {})
+            if formula.get("source_model_id") != model_id or formula.get("interface") not in allowed_interfaces:
+                return _result("FAIL_FORMULA_CONSISTENCY", [
+                    f"{binding.get('formula_id')} is not a sampled-data registry binding for {model_id}"
+                ])
+        formula_result = check_proof_bindings(proof)
+        if formula_result["status"] != "PASS":
+            return _result("FAIL_FORMULA_CONSISTENCY", formula_result["errors"])
+        return _result("PASS", [])
 
     if path in REGISTERED_PATHS:
         if model_id not in registry["models"]:
