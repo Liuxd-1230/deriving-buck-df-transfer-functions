@@ -32,7 +32,7 @@
         "Q2": "Tsw/(pi*(rC*C-Ton/2))"
       },
       "paper_model": {
-        "Gvc": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))"
+        "Gvc": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
       },
       "coefficient_origin": "not-applicable-direct-paper-transfer",
       "component_fidelity": {
@@ -90,7 +90,7 @@
           "source_model_id": "v2-cot-li-lee-2009",
           "interface": "direct-transfer",
           "dimension_signature": "output/control",
-          "expression": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))",
+          "expression": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))",
           "template_bindings": {
             "high_pair": "1+s/(Q1*w1)+s**2/w1**2",
             "fs_pair": "1+s/(Q2*w2)+s**2/w2**2"
@@ -135,7 +135,7 @@
         "Q2": "Tsw/(pi*(rC*C-Ton/2))"
       },
       "paper_model": {
-        "Gvc": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))"
+        "Gvc": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
       },
       "coefficient_origin": "not-applicable-direct-paper-transfer",
       "component_fidelity": {
@@ -193,7 +193,7 @@
           "source_model_id": "v2-cot-li-lee-2009",
           "interface": "direct-transfer",
           "dimension_signature": "output/control",
-          "expression": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))",
+          "expression": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))",
           "template_bindings": {
             "high_pair": "1+s/(Q1*w1)+s**2/w1**2",
             "fs_pair": "1+s/(Q2*w2)+s**2/w2**2"

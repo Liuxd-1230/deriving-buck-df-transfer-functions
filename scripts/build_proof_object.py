@@ -11,6 +11,7 @@ from typing import Any
 from df_model_library import ModelError, generate_case
 from formula_registry import get_formula, load_registry
 from preflight_intake import IntakeGateError, require_complete_intake
+from compensator_templates import CompensatorTemplateError, build_compensator
 
 
 class ProofBuildError(ValueError):
@@ -93,6 +94,10 @@ def _registered_proof(
             "expression": str(derived["evaluated"][target]),
             "origin": "registered-buck-sympy-elimination",
         }
+    if isinstance(normalized.get("compensator"), dict):
+        proof["compensator"] = build_compensator(normalized["compensator"])
+    if isinstance(normalized.get("loop_break"), dict):
+        proof["loop_break"] = normalized["loop_break"]
     return proof
 
 
@@ -143,7 +148,7 @@ def main() -> int:
         output.write_text(json.dumps(proof, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Wrote proof object: {output.resolve()}")
         return 0
-    except (OSError, json.JSONDecodeError, IntakeGateError, ModelError, ProofBuildError) as exc:
+    except (OSError, json.JSONDecodeError, IntakeGateError, ModelError, ProofBuildError, CompensatorTemplateError) as exc:
         print(f"ERROR: {exc}", file=__import__("sys").stderr)
         return 2
 

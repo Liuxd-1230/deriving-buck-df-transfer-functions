@@ -36,7 +36,9 @@ def _unsupported(intake: dict[str, Any]) -> list[str]:
         effects.append("multiphase-overlap")
     for key, label in (("pulse_skipping", "pulse-skipping"), ("burst", "burst"),
                        ("nonlinear_current_limit", "nonlinear-current-limit"),
-                       ("average_model_as_df", "average-model-as-df")):
+                       ("average_model_as_df", "average-model-as-df"),
+                       ("requires_two_pulse_trains", "cot-two-pulse-train"),
+                       ("dynamic_Fm_s", "dynamic-Fm-s")):
         if intake.get(key):
             effects.append(label)
     return effects

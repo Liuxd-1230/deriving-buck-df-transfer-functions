@@ -36,6 +36,10 @@ class V03CliTests(unittest.TestCase):
         return subprocess.run([sys.executable, "-S", str(CLI), *args], cwd=ROOT,
                               text=True, capture_output=True, timeout=30)
 
+    def run_cli_with_site(self, *args):
+        return subprocess.run([sys.executable, str(CLI), *args], cwd=ROOT,
+                              text=True, capture_output=True, timeout=30)
+
     def test_classify_prints_structured_result(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -77,7 +81,7 @@ class V03CliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("ASK_USER_ONLY", result.stderr)
 
-    def test_legacy_case_cannot_render_final_report_without_proof_object(self):
+    def test_legacy_case_renders_unverified_markdown_report(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             params = root / "params.json"
@@ -85,17 +89,17 @@ class V03CliTests(unittest.TestCase):
             report = root / "report.md"
             params.write_text(json.dumps({
                 "Vin": 12, "Vo": 1.2, "fs": 300000, "L": 3e-7,
-                "C": 560e-6, "R": 0.1, "rC": 0.006,
+                "C": 560e-6, "R": 0.1, "rC": 0.006, "Ri": 0.01,
             }), encoding="utf-8")
-            made = self.run_cli("make-case", "--model", "v2-cot-li-lee-2009",
+            made = self.run_cli("make-case", "--model", "cot-cm-li-lee-2010",
                                 "--params", str(params), "--approximation", "pade",
                                 "--out", str(case))
             self.assertEqual(made.returncode, 0, made.stderr)
-            derived = self.run_cli("derive", "--case", str(case), "--out", str(report))
-            report_exists = report.exists()
-        self.assertEqual(derived.returncode, 2)
-        self.assertIn("proof object", derived.stderr.lower())
-        self.assertFalse(report_exists)
+            derived = self.run_cli_with_site("derive", "--case", str(case), "--out", str(report))
+            text = report.read_text(encoding="utf-8") if report.exists() else ""
+        self.assertEqual(derived.returncode, 0, derived.stderr)
+        self.assertIn("LEGACY_CASE_UNVERIFIED", text)
+        self.assertIn("## Transfer functions", text)
 
 
 if __name__ == "__main__":

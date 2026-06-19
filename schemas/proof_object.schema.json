@@ -10,6 +10,8 @@
     "classification": {"type": "object", "required": ["path"]},
     "formula_bindings": {"type": "array"},
     "modulator": {"type": "object", "required": ["model_type"]},
+    "compensator": {"type": "object"},
+    "loop_break": {"type": "object"},
     "transfer": {"type": "object", "required": ["target_transfer", "expression"]},
     "validation": {"type": "object", "required": ["level", "completed", "missing"]}
   },

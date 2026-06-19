@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -144,7 +146,11 @@ def validate_case(case: dict[str, Any]) -> dict[str, list[str]]:
         if unknown:
             errors.append(f"Unknown targets: {', '.join(unknown)}")
         if "Tloop" in targets and not isinstance(case.get("feedback"), dict):
-            errors.append("Tloop requires feedback.Gc and feedback.H.")
+            errors.append("Tloop requires feedback.Gc, feedback.H, and feedback.loop_break.")
+        if "Tloop" in targets and isinstance(case.get("feedback"), dict):
+            loop_break = case["feedback"].get("loop_break")
+            if not isinstance(loop_break, dict) or not loop_break.get("sign_convention"):
+                errors.append("Tloop requires an explicit feedback.loop_break sign convention.")
 
     if not case.get("df_source"):
         warnings.append("df_source is missing; record the edge-condition derivation or literature source.")
@@ -396,6 +402,22 @@ def _render_proof_report(proof: dict[str, Any]) -> str:
 
 
 def command_derive(args: argparse.Namespace) -> int:
+    if args.case:
+        case = load_case(args.case)
+        model = derive_model(case)
+        report = build_check_report(case, model)
+        output = Path(args.out)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        text = _markdown(case, model, report)
+        text += (
+            "\n\n## Legacy validation status\n\n"
+            "- Level: `LEGACY_CASE_UNVERIFIED`\n"
+            "- Claim: this report was rendered from a legacy case, not from a checked v0.3.1 proof object.\n"
+            "- Use `check --case` for algebraic diagnostics; use `--proof-object` for ESSF proof reports.\n"
+        )
+        output.write_text(text, encoding="utf-8")
+        print(f"Wrote legacy unverified report: {output.resolve()}")
+        return 0
     if not args.proof_object:
         raise CaseError(
             "Final report generation requires a checked v0.3.1 proof object; "
@@ -477,6 +499,177 @@ def command_benchmark(args: argparse.Namespace) -> int:
     return 0
 
 
+def _frequency_limits(case: dict[str, Any]) -> tuple[float, float]:
+    parameters = case.get("parameters", {})
+    fs = parameters.get("fs")
+    if fs is None and parameters.get("Tsw"):
+        fs = 1 / float(parameters["Tsw"])
+    if fs is None:
+        raise CaseError("plot-bode requires parameters.fs or parameters.Tsw.")
+    fs_hz = float(fs)
+    valid = case.get("valid_frequency", {})
+    valid_limit = valid.get("max_hz") if isinstance(valid, dict) else None
+    return fs_hz, float(valid_limit) if valid_limit is not None else fs_hz / 2
+
+
+def _crossing(x: list[float], y: list[float], threshold: float) -> float | None:
+    for left in range(len(x) - 1):
+        y0 = y[left] - threshold
+        y1 = y[left + 1] - threshold
+        if y0 == 0:
+            return x[left]
+        if y0 * y1 < 0:
+            ratio = abs(y0) / (abs(y0) + abs(y1))
+            return x[left] + ratio * (x[left + 1] - x[left])
+    return None
+
+
+def _interp(x: list[float], y: list[float], x0: float) -> float:
+    if x0 <= x[0]:
+        return y[0]
+    if x0 >= x[-1]:
+        return y[-1]
+    for left in range(len(x) - 1):
+        if x[left] <= x0 <= x[left + 1]:
+            ratio = (x0 - x[left]) / (x[left + 1] - x[left])
+            return y[left] + ratio * (y[left + 1] - y[left])
+    return y[-1]
+
+
+def _plot_one_bode(
+    *,
+    target: str,
+    frequencies: list[float],
+    magnitude_db: list[float],
+    phase_deg: list[float],
+    fs_hz: float,
+    valid_limit_hz: float,
+    out_png: Path,
+) -> dict[str, Any]:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    crossover = _crossing(frequencies, magnitude_db, 0.0)
+    phase_margin = None
+    extrapolated = False
+    if crossover is not None:
+        phase_margin = 180.0 + _interp(frequencies, phase_deg, crossover)
+        extrapolated = crossover > valid_limit_hz
+    phase_crossing = _crossing(frequencies, phase_deg, -180.0)
+    gain_margin_db = None
+    if phase_crossing is not None:
+        gain_margin_db = -_interp(frequencies, magnitude_db, phase_crossing)
+
+    fig, (ax_mag, ax_phase) = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+    ax_mag.semilogx(frequencies, magnitude_db)
+    ax_phase.semilogx(frequencies, phase_deg)
+    ax_mag.set_ylabel("Magnitude (dB)")
+    ax_phase.set_ylabel("Phase (deg)")
+    ax_phase.set_xlabel("Frequency (Hz)")
+    ax_mag.set_title(f"{target} Bode plot")
+    for ax in (ax_mag, ax_phase):
+        ax.axvline(fs_hz, color="0.4", linestyle="--", linewidth=1, label="fs")
+        ax.axvline(fs_hz / 2, color="tab:orange", linestyle="--", linewidth=1, label="fs/2")
+        ax.axvline(valid_limit_hz, color="tab:red", linestyle=":", linewidth=1.2, label="valid limit")
+        ax.grid(True, which="both", alpha=0.3)
+    ax_mag.axhline(0, color="0.3", linewidth=0.8)
+    if crossover is not None:
+        ax_mag.plot([crossover], [0], "ro")
+        ax_mag.annotate("0 dB crossing", (crossover, 0), textcoords="offset points", xytext=(5, 8))
+    if phase_margin is not None:
+        ax_phase.annotate(f"PM={phase_margin:.1f} deg", (crossover, _interp(frequencies, phase_deg, crossover)),
+                          textcoords="offset points", xytext=(5, 8))
+    if gain_margin_db is not None:
+        ax_mag.annotate(f"GM={gain_margin_db:.1f} dB", (phase_crossing, _interp(frequencies, magnitude_db, phase_crossing)),
+                        textcoords="offset points", xytext=(5, -14))
+    if extrapolated:
+        ax_mag.text(0.02, 0.08, "EXTRAPOLATED_BEYOND_VALID_RANGE",
+                    transform=ax_mag.transAxes, color="tab:red", weight="bold")
+    ax_mag.legend(loc="best", fontsize=8)
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=150)
+    plt.close(fig)
+    return {
+        "zero_db_crossing_hz": crossover,
+        "phase_margin_deg": phase_margin,
+        "gain_margin_db": gain_margin_db,
+        "phase_180_crossing_hz": phase_crossing,
+        "validity": "EXTRAPOLATED_BEYOND_VALID_RANGE" if extrapolated else "WITHIN_DECLARED_RANGE",
+        "plot_markers": ["fs", "fs/2", "valid_frequency_limit", "0 dB crossing", "phase margin", "gain margin"],
+    }
+
+
+def command_plot_bode(args: argparse.Namespace) -> int:
+    import numpy as np
+
+    sympy = _require_sympy()
+    case = load_case(args.case)
+    model = derive_model(case)
+    requested = [target.strip() for target in args.targets.split(",") if target.strip()]
+    if not requested:
+        raise CaseError("plot-bode requires at least one target.")
+    unsupported = sorted(set(requested) - {"Gvc", "Gvg", "Zout", "Tloop"})
+    if unsupported:
+        raise CaseError(f"plot-bode unsupported targets: {', '.join(unsupported)}")
+    fs_hz, valid_limit_hz = _frequency_limits(case)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    max_frequency = max(fs_hz * 2, valid_limit_hz * 2, 10.0)
+    min_frequency = max(0.1, max_frequency / 1e6)
+    frequencies = np.logspace(math.log10(min_frequency), math.log10(max_frequency), 600)
+    s_symbol = model["symbols"]["s"]
+    summary: dict[str, Any] = {
+        "case": case.get("name", "unnamed"),
+        "targets": requested,
+        "fs_hz": fs_hz,
+        "fs_half_hz": fs_hz / 2,
+        "valid_frequency_limit_hz": valid_limit_hz,
+        "results": {},
+    }
+    if "Tloop" in requested:
+        feedback = case.get("feedback", {})
+        loop_break = feedback.get("loop_break") if isinstance(feedback, dict) else None
+        if not isinstance(loop_break, dict):
+            raise CaseError("Tloop Bode requires feedback.loop_break.")
+        summary["loop_break"] = {
+            "mode": loop_break.get("mode", "TLOOP_SIMPLE_NEGATIVE_FEEDBACK"),
+            "sign_convention": loop_break.get("sign_convention", "unknown"),
+            "measured_quantity": loop_break.get("measured_quantity", "unknown"),
+            "notes": loop_break.get("notes", ""),
+        }
+    for target in requested:
+        if target not in model["evaluated"]:
+            raise CaseError(f"Target {target} is not available for this case.")
+        expr = model["evaluated"][target]
+        remaining = expr.free_symbols - {s_symbol}
+        if remaining:
+            raise CaseError(f"Target {target} has unresolved symbols: {', '.join(map(str, sorted(remaining, key=str)))}")
+        fn = sympy.lambdify(s_symbol, expr, modules=["numpy"])
+        values = np.asarray(fn(1j * 2 * math.pi * frequencies), dtype=complex)
+        magnitude_db = (20 * np.log10(np.maximum(np.abs(values), 1e-300))).tolist()
+        phase_deg = np.unwrap(np.angle(values)) * 180 / math.pi
+        phase_list = phase_deg.tolist()
+        csv_path = out / f"{target}_bode.csv"
+        with csv_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["frequency_hz", "magnitude_db", "phase_deg"])
+            writer.writerows(zip(frequencies.tolist(), magnitude_db, phase_list))
+        summary["results"][target] = _plot_one_bode(
+            target=target,
+            frequencies=frequencies.tolist(),
+            magnitude_db=magnitude_db,
+            phase_deg=phase_list,
+            fs_hz=fs_hz,
+            valid_limit_hz=valid_limit_hz,
+            out_png=out / f"{target}_bode.png",
+        )
+    (out / "bode_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Wrote Bode plots: {out.resolve()}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Derive CCM buck transfer functions from describing-function coefficients."
@@ -544,6 +737,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     benchmark.add_argument("--output-root", help="Optional benchmark output directory.")
     benchmark.set_defaults(handler=command_benchmark)
+
+    plot_bode = subparsers.add_parser(
+        "plot-bode", help="Generate Bode PNG/CSV/summary for Gvc, Gvg, Zout, or Tloop."
+    )
+    plot_bode.add_argument("--case", required=True, help="Input JSON case file.")
+    plot_bode.add_argument("--targets", required=True, help="Comma-separated targets: Gvc,Gvg,Zout,Tloop.")
+    plot_bode.add_argument("--out", required=True, help="Output plots directory.")
+    plot_bode.set_defaults(handler=command_plot_bode)
     return parser
 
 

@@ -52,7 +52,7 @@ def bind_expression(formula_id: str, **bindings: str) -> str:
             f"Formula {formula_id} requires bindings: {', '.join(missing)}"
         )
     for name in required:
-        expression = expression.replace("{" + name + "}", f"({bindings[name]})")
+        expression = expression.replace("{" + name + "}", str(bindings[name]))
     return expression
 
 

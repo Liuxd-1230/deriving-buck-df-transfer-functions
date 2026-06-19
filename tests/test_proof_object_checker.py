@@ -144,6 +144,43 @@ class ProofObjectCheckerTests(unittest.TestCase):
         self.assertNotIn("pending", proof["transfer"]["expression"])
         self.assertEqual(json.loads(checked.stdout)["status"], "PASS")
 
+    def test_builder_records_compensator_formula_origin(self):
+        complete_intake = {
+            "intake_version": "0.3.1", "status": "COMPLETE", "missing": [],
+            "action": "CONTINUE_TO_CLASSIFICATION",
+            "normalized": {
+                "model_id": "cot-cm-li-lee-2010", "target": "Gvc",
+                "target_transfer": "Gvc", "topology": "buck", "conduction_mode": "CCM",
+                "phases": 1, "control_family": "C-COT",
+                "switching_events": [{"name": "valley", "equation": "F_event=Ri*iL-vcomp=0"}],
+                "comparator_inputs": {"positive": "vcomp", "negative": "Ri*iL"},
+                "parameters": {"Vin": 36, "Vo": 3.3, "fs": 188034.18803418803,
+                               "L": 3.3e-6, "C": 2040e-6, "R": 0.094286,
+                               "rC": 2.23e-3, "Ri": 1 / 30},
+                "compensator": {"type": "SIMPLIS_LAPLACE", "KPZ": 8000, "wz1": 4000,
+                                "wp1": 50, "wp2": 400000, "frequency_scale_factor": 1,
+                                "form": "simplicis_s_plus_w"},
+            }
+        }
+        classification = {"path": "DF_REGISTERED_MULTIPORT", "model_id": "cot-cm-li-lee-2010"}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            intake_path, class_path, proof_path = root / "intake.json", root / "class.json", root / "proof.json"
+            intake_path.write_text(json.dumps(complete_intake), encoding="utf-8")
+            class_path.write_text(json.dumps(classification), encoding="utf-8")
+            built = subprocess.run(
+                [sys.executable, str(BUILDER), "--intake-status", str(intake_path),
+                 "--classification", str(class_path), "--out", str(proof_path)],
+                cwd=ROOT, text=True, capture_output=True, timeout=60,
+            )
+            self.assertEqual(built.returncode, 0, built.stderr)
+            proof = json.loads(proof_path.read_text(encoding="utf-8"))
+        self.assertEqual(proof["compensator"]["formula_origin"], "compensator-template:SIMPLIS_LAPLACE")
+        self.assertEqual(
+            proof["compensator"]["canonical_sympy_expr"],
+            "KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

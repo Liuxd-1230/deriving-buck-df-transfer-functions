@@ -3,7 +3,7 @@
 ## Material passport
 
 - Artifact: `deriving-buck-df-transfer-functions`
-- Validation date: 2026-06-18
+- Validation date: 2026-06-19
 - Scope: ESSF first-stage intake, registry, proof-object gate plus retained single-phase CCM COT/RBCOT models
 - Overall status: `PARTIALLY_VERIFIED`
 - Offline use: no Zotero library or paper PDF is required at runtime
@@ -19,6 +19,11 @@
 | Formula registry | VERIFIED | Four registered generators load canonical formulas from `formula_registry.yaml`; Q2 and bound-expression mutation tests fail as required |
 | Proof object checker | VERIFIED | Direct fake `a_*`, unsupported target, incomplete intake, bad validation and formula mismatches are rejected |
 | Forward-test | VERIFIED_STATIC | “做一个谷值电压模 COT” returns missing questions only and creates no proof, transfer, or plot |
+| Engineering forward-test | VERIFIED_STATIC | Valley current-mode COT case requires `loop_break` for `Tloop`, preserves SIMPLIS Laplace semantics, and plots `Gvc/Tloop` with `fs/2` validity markers |
+| Bode plotting | VERIFIED_STATIC | `plot-bode` emits PNG, CSV, and JSON summary for `Gvc/Gvg/Zout/Tloop`; out-of-range crossings are marked `EXTRAPOLATED_BEYOND_VALID_RANGE` |
+| Compensator templates | VERIFIED_STATIC | `SIMPLIS_LAPLACE`, `OTA_GM_RO`, `PI`, `TYPE_II`, `TYPE_III`, and `CUSTOM_EXPRESSION` produce canonical expressions; Type II/III require rad/s units |
+| Legacy CLI compatibility | VERIFIED_STATIC | `derive --case` renders `LEGACY_CASE_UNVERIFIED`; `check --case` remains JSON algebra diagnostics |
+| `bind_expression` parentheses | VERIFIED | Binder no longer adds hidden parentheses; registry templates carry required grouping explicitly; formula consistency and benchmarks pass |
 | New RC-ramp coefficient formulas | NOT_VERIFIED | The example records required derivation evidence but intentionally contains no claimed closed-form coefficients |
 | Switching simulation | NOT_VERIFIED | No SIMPLIS/switching AC sweep validates a protocol-derived new model in v0.3.1 |
 | Independent agent forward-test | NOT_VERIFIED | The new prompt test is deterministic CLI evidence, not an isolated-agent behavioral run |
@@ -43,6 +48,7 @@ python -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/run_benchmarks.py --all
 python scripts/check_formula_consistency.py --all
 python scripts/check_proof_object.py --proof tests/fixtures/valid_li_lee_2009_direct.json
+pytest tests/test_forward_prompts.py tests/test_formula_consistency.py tests/test_direct_model_no_fake_a_star.py tests/test_cot_requires_two_pulse_trains.py tests/test_external_ramp_requires_fm_s.py tests/test_compensator_templates.py tests/test_tloop_loop_break.py tests/test_plot_bode.py tests/test_bind_expression_parentheses.py
 ```
 
 The first two suites test retained v0.2 algebra/benchmarks and v0.3.1 ESSF contracts separately. The two checker commands must return `PASS`.

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.3.1 compensator template",
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": {
+      "enum": ["SIMPLIS_LAPLACE", "OTA_GM_RO", "PI", "TYPE_II", "TYPE_III", "CUSTOM_EXPRESSION"]
+    },
+    "formula_origin": {"type": "string"},
+    "frequency_units": {"enum": ["rad_per_s"]},
+    "expression": {"type": "string"}
+  },
+  "additionalProperties": true
+}

@@ -48,13 +48,19 @@ python scripts/check_formula_consistency.py --proof proof_object.json
 python scripts/df_buck_sympy.py make-case --model MODEL --params params.json --out case.json
 python scripts/df_buck_sympy.py make-protocol-case --intake circuit.json --out protocol_case.json
 python scripts/df_buck_sympy.py derive --proof-object proof_object.json --out derivation.md
+python scripts/df_buck_sympy.py derive --case legacy_case.json --out legacy-unverified.md
 python scripts/df_buck_sympy.py check --case case.json
+python scripts/df_buck_sympy.py plot-bode --case case.json --targets Gvc,Gvg,Zout,Tloop --out plots/
 python scripts/df_buck_sympy.py benchmark --all
 ```
 
 注册模型：`cot-cm-li-lee-2010`、`cot-cm-external-ramp-tian-2015`、`rbcot-esr-lu-2023`、`v2-cot-li-lee-2009`。
 
-旧模型输入见 [formula patterns](references/formula-patterns.md)，v0.3 协议说明见 [protocol schema](references/protocol-case-schema.md)，来源索引见 [Zotero source map](references/zotero-df-source-map.md)。运行 skill 不依赖 Zotero 或论文 PDF。
+`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不等于 v0.3.1 proof。`derive --proof-object` 才是 ESSF 报告路径。
+
+旧模型输入见 [formula patterns](references/formula-patterns.md)，补偿器模板见 [compensator templates](references/compensator-templates.md)，v0.3 协议说明见 [protocol schema](references/protocol-case-schema.md)，来源索引见 [Zotero source map](references/zotero-df-source-map.md)。运行 skill 不依赖 Zotero 或论文 PDF。
+
+请求 `Tloop` 时必须有 `loop_break`：injection point、OUT/IN 定义、符号约定、forward/feedback path 和 `H`。只有明确声明默认负反馈时，才可用 `Tloop = Gc*H*Gvc`；这不等价于任意 SIMPLIS probe。`plot-bode` 必须标出 `fs`、`fs/2`、有效频率边界，并把超界交越标记为 `EXTRAPOLATED_BEYOND_VALID_RANGE`。
 
 ## Output contract for protocol-derived models
 
@@ -69,5 +75,6 @@ python scripts/df_buck_sympy.py benchmark --all
 - 不用单一 Bode 点验证完整模型；至少比较低频、交越附近及模型声明的最高有效频率。
 - 不把论文中的无限阶结果未经说明地替换为低阶多项式。
 - 多相 overlap、DCM、pulse skipping、burst 或非线性限流不得套用 v0.3。
+- COT 双脉冲列车、sideband/Dirichlet 和动态 `Fm(s)` 属于 v0.4/v0.5；v0.3.1 只拒绝，不半实现。
 - 用户直接给 `a_*` 不能伪装成 registered formula；必须标记 `CUSTOM_COEFFICIENT_UNVERIFIED`。
 - v0.3.1 不实现 sampled-data sideband、Dirichlet、COT 双脉冲或动态 `Fm(s)`；这些属于 v0.4/v0.5。

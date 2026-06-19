@@ -6,7 +6,7 @@
   "required": ["intake_version", "status", "missing", "action", "normalized"],
   "properties": {
     "intake_version": {"const": "0.3.1"},
-    "status": {"enum": ["COMPLETE", "INCOMPLETE"]},
+    "status": {"enum": ["COMPLETE", "INCOMPLETE", "INCOMPLETE_TLOOP_INTAKE"]},
     "missing": {
       "type": "array",
       "items": {
@@ -15,7 +15,8 @@
           "operating_mode",
           "sampling_or_switching_event",
           "comparator_inputs",
-          "parameters"
+          "parameters",
+          "loop_break"
         ]
       },
       "uniqueItems": true

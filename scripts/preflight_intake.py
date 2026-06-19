@@ -19,6 +19,14 @@ REQUIRED_GROUPS = (
     "comparator_inputs",
     "parameters",
 )
+TLOOP_QUESTIONS = (
+    "Where is the loop injection source?",
+    "Which nodes define OUT/IN?",
+    "Does the probe measure OUT/IN or -OUT/IN?",
+    "What is feedback divider H?",
+    "Is there any extra block between EA output and comparator input?",
+    "Are current/voltage sense gains already included in Gvc?",
+)
 CORE_PARAMETER_GROUPS = (
     ("Vin",),
     ("Vo",),
@@ -96,6 +104,29 @@ def _missing_groups(normalized: dict[str, Any]) -> list[str]:
     return missing
 
 
+def _targets_include_tloop(normalized: dict[str, Any]) -> bool:
+    target = normalized.get("target_transfer") or normalized.get("target")
+    if isinstance(target, list):
+        return any(str(item).lower() == "tloop" for item in target)
+    return str(target).lower() == "tloop"
+
+
+def _loop_break_complete(normalized: dict[str, Any]) -> bool:
+    loop_break = normalized.get("loop_break")
+    if not isinstance(loop_break, dict) or not loop_break.get("enabled"):
+        return False
+    required = (
+        "injection_point",
+        "return_point",
+        "measured_quantity",
+        "sign_convention",
+        "forward_path",
+        "feedback_path",
+        "H",
+    )
+    return all(loop_break.get(name) not in (None, "", "unknown") for name in required)
+
+
 def build_intake_status(*, intake: dict[str, Any] | None = None, text: str | None = None) -> dict[str, Any]:
     if (intake is None) == (text is None):
         raise IntakeGateError("Provide exactly one of structured intake or request text.")
@@ -109,14 +140,19 @@ def build_intake_status(*, intake: dict[str, Any] | None = None, text: str | Non
         source = "request-text"
 
     missing = _missing_groups(normalized)
+    tloop_missing = _targets_include_tloop(normalized) and not _loop_break_complete(normalized)
+    if tloop_missing and "loop_break" not in missing:
+        missing.append("loop_break")
     complete = not missing
+    status = "COMPLETE" if complete else ("INCOMPLETE_TLOOP_INTAKE" if tloop_missing else "INCOMPLETE")
     return {
         "intake_version": INTAKE_VERSION,
         "source": source,
-        "status": "COMPLETE" if complete else "INCOMPLETE",
+        "status": status,
         "missing": missing,
         "action": "CONTINUE_TO_CLASSIFICATION" if complete else "ASK_USER_ONLY",
         "normalized": normalized,
+        **({"questions": list(TLOOP_QUESTIONS)} if tloop_missing else {}),
     }
 
 

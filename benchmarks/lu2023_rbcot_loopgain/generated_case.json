@@ -29,9 +29,9 @@
         "sf": 909.090909090909
       },
       "paper_model": {
-        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
         "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
         "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
       },
@@ -63,7 +63,7 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "1-((exp(-s*Tsw)))",
+          "expression": "1-(exp(-s*Tsw))",
           "template_bindings": {
             "delay": "exp(-s*Tsw)"
           }
@@ -73,9 +73,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))",
+          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))"
+            "one_minus_delay": "1-(exp(-s*Tsw))"
           }
         },
         {
@@ -83,10 +83,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/control",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -94,10 +94,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -105,10 +105,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+          "expression": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
           "template_bindings": {
-            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))"
+            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))"
           }
         },
         {
@@ -130,9 +130,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+          "expression": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
           "template_bindings": {
-            "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))"
+            "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))"
           }
         },
         {
@@ -151,9 +151,9 @@
         }
       ],
       "modulator": {
-        "a_c": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
         "a_g": "0",
-        "a_o": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
         "a_i": "0"
       }
     },
@@ -185,9 +185,9 @@
         "sf": 5818.181818181818
       },
       "paper_model": {
-        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
         "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
         "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
       },
@@ -219,7 +219,7 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "1-((exp(-s*Tsw)))",
+          "expression": "1-(exp(-s*Tsw))",
           "template_bindings": {
             "delay": "exp(-s*Tsw)"
           }
@@ -229,9 +229,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))",
+          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))"
+            "one_minus_delay": "1-(exp(-s*Tsw))"
           }
         },
         {
@@ -239,10 +239,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/control",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -250,10 +250,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -261,10 +261,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+          "expression": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
           "template_bindings": {
-            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))"
+            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))"
           }
         },
         {
@@ -286,9 +286,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+          "expression": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
           "template_bindings": {
-            "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))"
+            "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))"
           }
         },
         {
@@ -307,9 +307,9 @@
         }
       ],
       "modulator": {
-        "a_c": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
         "a_g": "0",
-        "a_o": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
         "a_i": "0"
       }
     },
@@ -341,9 +341,9 @@
         "sf": 18181.81818181818
       },
       "paper_model": {
-        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-        "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+        "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+        "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
         "Fp": "Vg*(1+s*rC*C)/(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))",
         "Floop_structure": "Fdx*Fp/(1+Fox*Fp)"
       },
@@ -375,7 +375,7 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "1-((exp(-s*Tsw)))",
+          "expression": "1-(exp(-s*Tsw))",
           "template_bindings": {
             "delay": "exp(-s*Tsw)"
           }
@@ -385,9 +385,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "dimensionless",
-          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))",
+          "expression": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))"
+            "one_minus_delay": "1-(exp(-s*Tsw))"
           }
         },
         {
@@ -395,10 +395,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/control",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -406,10 +406,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+          "expression": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
           "template_bindings": {
-            "one_minus_delay": "1-((exp(-s*Tsw)))",
-            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))"
+            "one_minus_delay": "1-(exp(-s*Tsw))",
+            "B": "Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))"
           }
         },
         {
@@ -417,10 +417,10 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))",
+          "expression": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))",
           "template_bindings": {
-            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
-            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))"
+            "Fodx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
+            "Fdx": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))"
           }
         },
         {
@@ -442,9 +442,9 @@
           "source_model_id": "rbcot-esr-lu-2023",
           "interface": "a-star",
           "dimension_signature": "duty/output",
-          "expression": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+          "expression": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
           "template_bindings": {
-            "Fox": "-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))"
+            "Fox": "-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))"
           }
         },
         {
@@ -463,9 +463,9 @@
         }
       ],
       "modulator": {
-        "a_c": "(fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))",
+        "a_c": "(fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))",
         "a_g": "0",
-        "a_o": "-(-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw)))))))))-(((fs/sf)*(1-exp(-s*Ton))*((1-((exp(-s*Tsw)))))*(1+rC/R)/((Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*((1-((exp(-s*Tsw))))))))))",
+        "a_o": "-(-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw)))))-((fs/sf)*(1-exp(-s*Ton))*(1-(exp(-s*Tsw)))*(1+rC/R)/(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*(1-(exp(-s*Tsw))))))",
         "a_i": "0"
       }
     }

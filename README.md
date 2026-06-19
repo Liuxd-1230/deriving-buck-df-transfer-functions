@@ -60,6 +60,7 @@ v0.3.1 不支持或不宣称支持：
 - 从电路图片自动识别比较器连接；
 - 从任意 SPICE netlist 自动生成 DF；
 - 把平均模型包装成描述函数；
+- COT 双脉冲列车、sideband/Dirichlet 或动态 `Fm(s)`；
 - 把新推公式直接标成 verified。
 
 Huang 2025 internal-ramp/DC-extractor 模型采用平均模型，因此在本 DF 注册库中标记为 `EXCLUDED_NON_DF`。
@@ -100,6 +101,16 @@ Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。
 ## 快速开始
 
 主要入口：`preflight_intake.py`、`classify --intake-status`、`build_proof_object.py`、`check_proof_object.py`、`check_formula_consistency.py`、`make-protocol-case` 和 `derive --proof-object`。
+
+工程输出入口还包括：
+
+```powershell
+python scripts/df_buck_sympy.py derive --case legacy_case.json --out legacy-unverified.md
+python scripts/df_buck_sympy.py check --case legacy_case.json
+python scripts/df_buck_sympy.py plot-bode --case case.json --targets Gvc,Gvg,Zout,Tloop --out plots/
+```
+
+`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不会伪装成 v0.3.1 proof。最终 ESSF 报告仍必须走 `derive --proof-object`。
 
 ### 1. 已知论文模型
 
@@ -167,6 +178,29 @@ python scripts/check_formula_consistency.py --proof proof_object.json
 ```
 
 该示例演示协议结构，不声称已经给出 RC-ramp 的闭式正确系数。必须重新求周期稳态 `vramp(t)`、总边沿斜率、边沿递推和 DF 路径，并保持 `UNVERIFIED_NEW_DF_MODEL`。
+
+### 4. 工程 Bode、补偿器和 Tloop
+
+`plot-bode` 可对 legacy/registered a-star case 生成 `Gvc/Gvg/Zout/Tloop` 的 PNG、CSV 和 `bode_summary.json`：
+
+```powershell
+python scripts/df_buck_sympy.py plot-bode `
+  --case case.json `
+  --targets Gvc,Gvg,Zout,Tloop `
+  --out plots/
+```
+
+每张图和 summary 必须标出 `fs`、`fs/2`、`valid_frequency_limit`、0 dB crossing、phase margin 和可得的 gain margin。若交越超过有效频率边界，summary 标为 `EXTRAPOLATED_BEYOND_VALID_RANGE`；不能把这种相位裕度当可信稳定性结论。
+
+补偿器不要手写任意 `Gc(s)`，优先用 [compensator templates](references/compensator-templates.md)：`SIMPLIS_LAPLACE`、`OTA_GM_RO`、`PI`、`TYPE_II`、`TYPE_III` 或显式 `CUSTOM_EXPRESSION_UNVERIFIED`。SIMPLIS Laplace block 固定解释为：
+
+```text
+KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))
+```
+
+不是归一化的 `(1+s/w)` 形式。
+
+请求 `Tloop` 时必须提供 `loop_break`：注入点、返回点、OUT/IN 定义、符号约定、forward/feedback path 和反馈 `H`。只有用户明确声明默认负反馈约定时，才可构造 `Tloop = Gc*H*Gvc`；这不等价于任意 SIMPLIS probe。实操回归示例见 [examples/intake_valley_cm_cot_tloop.json](examples/intake_valley_cm_cot_tloop.json)。
 
 ### 结构化主路径与当前自动化边界
 
