@@ -29,9 +29,9 @@
     "se": 40000.0
   },
   "paper_model": {
-    "Fc": "fs*(1-exp(-s*Ton))*Vg/(L*s*((sf+se)-se*exp(-s*Tsw)))",
-    "Fg": "-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((sf+se)-se*exp(-s*Tsw)))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)",
-    "Fo": "1/(L*s)*(fs*(1-exp(-s*Ton))/((sf+se)-se*exp(-s*Tsw))*(1/(s*L/Ri))*Vg-1)",
+    "Fc": "fs*(1-exp(-s*Ton))*Vg/(L*s*((((sf+se)-se*exp(-s*Tsw)))))",
+    "Fg": "-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((((sf+se)-se*exp(-s*Tsw)))))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)",
+    "Fo": "1/(L*s)*(fs*(1-exp(-s*Ton))/((((sf+se)-se*exp(-s*Tsw))))*(1/(s*L/Ri))*Vg-1)",
     "Fc_low_order": "(1/Ri)*(1+s*Tsw/2)/(1+(se/sf+1/2)*Tsw*s)"
   },
   "coefficient_origin": "derived-adapter",
@@ -47,10 +47,93 @@
     "Gvg",
     "Zout"
   ],
+  "formula_bindings": [
+    {
+      "formula_id": "tian-2015.a",
+      "source_model_id": "cot-cm-external-ramp-tian-2015",
+      "interface": "a-star",
+      "dimension_signature": "slope",
+      "expression": "((sf+se)-se*exp(-s*Tsw))"
+    },
+    {
+      "formula_id": "tian-2015.fc",
+      "source_model_id": "cot-cm-external-ramp-tian-2015",
+      "interface": "a-star",
+      "dimension_signature": "current/control",
+      "expression": "fs*(1-exp(-s*Ton))*Vg/(L*s*((((sf+se)-se*exp(-s*Tsw)))))",
+      "template_bindings": {
+        "A": "((sf+se)-se*exp(-s*Tsw))"
+      }
+    },
+    {
+      "formula_id": "tian-2015.fg",
+      "source_model_id": "cot-cm-external-ramp-tian-2015",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((((sf+se)-se*exp(-s*Tsw)))))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)",
+      "template_bindings": {
+        "A": "((sf+se)-se*exp(-s*Tsw))"
+      }
+    },
+    {
+      "formula_id": "tian-2015.fo",
+      "source_model_id": "cot-cm-external-ramp-tian-2015",
+      "interface": "a-star",
+      "dimension_signature": "current/voltage",
+      "expression": "1/(L*s)*(fs*(1-exp(-s*Ton))/((((sf+se)-se*exp(-s*Tsw))))*(1/(s*L/Ri))*Vg-1)",
+      "template_bindings": {
+        "A": "((sf+se)-se*exp(-s*Tsw))"
+      }
+    },
+    {
+      "formula_id": "tian-2015.fc-low",
+      "source_model_id": "cot-cm-external-ramp-tian-2015",
+      "interface": "a-star",
+      "dimension_signature": "current/control",
+      "expression": "(1/Ri)*(1+s*Tsw/2)/(1+(se/sf+1/2)*Tsw*s)"
+    },
+    {
+      "formula_id": "common.adapter.a-c",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/control",
+      "expression": "(s*L+rL)*((fs*(1-exp(-s*Ton))*Vg/(L*s*((((sf+se)-se*exp(-s*Tsw)))))))/Vg",
+      "template_bindings": {
+        "Fc": "fs*(1-exp(-s*Ton))*Vg/(L*s*((((sf+se)-se*exp(-s*Tsw)))))"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-g",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/voltage",
+      "expression": "((s*L+rL)*((-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((((sf+se)-se*exp(-s*Tsw)))))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)))-D)/Vg",
+      "template_bindings": {
+        "Fg": "-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((((sf+se)-se*exp(-s*Tsw)))))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-o",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/voltage",
+      "expression": "((s*L+rL)*((1/(L*s)*(fs*(1-exp(-s*Ton))/((((sf+se)-se*exp(-s*Tsw))))*(1/(s*L/Ri))*Vg-1)))+1)/Vg",
+      "template_bindings": {
+        "Fo": "1/(L*s)*(fs*(1-exp(-s*Ton))/((((sf+se)-se*exp(-s*Tsw))))*(1/(s*L/Ri))*Vg-1)"
+      }
+    },
+    {
+      "formula_id": "common.adapter.a-i",
+      "source_model_id": "common-current-source-adapter",
+      "interface": "a-star",
+      "dimension_signature": "1/current",
+      "expression": "0"
+    }
+  ],
   "modulator": {
-    "a_c": "(s*L+rL)*(fs*(1-exp(-s*Ton))*Vg/(L*s*((sf+se)-se*exp(-s*Tsw))))/Vg",
-    "a_g": "((s*L+rL)*(-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((sf+se)-se*exp(-s*Tsw)))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D))-D)/Vg",
-    "a_o": "((s*L+rL)*(1/(L*s)*(fs*(1-exp(-s*Ton))/((sf+se)-se*exp(-s*Tsw))*(1/(s*L/Ri))*Vg-1))+1)/Vg",
+    "a_c": "(s*L+rL)*((fs*(1-exp(-s*Ton))*Vg/(L*s*((((sf+se)-se*exp(-s*Tsw)))))))/Vg",
+    "a_g": "((s*L+rL)*((-1/(L*s)*(fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*((((sf+se)-se*exp(-s*Tsw)))))*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)))-D)/Vg",
+    "a_o": "((s*L+rL)*((1/(L*s)*(fs*(1-exp(-s*Ton))/((((sf+se)-se*exp(-s*Tsw))))*(1/(s*L/Ri))*Vg-1)))+1)/Vg",
     "a_i": "0"
   },
   "features_hz": {

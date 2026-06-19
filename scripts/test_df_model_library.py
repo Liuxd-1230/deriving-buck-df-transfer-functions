@@ -176,6 +176,14 @@ class Lu2023RbcotTests(unittest.TestCase):
 
 
 class LiLee2009V2Tests(unittest.TestCase):
+    def test_direct_case_records_registry_formula_bindings(self) -> None:
+        parameters = cot_parameters() | {"C": 560e-6, "rC": 6e-3}
+        case = models.generate_case("v2-cot-li-lee-2009", parameters, "pade")
+        self.assertIn("formula_bindings", case)
+        formula_ids = {item["formula_id"] for item in case["formula_bindings"]}
+        self.assertIn("li-lee-2009.q2", formula_ids)
+        self.assertIn("li-lee-2009.gvc-pade", formula_ids)
+
     def test_v2_model_is_exposed_as_direct_paper_transfer_not_fake_coefficients(self) -> None:
         parameters = cot_parameters() | {"C": 560e-6, "rC": 6e-3}
         case = models.generate_case("v2-cot-li-lee-2009", parameters, "pade")

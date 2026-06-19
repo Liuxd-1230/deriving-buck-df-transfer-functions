@@ -38,11 +38,18 @@ class V03CliTests(unittest.TestCase):
 
     def test_classify_prints_structured_result(self):
         with tempfile.TemporaryDirectory() as td:
-            path = Path(td) / "intake.json"
-            path.write_text(json.dumps(protocol_intake()), encoding="utf-8")
-            result = self.run_cli("classify", "--intake", str(path))
+            root = Path(td)
+            path = root / "intake_status.json"
+            output = root / "classification.json"
+            path.write_text(json.dumps({
+                "intake_version": "0.3.1", "status": "COMPLETE", "missing": [],
+                "action": "CONTINUE_TO_CLASSIFICATION", "normalized": protocol_intake(),
+            }), encoding="utf-8")
+            result = self.run_cli("classify", "--intake-status", str(path), "--out", str(output))
+            written = json.loads(output.read_text(encoding="utf-8")) if output.is_file() else {}
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(json.loads(result.stdout)["path"], "NEW_MODEL")
+        self.assertEqual(json.loads(result.stdout)["path"], "PROTOCOL_DERIVED_NEW")
+        self.assertEqual(written["path"], "PROTOCOL_DERIVED_NEW")
 
     def test_make_and_derive_protocol_case(self):
         with tempfile.TemporaryDirectory() as td:
@@ -53,10 +60,10 @@ class V03CliTests(unittest.TestCase):
             intake.write_text(json.dumps(protocol_intake()), encoding="utf-8")
             made = self.run_cli("make-protocol-case", "--intake", str(intake), "--out", str(case))
             self.assertEqual(made.returncode, 0, made.stderr)
-            derived = self.run_cli("derive", "--case", str(case), "--out", str(report))
+            derived = self.run_cli("derive", "--proof-object", str(case), "--out", str(report))
             self.assertEqual(derived.returncode, 0, derived.stderr)
-            self.assertEqual(json.loads(case.read_text(encoding="utf-8"))["case_version"], "0.3")
-            self.assertIn("## Switching event equation", report.read_text(encoding="utf-8"))
+            self.assertEqual(json.loads(case.read_text(encoding="utf-8"))["proof_version"], "0.3.1")
+            self.assertIn("## Structured evidence", report.read_text(encoding="utf-8"))
 
     def test_missing_event_cannot_make_protocol_case(self):
         with tempfile.TemporaryDirectory() as td:
@@ -68,7 +75,27 @@ class V03CliTests(unittest.TestCase):
             result = self.run_cli("make-protocol-case", "--intake", str(intake),
                                   "--out", str(root / "case.json"))
         self.assertEqual(result.returncode, 2)
-        self.assertIn("switching_events", result.stderr)
+        self.assertIn("ASK_USER_ONLY", result.stderr)
+
+    def test_legacy_case_cannot_render_final_report_without_proof_object(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            params = root / "params.json"
+            case = root / "case.json"
+            report = root / "report.md"
+            params.write_text(json.dumps({
+                "Vin": 12, "Vo": 1.2, "fs": 300000, "L": 3e-7,
+                "C": 560e-6, "R": 0.1, "rC": 0.006,
+            }), encoding="utf-8")
+            made = self.run_cli("make-case", "--model", "v2-cot-li-lee-2009",
+                                "--params", str(params), "--approximation", "pade",
+                                "--out", str(case))
+            self.assertEqual(made.returncode, 0, made.stderr)
+            derived = self.run_cli("derive", "--case", str(case), "--out", str(report))
+            report_exists = report.exists()
+        self.assertEqual(derived.returncode, 2)
+        self.assertIn("proof object", derived.stderr.lower())
+        self.assertFalse(report_exists)
 
 
 if __name__ == "__main__":

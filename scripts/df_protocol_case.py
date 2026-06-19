@@ -7,6 +7,7 @@ from copy import deepcopy
 from typing import Any
 
 from df_model_classifier import classify_intake
+from preflight_intake import IntakeGateError, build_intake_status, require_complete_intake
 
 
 class ProtocolCaseError(ValueError):
@@ -28,12 +29,16 @@ def _require_event_chain(events: Any) -> None:
 
 
 def build_protocol_case(intake: dict[str, Any]) -> dict[str, Any]:
+    try:
+        intake = require_complete_intake(build_intake_status(intake=intake))
+    except IntakeGateError as exc:
+        raise ProtocolCaseError(str(exc)) from exc
     classification = classify_intake(intake)
     if classification["path"] == "UNSUPPORTED":
         raise ProtocolCaseError("Unsupported circuit: " + ", ".join(classification["unsupported_effects"]))
     if classification["path"] == "INCOMPLETE":
         raise ProtocolCaseError("Missing information: " + ", ".join(classification["missing_information"]))
-    if classification["path"] == "KNOWN_MODEL":
+    if classification["path"] in {"DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"}:
         raise ProtocolCaseError("Registered models must use make-case; protocol derivation is not required.")
 
     events = deepcopy(intake.get("switching_events"))

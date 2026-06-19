@@ -32,7 +32,7 @@
         "Q2": "Tsw/(pi*(rC*C-Ton/2))"
       },
       "paper_model": {
-        "Gvc": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
+        "Gvc": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))"
       },
       "coefficient_origin": "not-applicable-direct-paper-transfer",
       "component_fidelity": {
@@ -41,6 +41,61 @@
       },
       "targets": [
         "Gvc"
+      ],
+      "formula_bindings": [
+        {
+          "formula_id": "li-lee-2009.w1",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "frequency",
+          "expression": "pi/Ton"
+        },
+        {
+          "formula_id": "li-lee-2009.q1",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "2/pi"
+        },
+        {
+          "formula_id": "li-lee-2009.w2",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "frequency",
+          "expression": "pi/Tsw"
+        },
+        {
+          "formula_id": "li-lee-2009.q2",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "Tsw/(pi*(rC*C-Ton/2))"
+        },
+        {
+          "formula_id": "li-lee-2009.high-pair",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "1+s/(Q1*w1)+s**2/w1**2"
+        },
+        {
+          "formula_id": "li-lee-2009.fs-pair",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "1+s/(Q2*w2)+s**2/w2**2"
+        },
+        {
+          "formula_id": "li-lee-2009.gvc-pade",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "output/control",
+          "expression": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))",
+          "template_bindings": {
+            "high_pair": "1+s/(Q1*w1)+s**2/w1**2",
+            "fs_pair": "1+s/(Q2*w2)+s**2/w2**2"
+          }
+        }
       ],
       "interface": "direct-transfer-function",
       "stability": {
@@ -80,7 +135,7 @@
         "Q2": "Tsw/(pi*(rC*C-Ton/2))"
       },
       "paper_model": {
-        "Gvc": "(1+s*rC*C)/((1+s/(Q1*w1)+s**2/w1**2)*(1+s/(Q2*w2)+s**2/w2**2))"
+        "Gvc": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))"
       },
       "coefficient_origin": "not-applicable-direct-paper-transfer",
       "component_fidelity": {
@@ -89,6 +144,61 @@
       },
       "targets": [
         "Gvc"
+      ],
+      "formula_bindings": [
+        {
+          "formula_id": "li-lee-2009.w1",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "frequency",
+          "expression": "pi/Ton"
+        },
+        {
+          "formula_id": "li-lee-2009.q1",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "2/pi"
+        },
+        {
+          "formula_id": "li-lee-2009.w2",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "frequency",
+          "expression": "pi/Tsw"
+        },
+        {
+          "formula_id": "li-lee-2009.q2",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "Tsw/(pi*(rC*C-Ton/2))"
+        },
+        {
+          "formula_id": "li-lee-2009.high-pair",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "1+s/(Q1*w1)+s**2/w1**2"
+        },
+        {
+          "formula_id": "li-lee-2009.fs-pair",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "dimensionless",
+          "expression": "1+s/(Q2*w2)+s**2/w2**2"
+        },
+        {
+          "formula_id": "li-lee-2009.gvc-pade",
+          "source_model_id": "v2-cot-li-lee-2009",
+          "interface": "direct-transfer",
+          "dimension_signature": "output/control",
+          "expression": "(1+s*rC*C)/(((1+s/(Q1*w1)+s**2/w1**2))*((1+s/(Q2*w2)+s**2/w2**2)))",
+          "template_bindings": {
+            "high_pair": "1+s/(Q1*w1)+s**2/w1**2",
+            "fs_pair": "1+s/(Q2*w2)+s**2/w2**2"
+          }
+        }
       ],
       "interface": "direct-transfer-function",
       "stability": {

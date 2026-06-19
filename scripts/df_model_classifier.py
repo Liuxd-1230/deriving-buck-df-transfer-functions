@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from df_model_library import MODEL_SPECS
+from preflight_intake import require_complete_intake
 
 
 BASE_PARAMETERS = ("Vin", "Vo", "L", "C", "R", "rC")
@@ -88,8 +89,14 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
             "phases": intake.get("phases", 1),
             "control_family": intake.get("control_family", MODEL_FAMILIES[model_id]),
         })
-        return {**base, "path": "KNOWN_MODEL", "model_match": {"known_model": True,
-                "model_id": model_id, "confidence": "high"}, "action": "use_known_model",
+        registered_path = (
+            "DF_REGISTERED_DIRECT"
+            if MODEL_SPECS[model_id]["interface"] == "direct-transfer"
+            else "DF_REGISTERED_MULTIPORT"
+        )
+        return {**base, "path": registered_path, "model_id": model_id,
+                "model_match": {"known_model": True,
+                "model_id": model_id, "confidence": "high"}, "action": "use_registered_model",
                 "validation_level": "PAPER_GROUNDED_PARTIAL", "missing_information": []}
 
     similar = intake.get("similar_model") or (model_id if model_id in MODEL_SPECS else None)
@@ -100,22 +107,28 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                 "validation_level": None, "missing_information": missing}
 
     if similar in MODEL_SPECS:
-        path = "NEAR_MODEL"
+        path = "PROTOCOL_DERIVED_NEW"
         confidence = "medium"
     else:
-        path = "NEW_MODEL"
+        path = "PROTOCOL_DERIVED_NEW"
         confidence = "low"
     return {**base, "path": path, "model_match": {"known_model": False,
             "model_id": similar, "confidence": confidence}, "action": "derive_by_protocol",
             "validation_level": "PROTOCOL_DERIVED_UNVERIFIED", "missing_information": []}
 
 
+def classify_intake_status(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Classify only after the mandatory intake gate has passed."""
+
+    return classify_intake(require_complete_intake(artifact))
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Classify a Buck DF circuit intake.")
-    parser.add_argument("--intake", required=True)
+    parser = argparse.ArgumentParser(description="Classify a completed Buck DF intake artifact.")
+    parser.add_argument("--intake-status", required=True)
     args = parser.parse_args()
-    data = json.loads(Path(args.intake).read_text(encoding="utf-8"))
-    print(json.dumps(classify_intake(data), ensure_ascii=False, indent=2))
+    data = json.loads(Path(args.intake_status).read_text(encoding="utf-8"))
+    print(json.dumps(classify_intake_status(data), ensure_ascii=False, indent=2))
     return 0
 
 

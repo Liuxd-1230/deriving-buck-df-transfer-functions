@@ -4,31 +4,22 @@
 from __future__ import annotations
 
 import math
+import sys
+from pathlib import Path
 from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from formula_registry import bind_expression, formula_binding, model_specs
 
 
 class ModelError(ValueError):
     """Raised when a requested paper model is unsupported or invalid."""
 
 
-MODEL_SPECS = {
-    "cot-cm-li-lee-2010": {
-        "method": "describing-function",
-        "source": "Li and Lee, IEEE TPEL 2010",
-    },
-    "cot-cm-external-ramp-tian-2015": {
-        "method": "describing-function",
-        "source": "Tian et al., IEEE TPEL 2016 (early access 2015)",
-    },
-    "rbcot-esr-lu-2023": {
-        "method": "describing-function",
-        "source": "Lu et al., IEEE TPEL 2023",
-    },
-    "v2-cot-li-lee-2009": {
-        "method": "describing-function",
-        "source": "Li and Lee, IEEE ECCE 2009",
-    },
-}
+MODEL_SPECS = model_specs()
 
 EXCLUDED_MODELS = {
     "rbcot-internal-ramp-huang-2025": (
@@ -46,12 +37,23 @@ def current_source_to_duty_coefficients(*, Fc: str, Fg: str, Fo: str) -> dict[st
     """Adapt a closed current-source DF relation to the Buck duty interface."""
 
     return {
-        "a_c": f"(s*L+rL)*({Fc})/Vg",
-        "a_g": f"((s*L+rL)*({Fg})-D)/Vg",
-        "a_o": f"((s*L+rL)*({Fo})+1)/Vg",
-        "a_i": "0",
+        "a_c": bind_expression("common.adapter.a-c", Fc=Fc),
+        "a_g": bind_expression("common.adapter.a-g", Fg=Fg),
+        "a_o": bind_expression("common.adapter.a-o", Fo=Fo),
+        "a_i": bind_expression("common.adapter.a-i"),
         "coefficient_origin": "derived-adapter",
     }
+
+
+def _adapter_formula_bindings(
+    adapted: dict[str, str], *, Fc: str, Fg: str, Fo: str
+) -> list[dict[str, Any]]:
+    return [
+        formula_binding("common.adapter.a-c", adapted["a_c"], {"Fc": Fc}),
+        formula_binding("common.adapter.a-g", adapted["a_g"], {"Fg": Fg}),
+        formula_binding("common.adapter.a-o", adapted["a_o"], {"Fo": Fo}),
+        formula_binding("common.adapter.a-i", adapted["a_i"]),
+    ]
 
 
 def _require(parameters: dict[str, Any], names: tuple[str, ...]) -> None:
@@ -104,6 +106,7 @@ def _paper_case(
     valid_frequency: dict[str, Any],
     coefficient_origin: str,
     component_fidelity: dict[str, str],
+    formula_bindings: list[dict[str, Any]],
 ) -> dict[str, Any]:
     case: dict[str, Any] = {
         "name": model_id,
@@ -117,7 +120,8 @@ def _paper_case(
         "paper_model": paper_model,
         "coefficient_origin": coefficient_origin,
         "component_fidelity": component_fidelity,
-        "targets": ["Gvc", "Gvg", "Zout"],
+        "targets": list(MODEL_SPECS[model_id]["supported_targets"]),
+        "formula_bindings": formula_bindings,
     }
     if modulator is not None:
         case["modulator"] = modulator
@@ -136,18 +140,20 @@ def _li_lee_2010(parameters: dict[str, Any], approximation: str) -> dict[str, An
         }
     )
     if approximation == "exact":
-        fc = "(fs/sf)*(1-exp(-s*Ton))*Vg/(L*s)"
+        fc_id = "li-lee-2010.fc-exact"
+        fc = bind_expression(fc_id)
         basis = "Li-Lee-2010-Eq9"
     elif approximation == "pade":
-        fc = "1/(Ri*(1+s/(Q1*w1)+s**2/w1**2))"
+        fc_id = "li-lee-2010.fc-pade"
+        fc = bind_expression(fc_id)
         basis = "Li-Lee-2010-Eq10"
     else:
         raise ModelError("Li/Lee 2010 approximation must be 'exact' or 'pade'.")
 
-    k1 = "Ton*Ri/(2*L)"
-    k2 = "-Ton*Ri/(2*L)"
-    fg = f"({k1})*({fc})"
-    fo = f"({k2})*({fc})"
+    k1 = bind_expression("li-lee-2010.k1")
+    k2 = bind_expression("li-lee-2010.k2")
+    fg = bind_expression("li-lee-2010.fg", k1=k1, Fc=fc)
+    fo = bind_expression("li-lee-2010.fo", k2=k2, Fc=fc)
     adapted = current_source_to_duty_coefficients(Fc=fc, Fg=fg, Fo=fo)
     origin = adapted.pop("coefficient_origin")
     return _paper_case(
@@ -168,6 +174,14 @@ def _li_lee_2010(parameters: dict[str, Any], approximation: str) -> dict[str, An
             "Fo": "paper-low-order-ratio-Eq15",
             "a_*": "derived-adapter",
         },
+        formula_bindings=[
+            formula_binding(fc_id, fc),
+            formula_binding("li-lee-2010.k1", k1),
+            formula_binding("li-lee-2010.k2", k2),
+            formula_binding("li-lee-2010.fg", fg, {"k1": k1, "Fc": fc}),
+            formula_binding("li-lee-2010.fo", fo, {"k2": k2, "Fc": fc}),
+            *_adapter_formula_bindings(adapted, Fc=fc, Fg=fg, Fo=fo),
+        ],
     )
 
 
@@ -186,18 +200,11 @@ def _tian_external_ramp(parameters: dict[str, Any], approximation: str) -> dict[
     sf = float(p["Ri"]) * float(p["Vo"]) / float(p["L"])
     p.update({"sf": sf, "se": se_ratio * sf})
 
-    denominator = "((sf+se)-se*exp(-s*Tsw))"
-    fc = f"fs*(1-exp(-s*Ton))*Vg/(L*s*{denominator})"
-    fg = (
-        "-1/(L*s)*("
-        "fs*(1-exp(-s*Ton))/((1-exp(s*Tsw))*"
-        f"{denominator})*((1-exp(s*Ton))/(s*L/Ri))*Vg+D)"
-    )
-    fo = (
-        "1/(L*s)*("
-        f"fs*(1-exp(-s*Ton))/{denominator}*(1/(s*L/Ri))*Vg-1)"
-    )
-    fc_low = "(1/Ri)*(1+s*Tsw/2)/(1+(se/sf+1/2)*Tsw*s)"
+    denominator = bind_expression("tian-2015.a")
+    fc = bind_expression("tian-2015.fc", A=denominator)
+    fg = bind_expression("tian-2015.fg", A=denominator)
+    fo = bind_expression("tian-2015.fo", A=denominator)
+    fc_low = bind_expression("tian-2015.fc-low")
     adapted = current_source_to_duty_coefficients(Fc=fc, Fg=fg, Fo=fo)
     origin = adapted.pop("coefficient_origin")
     case = _paper_case(
@@ -218,6 +225,14 @@ def _tian_external_ramp(parameters: dict[str, Any], approximation: str) -> dict[
             "Fc_low_order": "paper-equation-8",
             "a_*": "derived-adapter",
         },
+        formula_bindings=[
+            formula_binding("tian-2015.a", denominator),
+            formula_binding("tian-2015.fc", fc, {"A": denominator}),
+            formula_binding("tian-2015.fg", fg, {"A": denominator}),
+            formula_binding("tian-2015.fo", fo, {"A": denominator}),
+            formula_binding("tian-2015.fc-low", fc_low),
+            *_adapter_formula_bindings(adapted, Fc=fc, Fg=fg, Fo=fo),
+        ],
     )
     case["features_hz"] = {
         "moving_pole": float(p["fs"]) / (math.pi * (2 * se_ratio + 1)),
@@ -239,34 +254,28 @@ def _lu_rbcot_esr(parameters: dict[str, Any], approximation: str) -> dict[str, A
     if float(p["sf"]) <= 0:
         raise ModelError("Lu 2023 ESR-ripple model requires rC > 0.")
     if approximation == "exact":
-        delay = "exp(-s*Tsw)"
+        delay_id = "lu-2023.delay-exact"
+        delay = bind_expression(delay_id)
         delay_origin = "paper-exponential"
     elif approximation == "pade":
-        delay = "(1-s*Tsw/(1+s*Tsw/2+s**2*Tsw**2/pi**2))"
+        delay_id = "lu-2023.delay-pade"
+        delay = bind_expression(delay_id)
         delay_origin = "paper-pade-after-Eq11"
     else:
         raise ModelError("Lu 2023 approximation must be 'exact' or 'pade'.")
 
-    one_minus_delay = f"(1-({delay}))"
-    common_denominator = (
-        "(Tsw/(rC*C)+(1+(Toff-2*Tsw)/(2*rC*C))*"
-        f"{one_minus_delay})"
+    one_minus_delay = bind_expression("lu-2023.one-minus-delay", delay=delay)
+    common_denominator = bind_expression("lu-2023.b", one_minus_delay=one_minus_delay)
+    fdx = bind_expression(
+        "lu-2023.fdx", one_minus_delay=one_minus_delay, B=common_denominator
     )
-    fdx = (
-        "(fs/sf)*(1-exp(-s*Ton))*"
-        f"{one_minus_delay}*(1+rC/R)/{common_denominator}"
+    fodx = bind_expression(
+        "lu-2023.fodx", one_minus_delay=one_minus_delay, B=common_denominator
     )
-    fodx = (
-        "(fs/sf)*(1-exp(-s*Ton))*"
-        f"{one_minus_delay}*(1/(s**2*L*C)+(rC/L+1/(R*C))/s)"
-        f"/{common_denominator}"
-    )
-    fox = f"-({fodx})-({fdx})"
-    fp = (
-        "Vg*(1+s*rC*C)/"
-        "(1+s*(rC*C+L/R)+s**2*L*C*(1+rC/R))"
-    )
-    modulator = {"a_c": fdx, "a_g": "0", "a_o": f"-({fox})", "a_i": "0"}
+    fox = bind_expression("lu-2023.fox", Fodx=fodx, Fdx=fdx)
+    fp = bind_expression("lu-2023.fp")
+    a_o = bind_expression("lu-2023.a-o", Fox=fox)
+    modulator = {"a_c": fdx, "a_g": "0", "a_o": a_o, "a_i": "0"}
     return _paper_case(
         model_id="rbcot-esr-lu-2023",
         parameters=p,
@@ -276,7 +285,7 @@ def _lu_rbcot_esr(parameters: dict[str, Any], approximation: str) -> dict[str, A
             "Fodx": fodx,
             "Fox": fox,
             "Fp": fp,
-            "Floop_structure": "Fdx*Fp/(1+Fox*Fp)",
+            "Floop_structure": bind_expression("lu-2023.floop"),
         },
         valid_frequency={
             "max_hz": float(p["fs"]) / 2,
@@ -292,6 +301,19 @@ def _lu_rbcot_esr(parameters: dict[str, Any], approximation: str) -> dict[str, A
             "delay": delay_origin,
             "a_o": "derived-sign-adapter-from-Fox",
         },
+        formula_bindings=[
+            formula_binding(delay_id, delay),
+            formula_binding("lu-2023.one-minus-delay", one_minus_delay, {"delay": delay}),
+            formula_binding("lu-2023.b", common_denominator, {"one_minus_delay": one_minus_delay}),
+            formula_binding("lu-2023.fdx", fdx, {"one_minus_delay": one_minus_delay, "B": common_denominator}),
+            formula_binding("lu-2023.fodx", fodx, {"one_minus_delay": one_minus_delay, "B": common_denominator}),
+            formula_binding("lu-2023.fox", fox, {"Fodx": fodx, "Fdx": fdx}),
+            formula_binding("lu-2023.fp", fp),
+            formula_binding("lu-2023.floop", bind_expression("lu-2023.floop")),
+            formula_binding("lu-2023.a-o", a_o, {"Fox": fox}),
+            formula_binding("common.zero.a-g", "0"),
+            formula_binding("common.adapter.a-i", "0"),
+        ],
     )
 
 
@@ -304,19 +326,21 @@ def _li_lee_2009_v2(parameters: dict[str, Any], approximation: str) -> dict[str,
     p = _base_parameters(parameters)
     p.update(
         {
-            "w1": "pi/Ton",
-            "Q1": "2/pi",
-            "w2": "pi/Tsw",
-            "Q2": "Tsw/(pi*(rC*C-Ton/2))",
+            "w1": bind_expression("li-lee-2009.w1"),
+            "Q1": bind_expression("li-lee-2009.q1"),
+            "w2": bind_expression("li-lee-2009.w2"),
+            "Q2": bind_expression("li-lee-2009.q2"),
         }
     )
-    high_pair = "(1+s/(Q1*w1)+s**2/w1**2)"
-    fs_pair = "(1+s/(Q2*w2)+s**2/w2**2)"
+    high_pair = bind_expression("li-lee-2009.high-pair")
+    fs_pair = bind_expression("li-lee-2009.fs-pair")
     if approximation == "pade":
-        gvc = f"(1+s*rC*C)/({high_pair}*{fs_pair})"
+        gvc_id = "li-lee-2009.gvc-pade"
+        gvc = bind_expression(gvc_id, high_pair=high_pair, fs_pair=fs_pair)
         basis = "Li-Lee-2009-Eq9"
     else:
-        gvc = f"(1+s*rC*C)/{fs_pair}"
+        gvc_id = "li-lee-2009.gvc-low-order"
+        gvc = bind_expression(gvc_id, fs_pair=fs_pair)
         basis = "Li-Lee-2009-Eq10"
     margin = float(p["rC"]) * float(p["C"]) - float(p["Ton"]) / 2
     case = _paper_case(
@@ -327,6 +351,20 @@ def _li_lee_2009_v2(parameters: dict[str, Any], approximation: str) -> dict[str,
         valid_frequency={"max_hz": float(p["fs"]) / 2, "basis": basis},
         coefficient_origin="not-applicable-direct-paper-transfer",
         component_fidelity={"Gvc": "paper-equation", "a_*": "not-claimed"},
+        formula_bindings=[
+            formula_binding("li-lee-2009.w1", p["w1"]),
+            formula_binding("li-lee-2009.q1", p["Q1"]),
+            formula_binding("li-lee-2009.w2", p["w2"]),
+            formula_binding("li-lee-2009.q2", p["Q2"]),
+            formula_binding("li-lee-2009.high-pair", high_pair),
+            formula_binding("li-lee-2009.fs-pair", fs_pair),
+            formula_binding(
+                gvc_id,
+                gvc,
+                {"high_pair": high_pair, "fs_pair": fs_pair}
+                if approximation == "pade" else {"fs_pair": fs_pair},
+            ),
+        ],
     )
     case.update(
         {

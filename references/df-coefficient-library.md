@@ -1,5 +1,7 @@
 # Buck DF coefficient library (v0.2)
 
+> v0.3.1 authority rule: this Markdown is explanatory. The machine-readable and executable source of truth is `registries/formula_registry.yaml`; registered generators may not copy formulas from this page.
+
 本文件只收录单相 CCM Buck 的描述函数模型。公式可在没有 Zotero 和论文 PDF 的电脑上使用；Zotero 仅用于编写时核对来源。
 
 ## 共同接口与来源标签

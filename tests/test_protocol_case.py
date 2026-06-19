@@ -48,7 +48,7 @@ class ProtocolCaseTests(unittest.TestCase):
     def test_missing_event_refuses_case(self):
         intake = complete_new_intake()
         del intake["switching_events"]
-        with self.assertRaisesRegex(ProtocolCaseError, "switching_events"):
+        with self.assertRaisesRegex(ProtocolCaseError, "ASK_USER_ONLY"):
             build_protocol_case(intake)
 
     def test_missing_switch_state_model_refuses_case(self):

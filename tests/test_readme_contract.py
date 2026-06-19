@@ -15,7 +15,11 @@ class ReadmeContractTests(unittest.TestCase):
             "cot-cm-external-ramp-tian-2015",
             "v2-cot-li-lee-2009",
             "rbcot-esr-lu-2023",
-            "classify --intake",
+            "preflight_intake.py",
+            "--intake-status",
+            "proof_object.json",
+            "formula_registry.yaml",
+            "check_proof_object.py",
             "make-protocol-case",
             "df_protocol_checker.py",
             "PAPER_GROUNDED_PARTIAL",
@@ -26,6 +30,8 @@ class ReadmeContractTests(unittest.TestCase):
             "结构化主路径",
             "报告渲染器",
             "不会自动",
+            "ASK_USER_ONLY",
+            "DF_REGISTERED_DIRECT",
         )
         for token in required:
             self.assertIn(token, text, token)

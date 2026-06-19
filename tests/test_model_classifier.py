@@ -5,10 +5,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import df_model_classifier
 from df_model_classifier import classify_intake
+from preflight_intake import build_intake_status, IntakeGateError
 
 
 class ModelClassifierTests(unittest.TestCase):
+    def test_registered_model_cannot_bypass_incomplete_preflight(self):
+        self.assertTrue(hasattr(df_model_classifier, "classify_intake_status"))
+        status = build_intake_status(intake={
+            "model_id": "v2-cot-li-lee-2009",
+            "target": "Gvc",
+            "parameters": {"Vin": 12, "Vo": 1.2},
+        })
+        with self.assertRaisesRegex(IntakeGateError, "ASK_USER_ONLY"):
+            df_model_classifier.classify_intake_status(status)
+
     def test_explicit_registered_model_is_known(self):
         result = classify_intake({
             "model_id": "cot-cm-external-ramp-tian-2015",
@@ -17,8 +29,8 @@ class ModelClassifierTests(unittest.TestCase):
                            "C": 0.00448, "R": 0.1, "rC": 0.00075,
                            "Ri": 0.01, "se_ratio": 1},
         })
-        self.assertEqual(result["path"], "KNOWN_MODEL")
-        self.assertEqual(result["action"], "use_known_model")
+        self.assertEqual(result["path"], "DF_REGISTERED_MULTIPORT")
+        self.assertEqual(result["action"], "use_registered_model")
         self.assertEqual(result["topology"], "buck")
         self.assertEqual(result["conduction_mode"], "CCM")
         self.assertEqual(result["phases"], 1)
@@ -38,7 +50,7 @@ class ModelClassifierTests(unittest.TestCase):
             "parameters": {"Vin": 12, "Vo": 1.2, "fs": 300000, "L": 3e-7,
                            "C": 0.00448, "R": 0.1, "rC": 0.00075},
         })
-        self.assertEqual(result["path"], "NEAR_MODEL")
+        self.assertEqual(result["path"], "PROTOCOL_DERIVED_NEW")
         self.assertEqual(result["action"], "derive_by_protocol")
 
     def test_missing_event_is_incomplete(self):

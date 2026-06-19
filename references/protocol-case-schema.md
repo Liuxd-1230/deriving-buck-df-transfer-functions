@@ -1,5 +1,7 @@
 # Protocol case schema
 
+> v0.3.1 note: this is the compatibility schema for legacy event evidence. Final report generation now requires `schemas/proof_object.schema.json`; `make-protocol-case` validates this evidence and emits a v0.3.1 proof object.
+
 A v0.3 case is an evidence record, not merely a coefficient container.
 
 ```json
@@ -7,7 +9,7 @@ A v0.3 case is an evidence record, not merely a coefficient container.
   "case_version": "0.3",
   "mode": "derive-by-protocol",
   "target": "Gvc",
-  "classification": {"path": "NEW_MODEL", "action": "derive_by_protocol"},
+  "classification": {"path": "PROTOCOL_DERIVED_NEW", "action": "derive_by_protocol"},
   "state_variables": ["iL", "vo"],
   "switching_state_equations": {"on": "...", "off": "..."},
   "steady_state_trajectory": "...",

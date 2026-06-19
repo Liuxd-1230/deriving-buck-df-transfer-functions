@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static contract tests for the v0.2 skill documentation."""
+"""Static contract tests for retained paper models under v0.3.1."""
 
 from __future__ import annotations
 
@@ -13,8 +13,9 @@ SKILL_DIR = Path(__file__).resolve().parent.parent
 class SkillContractTests(unittest.TestCase):
     def test_skill_routes_to_the_paper_formula_library_and_generators(self) -> None:
         text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("v0.2", text)
+        self.assertIn("v0.3.1", text)
         self.assertIn("references/df-coefficient-library.md", text)
+        self.assertIn("registries/formula_registry.yaml", text)
         self.assertIn("make-case", text)
         for model_id in (
             "cot-cm-li-lee-2010",
@@ -42,7 +43,7 @@ class SkillContractTests(unittest.TestCase):
     def test_validation_report_keeps_unverified_claims_explicit(self) -> None:
         text = (SKILL_DIR / "VALIDATION.md").read_text(encoding="utf-8")
         self.assertIn("EXCLUDED_NON_DF", text)
-        self.assertIn("switching simulation", text)
+        self.assertIn("Switching simulation", text)
         self.assertIn("NOT_VERIFIED", text)
         self.assertIn("PARTIALLY_VERIFIED", text)
 

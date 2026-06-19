@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/deriving-buck-df-transfer-functions/intake.schema.json",
+  "title": "ESSF v0.3.1 intake status",
+  "type": "object",
+  "required": ["intake_version", "status", "missing", "action", "normalized"],
+  "properties": {
+    "intake_version": {"const": "0.3.1"},
+    "status": {"enum": ["COMPLETE", "INCOMPLETE"]},
+    "missing": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "target_transfer",
+          "operating_mode",
+          "sampling_or_switching_event",
+          "comparator_inputs",
+          "parameters"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "action": {"enum": ["CONTINUE_TO_CLASSIFICATION", "ASK_USER_ONLY"]},
+    "normalized": {"type": "object"}
+  },
+  "additionalProperties": true
+}

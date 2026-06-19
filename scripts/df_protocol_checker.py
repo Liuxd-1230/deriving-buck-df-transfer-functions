@@ -33,7 +33,11 @@ def check_protocol_case(case: dict[str, Any]) -> dict[str, Any]:
     classification = case.get("classification", {})
     path = classification.get("path")
     unsupported = classification.get("unsupported_effects", [])
-    checks["classification_declared"] = path in {"KNOWN_MODEL", "NEAR_MODEL", "NEW_MODEL", "UNSUPPORTED"}
+    checks["classification_declared"] = path in {
+        "KNOWN_MODEL", "NEAR_MODEL", "NEW_MODEL",
+        "DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "PROTOCOL_DERIVED_NEW",
+        "UNSUPPORTED",
+    }
 
     if path == "UNSUPPORTED" or any(effect in unsupported for effect in
             ("multiphase-overlap", "DCM", "pulse-skipping", "burst", "nonlinear-current-limit")):
@@ -44,7 +48,7 @@ def check_protocol_case(case: dict[str, Any]) -> dict[str, Any]:
         failures.add("FAIL_FALSE_DF")
         errors.append("An average model is being represented as a describing function.")
 
-    if path == "KNOWN_MODEL" and not failures:
+    if path in {"KNOWN_MODEL", "DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"} and not failures:
         return _result("PASS_KNOWN_MODEL", errors, warnings, checks)
 
     events = case.get("switching_events")

@@ -23,12 +23,15 @@ from df_model_library import (  # noqa: E402
     generate_case,
     list_models,
 )
-from df_model_classifier import classify_intake  # noqa: E402
+from df_model_classifier import classify_intake_status  # noqa: E402
 from df_protocol_case import (  # noqa: E402
     ProtocolCaseError,
     build_protocol_case,
     render_protocol_report,
 )
+from build_proof_object import ProofBuildError, build_proof_object  # noqa: E402
+from check_proof_object import check_proof_object  # noqa: E402
+from preflight_intake import IntakeGateError, build_intake_status  # noqa: E402
 
 
 IDENTIFIER = re.compile(r"\b[A-Za-z_]\w*\b")
@@ -356,23 +359,56 @@ def _markdown(case: dict[str, Any], model: dict[str, Any], report: dict[str, Any
     return "\n".join(lines)
 
 
+def _render_proof_report(proof: dict[str, Any]) -> str:
+    classification = proof["classification"]
+    modulator = proof["modulator"]
+    transfer = proof["transfer"]
+    validation = proof["validation"]
+    lines = [
+        "# ESSF v0.3.1 proof report", "",
+        "## Structured evidence", "",
+        f"- Case: `{proof['case_id']}`",
+        f"- Path: `{classification['path']}`",
+        f"- Model: `{classification.get('model_id')}`",
+        f"- Modulator interface: `{modulator['model_type']}`", "",
+        "## Formula bindings", "",
+    ]
+    for binding in proof.get("formula_bindings", []):
+        lines.append(f"- `{binding['formula_id']}`: `{binding['expression']}`")
+    if modulator["model_type"] == "a-star":
+        lines.extend(["", "## Mapping to a_c/a_g/a_o/a_i", ""])
+        for name, binding in modulator["coefficients"].items():
+            lines.append(f"- `{name}` from `{binding['formula_id']}`: `{binding['expression']}`")
+    elif modulator["model_type"] == "protocol-derived":
+        lines.extend(["", "## Protocol-derived relation", "", str(modulator.get("relation", {}))])
+    lines.extend([
+        "", "## Transfer", "",
+        f"- Target: `{transfer['target_transfer']}`",
+        f"- Formula ID: `{transfer.get('formula_id')}`",
+        f"- Expression: `{transfer['expression']}`", "",
+        "## Validation", "",
+        f"- Level: `{validation['level']}`",
+        f"- Completed: {validation['completed']}",
+        f"- Missing: {validation['missing']}", "",
+        "> Markdown is display only. The checked proof object and formula registry are authoritative.", "",
+    ])
+    return "\n".join(lines)
+
+
 def command_derive(args: argparse.Namespace) -> int:
-    case = load_case(args.case)
-    if str(case.get("case_version")) == "0.3":
-        output = Path(args.out)
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(render_protocol_report(case), encoding="utf-8")
-        print(f"Wrote protocol derivation: {output.resolve()}")
-        return 0
-    model = derive_model(case)
-    report = build_check_report(case, model)
+    if not args.proof_object:
+        raise CaseError(
+            "Final report generation requires a checked v0.3.1 proof object; "
+            "legacy --case remains available only to the algebraic check command."
+        )
+    proof = load_case(args.proof_object)
+    result = check_proof_object(proof)
+    if result["status"] != "PASS":
+        raise CaseError(f"Proof object rejected: {result['status']}: {'; '.join(result['errors'])}")
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(_markdown(case, model, report), encoding="utf-8")
-    print(f"Wrote derivation: {output.resolve()}")
-    if model["diagnostics"]["warnings"]:
-        for warning in model["diagnostics"]["warnings"]:
-            print(f"WARNING: {warning}", file=sys.stderr)
+    output.write_text(_render_proof_report(proof), encoding="utf-8")
+    print(f"Wrote ESSF proof report: {output.resolve()}")
     return 0
 
 
@@ -407,14 +443,22 @@ def command_make_case(args: argparse.Namespace) -> int:
 
 
 def command_classify(args: argparse.Namespace) -> int:
-    intake = load_case(args.intake)
-    print(json.dumps(classify_intake(intake), ensure_ascii=False, indent=2))
+    artifact = load_case(args.intake_status)
+    classification = classify_intake_status(artifact)
+    if args.out:
+        output = Path(args.out)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(classification, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(classification, ensure_ascii=False, indent=2))
     return 0
 
 
 def command_make_protocol_case(args: argparse.Namespace) -> int:
     intake = load_case(args.intake)
-    case = build_protocol_case(intake)
+    build_protocol_case(intake)  # compatibility validation; output is now a proof object
+    intake_status = build_intake_status(intake=intake)
+    classification = classify_intake_status(intake_status)
+    case = build_proof_object(intake_status, classification)
     output = Path(args.out)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(case, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -440,7 +484,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     derive = subparsers.add_parser("derive", help="Write a Markdown derivation report.")
-    derive.add_argument("--case", required=True, help="Input JSON case file.")
+    derive_input = derive.add_mutually_exclusive_group(required=True)
+    derive_input.add_argument("--case", help="Legacy v0.2 generated case file.")
+    derive_input.add_argument("--proof-object", help="Checked ESSF v0.3.1 proof object.")
     derive.add_argument("--out", required=True, help="Output Markdown path.")
     derive.set_defaults(handler=command_derive)
 
@@ -470,7 +516,8 @@ def build_parser() -> argparse.ArgumentParser:
     classify = subparsers.add_parser(
         "classify", help="Classify circuit intake before selecting a DF path."
     )
-    classify.add_argument("--intake", required=True, help="Circuit-intake JSON file.")
+    classify.add_argument("--intake-status", required=True, help="Completed intake_status.json artifact.")
+    classify.add_argument("--out", help="Optional classification.json output path.")
     classify.set_defaults(handler=command_classify)
 
     protocol_case = subparsers.add_parser(
@@ -505,7 +552,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return args.handler(args)
-    except (CaseError, ModelError, ProtocolCaseError) as exc:
+    except (CaseError, ModelError, ProtocolCaseError, IntakeGateError, ProofBuildError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
