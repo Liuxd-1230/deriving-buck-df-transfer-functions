@@ -73,6 +73,12 @@ v0.4 sampled-data 注册路径：`yan-2022-part-i-pcm-buck`、`yan-2022-part-ii-
 
 旧 DF 论文公式的人类可读索引保留在 `references/df-coefficient-library.md`；它不是 machine-readable registry 的替代品。
 
+v0.4.2 uses a dual-index model selection rule. First classify the control ontology; then bind the paper/source index. Read `references/model-ontology.md` when a request may confuse current-mode, voltage-mode, V2 COT, RBCOT, sampled-data, external ramp, internal ramp, delay, filter, or multiphase mechanisms. Read `references/df-vs-sampled-method-selection.md` when both DF and sampled-data language could apply.
+
+For formula audits, read `references/formula-audit-plan.md` and `references/paper-bode-validation-spec.md`. Practice is the final arbiter: registry consistency and symbolic algebra are not enough for a verified claim. Use evidence levels `SUBFORMULA_VERIFIED`, `CHAIN_VERIFIED`, `FIGURE_REPRODUCED`, and `SIMULATION_OR_MEASUREMENT_REPRODUCED` honestly.
+
+For Li/Lee 2010 current-mode COT `Gvc`, read `references/li-lee-2010-current-mode-gvc.md` before generating or comparing Bode plots. The existing Li/Lee 2010 benchmark checks Eq. (9)-(10) subformulas; it does not yet claim full Eq. (16) `Gvc` figure reproduction.
+
 请求 `Tloop` 时必须有 `loop_break`：injection point、OUT/IN 定义、符号约定、forward/feedback path 和 `H`。只有明确声明默认负反馈时，才可用 `Tloop = Gc*H*Gvc`；这不等价于任意 SIMPLIS probe。`plot-bode` 必须标出 `fs`、`fs/2`、有效频率边界，并把超界交越标记为 `EXTRAPOLATED_BEYOND_VALID_RANGE`。
 
 sampled-data 的 `GPWM/Gm/Ti/Tv/Tc` 不能混称为 `Gvc/Tloop`。`target_mapping.mapping_status` 只能是 `REGISTERED_DIRECT`、`REGISTERED_DERIVED`、`PROTOCOL_DERIVED_UNVERIFIED` 或 `UNSUPPORTED`。`SYMBOLIC_FULL_SUM` 不可数值画图；Bode 必须使用 `TRUNCATED_SUM_M` 或 `PAPER_SIMPLIFIED_FORM`，并记录近似。

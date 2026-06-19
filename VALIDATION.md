@@ -1,10 +1,10 @@
-# Buck DF Skill v0.4.1 Validation
+# Buck DF Skill v0.4.2 Validation
 
 ## Material passport
 
 - Artifact: `deriving-buck-df-transfer-functions`
 - Validation date: 2026-06-19
-- Scope: ESSF intake/proof gate, retained single-phase CCM COT/RBCOT DF models, and Yan 2022 sampled-data registered path minimal closure
+- Scope: ESSF intake/proof gate, retained single-phase CCM COT/RBCOT DF models, Yan 2022 sampled-data registered path minimal closure, and dual-index formula audit guardrails
 - Overall status: `PARTIALLY_VERIFIED`
 - Offline use: no Zotero library or paper PDF is required at runtime
 
@@ -17,6 +17,7 @@
 | Intake hard gate | VERIFIED | Text/JSON tests enforce `INCOMPLETE -> ASK_USER_ONLY`; registered model IDs cannot bypass preflight |
 | Runtime schemas and provenance | VERIFIED_STATIC | Draft 2020-12 validation plus canonical JSON SHA-256 links enforce every transition through `FORMULA_BINDING → DERIVATION → CHECKERS → REPORT` |
 | Model classification | VERIFIED | Paths are `DF_REGISTERED_DIRECT`, `DF_REGISTERED_MULTIPORT`, `PROTOCOL_DERIVED_NEW`, `INCOMPLETE`, and `UNSUPPORTED` |
+| Dual-index model selection | VERIFIED_STATIC | Registered models expose `control_ontology` and `source_index`; classifier binds current-mode, V2 COT, RBCOT, sampled-data, and external-ramp paths by mechanism before source claims |
 | Formula registry | VERIFIED | Four registered generators load canonical formulas from `formula_registry.yaml`; Q2 and bound-expression mutation tests fail as required |
 | Yan 2022 sampled-data registry | PARTIALLY_VERIFIED | Part I/II registered paths generate `GPWM → Gid/Gvd → Ti/Tv → Tc`; scope remains single-phase zero-ramp and does not imply arbitrary sampled-data support |
 | Sampled-data derivation checker | VERIFIED_STATIC | Every derivation step, target closure, approximation, order and predecessor hash is recomputed from paper/formula registries |
@@ -36,6 +37,7 @@
 | Compensator templates | VERIFIED_STATIC | `SIMPLIS_LAPLACE`, `OTA_GM_RO`, `PI`, `TYPE_II`, `TYPE_III`, and `CUSTOM_EXPRESSION` produce canonical expressions; Type II/III require rad/s units |
 | Legacy CLI compatibility | VERIFIED_STATIC | `derive --case` renders `LEGACY_CASE_UNVERIFIED`; `check --case` remains JSON algebra diagnostics |
 | `bind_expression` parentheses | VERIFIED | Binder no longer adds hidden parentheses; registry templates carry required grouping explicitly; formula consistency and benchmarks pass |
+| Li/Lee 2010 full `Gvc` figure reproduction | NOT_VERIFIED | Current benchmark verifies Eq. (9)-(10) `Fc` subformulas only; Eq. (16) `Gvc`, `Ri sweep`, and external-ramp sweep remain an explicit audit target |
 | New RC-ramp coefficient formulas | NOT_VERIFIED | The example records required derivation evidence but intentionally contains no claimed closed-form coefficients |
 | Switching simulation | NOT_VERIFIED | No SIMPLIS/switching AC sweep validates a protocol-derived new model in v0.3.1 |
 | Independent agent forward-test | NOT_VERIFIED | The new prompt test is deterministic CLI evidence, not an isolated-agent behavioral run |
@@ -45,7 +47,7 @@
 
 ## Paper-model evidence retained from v0.2
 
-- Li/Lee 2010: Eqs. (9)–(10) and current-source adapter checks; exact-vs-Padé error below `0.49fs` about `0.0145 dB / 0.0149 deg`.
+- Li/Lee 2010: Eqs. (9)–(10) and current-source adapter checks; exact-vs-Padé error below `0.49fs` about `0.0145 dB / 0.0149 deg`. This is `SUBFORMULA_VERIFIED` / partial chain evidence, not full Eq. (16) `Gvc` figure reproduction.
 - Tian: Eqs. (4), (6)–(8), (13); benchmark `fp=31.831 kHz`, `fz=95.493 kHz`; exact-vs-low-order error below `0.49fs` about `1.482 dB / 10.77 deg`.
 - Li/Lee 2009: bundled cases reproduce `rC*C > Ton/2` for OSCON/ceramic examples.
 - Lu 2023: corrected Eq. (8) sign and Eq. (11) loop structure; an assumed `R=0.12 ohm` remains documented because the source caption omits it.
@@ -58,6 +60,17 @@
 - Sideband policy: registry stores symbolic/paper skeletons; numeric Bode must declare `TRUNCATED_SUM_M` or `PAPER_SIMPLIFIED_FORM`.
 - Power-stage coupling: current contracts use `Gid/Hi/Ti`; voltage contracts use `Gvd/Hv/Tv`; `Tc` is generated only as `Ti/(1+Ti)` or `Tv/(1+Tv)`.
 - Margin policy: only `Ti/Tv/Tloop` are return ratios. `Gm/GPWM/Gvc/Gvg/Zout/Tc` report `NOT_APPLICABLE_NON_RETURN_RATIO` for PM/GM.
+
+## v0.4.2 formula audit evidence policy
+
+Practice is the final arbiter: symbolic consistency, registry binding, and a visually plausible Bode plot are not enough by themselves. Evidence levels are:
+
+- `SUBFORMULA_VERIFIED`: a paper subformula and numeric probes match.
+- `CHAIN_VERIFIED`: the registered formula chain composes into the intended target.
+- `FIGURE_REPRODUCED`: a named paper figure or key trend is reproduced with parameters and error/trend notes.
+- `SIMULATION_OR_MEASUREMENT_REPRODUCED`: switching simulation or measurement independently supports the model.
+
+The Yanna/Zotero collection and local PDFs are development sources for audit; runtime artifacts remain self-contained and do not bundle PDFs.
 
 ## v0.4 not covered
 
@@ -96,4 +109,4 @@ The proof/formula checkers validate artifact completeness, registered interfaces
 
 ## Version verdict
 
-`v0.4 = paper-grounded single-phase COT/RBCOT DF library + mandatory intake/formula-registry/proof-object gate + Yan 2022 sampled-data registered path minimal closure`. It still does not implement dynamic `Fm(s)`, nonideal ramp/filter/delay paths, multiphase sampled-data, or arbitrary protocol-derived model verification.
+`v0.4.2 = paper-grounded single-phase COT/RBCOT DF library + mandatory intake/formula-registry/proof-object gate + Yan 2022 sampled-data registered path minimal closure + dual-index formula audit guardrails`. It still does not implement dynamic `Fm(s)`, nonideal ramp/filter/delay paths, multiphase sampled-data, or arbitrary protocol-derived model verification.

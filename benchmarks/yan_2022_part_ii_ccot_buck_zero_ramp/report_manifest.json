@@ -3,8 +3,8 @@
   "case_id": "yan_2022_part_ii_ccot_buck_zero_ramp",
   "format": "markdown",
   "markdown_sha256": "08d09059a656a9bc60cbcaf3816b30fc663e6ab3ac80bf1129faeff68058aaef",
-  "source_derivation_sha256": "c8f45c3f2f0e868655785700a1ef9e6a2ae962ad405a8132886ad439374fa56d",
-  "source_checker_sha256": "76e15727386e0ad2d673b024d971399c2bf25b301a015e119262077415d5f81d",
+  "source_derivation_sha256": "e045d65db4116dad9847e0aee522582708196457c24ce0125cf32df8e4edc1f7",
+  "source_checker_sha256": "f215df1627e5befe278e6180edc84fb740dc18a6066242e3895f9aa549f01e9f",
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -21,8 +21,8 @@
     "predecessor": {
       "artifact_type": "checker_result",
       "state": "CHECKERS",
-      "sha256": "76e15727386e0ad2d673b024d971399c2bf25b301a015e119262077415d5f81d"
+      "sha256": "f215df1627e5befe278e6180edc84fb740dc18a6066242e3895f9aa549f01e9f"
     },
-    "artifact_sha256": "33b6e2cc1b50b1e21a9f081d0754bed1d95a400152b16d7a0988a5cdc2574b76"
+    "artifact_sha256": "cd97f44fca1f52b1c971da954609c5bb9866ff52535c1bd51f6c975b064e18ad"
   }
 }

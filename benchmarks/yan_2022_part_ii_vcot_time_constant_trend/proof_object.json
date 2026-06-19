@@ -242,8 +242,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "503a4266b82d3af07fda13496797f825dcce19d1c47175214dfe7c65a063e300"
+      "sha256": "bc84d6e7d661cead4f5d20d9ccaf9549780e23a15869488268edcaf130baab07"
     },
-    "artifact_sha256": "df25fc59bf671b9e89ee69a32c9aed5270b4a1ff73a64ad38a494f38e866033e"
+    "artifact_sha256": "ac112566eb0010975f1e4e00543716b4ca92a1238e39a6195c2bfc49e13eb9c1"
   }
 }

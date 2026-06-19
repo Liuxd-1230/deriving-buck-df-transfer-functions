@@ -12,6 +12,8 @@ INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY
 
 任一五问信息缺失时，固定返回 `INCOMPLETE → ASK_USER_ONLY`，不能推导、自选参数或画 Bode 图。新结构即使完整走完协议，也必须保持 `PROTOCOL_DERIVED_UNVERIFIED`。
 
+v0.4.2 增加“双索引”分类：先按控制机理/建模方法判断 `current-mode`、`voltage-mode`、`V² COT`、`RBCOT`、`sampled-data`、ramp/delay/filter/multiphase 等 ontology，再绑定 Li/Lee、Tian、Lu、Yan 等 paper source。实践是检验真理的唯一标准；`SUBFORMULA_VERIFIED`、`CHAIN_VERIFIED`、`FIGURE_REPRODUCED`、`SIMULATION_OR_MEASUREMENT_REPRODUCED` 必须分开声明。
+
 ## 它解决什么问题
 
 - 从物理参数生成四个已注册论文模型，不要求用户预先填写 `a_*`。
@@ -48,7 +50,7 @@ flowchart TD
 
 | 模型 ID | 控制方式 | 接口 | 当前证据等级 |
 |---|---|---|---|
-| `cot-cm-li-lee-2010` | COT current-mode | `Fc/Fg/Fo → a_*` | `PAPER_GROUNDED_PARTIAL` |
+| `cot-cm-li-lee-2010` | COT current-mode | `Fc/Fg/Fo → a_*` | `PAPER_GROUNDED_PARTIAL`; current benchmark covers Eq. (9)-(10), not full Eq. (16) `Gvc` figure reproduction |
 | `cot-cm-external-ramp-tian-2015` | COT current-mode + linear external ramp | `Fc/Fg/Fo → a_*` | `PAPER_GROUNDED_PARTIAL` |
 | `v2-cot-li-lee-2009` | V² COT capacitor-ripple control | paper direct `Gvc` | paper-grounded benchmark |
 | `rbcot-esr-lu-2023` | ESR-ripple RBCOT loop gain | `Fdx/Fodx/Fox/Fp` | `PAPER_GROUNDED_PARTIAL` |
