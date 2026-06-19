@@ -28,6 +28,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from df_model_library import generate_case  # noqa: E402
 from formula_registry import formula_binding, get_formula  # noqa: E402
+from artifact_workflow import attach_workflow  # noqa: E402
 
 
 LEGACY_BENCHMARK_NAMES = (
@@ -84,7 +85,7 @@ def _sampled_common_artifacts(
     notes: str,
 ) -> dict[str, Any]:
     intake = {
-        "intake_version": "0.3.1",
+        "intake_version": "0.4",
         "status": "COMPLETE",
         "missing": [],
         "action": "CONTINUE_TO_CLASSIFICATION",
@@ -108,13 +109,16 @@ def _sampled_common_artifacts(
             "parameters": parameters,
         },
     }
+    intake = attach_workflow(intake, state="PREFLIGHT_INTAKE", intent="paper-benchmark")
     classification = {
+        "classification_version": "0.4",
         "path": "SAMPLED_DATA_REGISTERED",
         "part_family": part_family,
         "model_id": model_id,
         "target_transfer": target,
         "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
     }
+    classification = attach_workflow(classification, state="MODEL_CLASSIFY", intent="paper-benchmark", predecessor=intake)
     proof_bindings = [
         formula_binding(formula_id)
         for formula_id in formula_ids
@@ -174,6 +178,7 @@ def _sampled_common_artifacts(
         }
     else:
         proof["pulse_structure"] = {"type": "SINGLE_PULSE_TRAIN", "frequency_factor": "1"}
+    proof = attach_workflow(proof, state="FORMULA_BINDING", intent="paper-benchmark", predecessor=classification)
 
     generated_case = {
         "case_version": "0.4-sampled-data",

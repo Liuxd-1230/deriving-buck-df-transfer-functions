@@ -5,6 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from artifact_workflow import attach_workflow
+
 
 ROOT = Path(__file__).resolve().parents[1]
 CLASSIFIER = ROOT / "scripts" / "df_buck_sympy.py"
@@ -13,8 +16,8 @@ CHECKER = ROOT / "scripts" / "check_proof_object.py"
 
 
 def ccot_intake():
-    return {
-        "intake_version": "0.3.1",
+    artifact = {
+        "intake_version": "0.4",
         "status": "COMPLETE",
         "missing": [],
         "action": "CONTINUE_TO_CLASSIFICATION",
@@ -39,6 +42,11 @@ def ccot_intake():
             },
         },
     }
+    return attach_workflow(
+        artifact,
+        state="PREFLIGHT_INTAKE",
+        intent="user-circuit-derivation",
+    )
 
 
 class SampledDataRegisteredModelsTests(unittest.TestCase):

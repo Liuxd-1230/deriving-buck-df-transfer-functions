@@ -10,8 +10,11 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from artifact_workflow import WorkflowError, attach_workflow, verify_workflow
+from schema_validation import ArtifactSchemaError, validate_artifact
 
-INTAKE_VERSION = "0.3.1"
+
+INTAKE_VERSION = "0.4"
 REQUIRED_GROUPS = (
     "target_transfer",
     "operating_mode",
@@ -145,7 +148,7 @@ def build_intake_status(*, intake: dict[str, Any] | None = None, text: str | Non
         missing.append("loop_break")
     complete = not missing
     status = "COMPLETE" if complete else ("INCOMPLETE_TLOOP_INTAKE" if tloop_missing else "INCOMPLETE")
-    return {
+    artifact = {
         "intake_version": INTAKE_VERSION,
         "source": source,
         "status": status,
@@ -154,11 +157,21 @@ def build_intake_status(*, intake: dict[str, Any] | None = None, text: str | Non
         "normalized": normalized,
         **({"questions": list(TLOOP_QUESTIONS)} if tloop_missing else {}),
     }
+    intent = str(normalized.get("intent", "user-circuit-derivation"))
+    artifact = attach_workflow(artifact, state="PREFLIGHT_INTAKE", intent=intent)
+    validate_artifact(artifact, "intake.schema.json")
+    return artifact
 
 
 def require_complete_intake(artifact: dict[str, Any]) -> dict[str, Any]:
-    if not isinstance(artifact, dict) or artifact.get("intake_version") != INTAKE_VERSION:
-        raise IntakeGateError("A v0.3.1 intake_status artifact is required.")
+    if not isinstance(artifact, dict) or artifact.get("intake_version") not in {"0.3.1", "0.4"}:
+        raise IntakeGateError("A v0.3.1 or v0.4 intake_status artifact is required.")
+    if artifact.get("intake_version") == "0.4":
+        try:
+            validate_artifact(artifact, "intake.schema.json")
+            verify_workflow(artifact, expected_state="PREFLIGHT_INTAKE")
+        except (ArtifactSchemaError, WorkflowError) as exc:
+            raise IntakeGateError(str(exc)) from exc
     if artifact.get("status") != "COMPLETE" or artifact.get("action") != "CONTINUE_TO_CLASSIFICATION":
         missing = artifact.get("missing", [])
         raise IntakeGateError("INCOMPLETE_INTAKE: ASK_USER_ONLY; missing: " + ", ".join(missing))

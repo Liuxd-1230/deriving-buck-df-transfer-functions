@@ -11,6 +11,8 @@ from typing import Any
 from df_model_library import MODEL_SPECS
 from preflight_intake import require_complete_intake
 from fm_models import build_fm_model
+from artifact_workflow import attach_workflow, verify_workflow
+from schema_validation import validate_artifact
 
 
 BASE_PARAMETERS = ("Vin", "Vo", "L", "C", "R", "rC")
@@ -166,8 +168,19 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
 
 def classify_intake_status(artifact: dict[str, Any]) -> dict[str, Any]:
     """Classify only after the mandatory intake gate has passed."""
-
-    return classify_intake(require_complete_intake(artifact))
+    normalized = require_complete_intake(artifact)
+    result = classify_intake(normalized)
+    if artifact.get("intake_version") == "0.4":
+        verify_workflow(artifact, expected_state="PREFLIGHT_INTAKE")
+        result = {"classification_version": "0.4", **result}
+        result = attach_workflow(
+            result,
+            state="MODEL_CLASSIFY",
+            intent=artifact["workflow"]["intent"],
+            predecessor=artifact,
+        )
+        validate_artifact(result, "classification.schema.json")
+    return result
 
 
 def main() -> int:

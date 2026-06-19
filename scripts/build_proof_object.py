@@ -13,6 +13,8 @@ from formula_registry import formula_binding, get_formula, load_registry
 from preflight_intake import IntakeGateError, require_complete_intake
 from compensator_templates import CompensatorTemplateError, build_compensator
 from sampled_modulator import build_sampled_modulator_proof
+from artifact_workflow import WorkflowError, attach_workflow, verify_workflow
+from schema_validation import ArtifactSchemaError, validate_artifact
 
 
 class ProofBuildError(ValueError):
@@ -107,8 +109,17 @@ def build_proof_object(
 ) -> dict[str, Any]:
     normalized = require_complete_intake(intake_artifact)
     path = classification.get("path")
+    v04 = intake_artifact.get("intake_version") == "0.4"
+    if v04:
+        verify_workflow(intake_artifact, expected_state="PREFLIGHT_INTAKE")
+        verify_workflow(classification, expected_state="MODEL_CLASSIFY", predecessor=intake_artifact)
     if path in {"DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"}:
-        return _registered_proof(normalized, classification)
+        proof = _registered_proof(normalized, classification)
+        if v04:
+            proof["proof_version"] = "0.4"
+            proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)
+        validate_artifact(proof, "proof_object.schema.json")
+        return proof
     if path == "SAMPLED_DATA_REGISTERED":
         spec = {
             **normalized,
@@ -119,7 +130,7 @@ def build_proof_object(
         if sampled.get("status") != "OK":
             raise ProofBuildError(sampled.get("status", "sampled-data proof construction failed"))
         target = normalized.get("target_transfer") or normalized.get("target")
-        return {
+        proof = {
             "proof_version": "0.4",
             "case_id": normalized.get("case_id", classification.get("model_id", "sampled-data-case")),
             "intake": {"status": "COMPLETE", "normalized": normalized},
@@ -152,12 +163,16 @@ def build_proof_object(
                 "missing": ["paper-figure-reproduction", "switching-simulation"],
             },
         }
+        if v04:
+            proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)
+        validate_artifact(proof, "proof_object.schema.json")
+        return proof
     if path != "PROTOCOL_DERIVED_NEW":
         raise ProofBuildError(f"Cannot build proof object for classification path {path!r}.")
     relation = normalized.get("df_relation")
     if not isinstance(relation, dict) or not relation.get("form"):
         raise ProofBuildError("Protocol-derived proof requires df_relation.form.")
-    return {
+    proof = {
         "proof_version": "0.3.1",
         "case_id": normalized.get("case_id", "protocol-derived-case"),
         "intake": {"status": "COMPLETE", "normalized": normalized},
@@ -175,6 +190,11 @@ def build_proof_object(
             "missing": ["paper-benchmark", "switching-simulation"],
         },
     }
+    if v04:
+        proof["proof_version"] = "0.4"
+        proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)
+    validate_artifact(proof, "proof_object.schema.json")
+    return proof
 
 
 def main() -> int:
@@ -192,7 +212,7 @@ def main() -> int:
         output.write_text(json.dumps(proof, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Wrote proof object: {output.resolve()}")
         return 0
-    except (OSError, json.JSONDecodeError, IntakeGateError, ModelError, ProofBuildError, CompensatorTemplateError) as exc:
+    except (OSError, json.JSONDecodeError, IntakeGateError, ModelError, ProofBuildError, CompensatorTemplateError, ArtifactSchemaError, WorkflowError) as exc:
         print(f"ERROR: {exc}", file=__import__("sys").stderr)
         return 2
 

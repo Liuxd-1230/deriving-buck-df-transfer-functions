@@ -10,6 +10,8 @@ from typing import Any
 
 from check_formula_consistency import check_binding, check_proof_bindings
 from formula_registry import FormulaRegistryError, load_registry
+from artifact_workflow import WorkflowError, verify_workflow
+from schema_validation import ArtifactSchemaError, validate_artifact
 
 
 REGISTERED_PATHS = {"DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT"}
@@ -229,8 +231,11 @@ def main() -> int:
     args = parser.parse_args()
     try:
         proof = json.loads(Path(args.proof).read_text(encoding="utf-8"))
+        validate_artifact(proof, "proof_object.schema.json")
+        if proof.get("proof_version") == "0.4":
+            verify_workflow(proof, expected_state="FORMULA_BINDING")
         result = check_proof_object(proof)
-    except (OSError, json.JSONDecodeError, FormulaRegistryError) as exc:
+    except (OSError, json.JSONDecodeError, FormulaRegistryError, ArtifactSchemaError, WorkflowError) as exc:
         result = _result("FAIL_NOT_PROOF_OBJECT", [str(exc)])
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["status"] == "PASS" else 1

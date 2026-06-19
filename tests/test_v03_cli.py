@@ -33,7 +33,7 @@ def protocol_intake():
 
 class V03CliTests(unittest.TestCase):
     def run_cli(self, *args):
-        return subprocess.run([sys.executable, "-S", str(CLI), *args], cwd=ROOT,
+        return subprocess.run([sys.executable, str(CLI), *args], cwd=ROOT,
                               text=True, capture_output=True, timeout=30)
 
     def run_cli_with_site(self, *args):
@@ -66,7 +66,9 @@ class V03CliTests(unittest.TestCase):
             self.assertEqual(made.returncode, 0, made.stderr)
             derived = self.run_cli("derive", "--proof-object", str(case), "--out", str(report))
             self.assertEqual(derived.returncode, 0, derived.stderr)
-            self.assertEqual(json.loads(case.read_text(encoding="utf-8"))["proof_version"], "0.3.1")
+            proof = json.loads(case.read_text(encoding="utf-8"))
+            self.assertEqual(proof["proof_version"], "0.4")
+            self.assertEqual(proof["workflow"]["state"], "FORMULA_BINDING")
             self.assertIn("## Structured evidence", report.read_text(encoding="utf-8"))
 
     def test_missing_event_cannot_make_protocol_case(self):

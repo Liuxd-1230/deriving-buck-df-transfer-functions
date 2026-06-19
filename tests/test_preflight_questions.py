@@ -13,7 +13,7 @@ SCRIPT = ROOT / "scripts" / "preflight_intake.py"
 class PreflightQuestionTests(unittest.TestCase):
     def run_preflight(self, *args):
         return subprocess.run(
-            [sys.executable, "-S", str(SCRIPT), *args],
+            [sys.executable, str(SCRIPT), *args],
             cwd=ROOT,
             text=True,
             capture_output=True,

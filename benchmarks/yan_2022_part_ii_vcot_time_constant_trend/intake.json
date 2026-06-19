@@ -1,5 +1,5 @@
 {
-  "intake_version": "0.3.1",
+  "intake_version": "0.4",
   "status": "COMPLETE",
   "missing": [],
   "action": "CONTINUE_TO_CLASSIFICATION",
@@ -37,5 +37,16 @@
       "C": 0.0002,
       "rC": 0.01
     }
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "PREFLIGHT_INTAKE",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE"
+    ],
+    "predecessor": null,
+    "artifact_sha256": "30959be8a04bcbefb75fd2a173d1226a3719f8f26a7caf9ae1573c81994e459a"
   }
 }

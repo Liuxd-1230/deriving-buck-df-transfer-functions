@@ -1,7 +1,24 @@
 {
+  "classification_version": "0.4",
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
   "model_id": "yan-2022-part-i-pcm-buck",
   "target_transfer": "Gm",
-  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL"
+  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "MODEL_CLASSIFY",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY"
+    ],
+    "predecessor": {
+      "artifact_type": "intake_status",
+      "state": "PREFLIGHT_INTAKE",
+      "sha256": "9254a34dd43eecb3a3da97e4c93c616e00ae611c1509de1745196e6d01b3bc44"
+    },
+    "artifact_sha256": "3ce5cbffff601f989f8198ec6df8a3dbfebac2f0071dc3f5b8196efc500cb5af"
+  }
 }

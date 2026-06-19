@@ -1,7 +1,24 @@
 {
+  "classification_version": "0.4",
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
   "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
   "target_transfer": "GPWM",
-  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL"
+  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "MODEL_CLASSIFY",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY"
+    ],
+    "predecessor": {
+      "artifact_type": "intake_status",
+      "state": "PREFLIGHT_INTAKE",
+      "sha256": "30959be8a04bcbefb75fd2a173d1226a3719f8f26a7caf9ae1573c81994e459a"
+    },
+    "artifact_sha256": "9d22ed7e05ca98579cac9e1596fe3273cc14ce21bc24be9da25e91bb2461db56"
+  }
 }

@@ -19,7 +19,6 @@ class ForwardPromptTests(unittest.TestCase):
             result = subprocess.run(
                 [
                     sys.executable,
-                    "-S",
                     str(PREFLIGHT),
                     "--text",
                     str(ROOT / "tests" / "fixtures" / "forward_valley_vcot.txt"),

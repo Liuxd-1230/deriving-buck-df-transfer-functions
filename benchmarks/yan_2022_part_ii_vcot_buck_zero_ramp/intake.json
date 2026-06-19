@@ -1,5 +1,5 @@
 {
-  "intake_version": "0.3.1",
+  "intake_version": "0.4",
   "status": "COMPLETE",
   "missing": [],
   "action": "CONTINUE_TO_CLASSIFICATION",
@@ -36,5 +36,16 @@
       "Fm": 25.0,
       "Hv": 0.36
     }
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "PREFLIGHT_INTAKE",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE"
+    ],
+    "predecessor": null,
+    "artifact_sha256": "9fa49b79ef55427955c0c3f6685cc2b689886af6e002051dc413a1ed4aaac7db"
   }
 }
