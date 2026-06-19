@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "C-COT",
-      "target": "Tc",
-      "target_transfer": "Tc",
+      "target": "Tloop",
+      "target_transfer": "Tloop",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -105,7 +105,7 @@
       "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
       "interface": "sampled-data-power-stage",
       "dimension_signature": "current/duty",
-      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)"
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)"
     },
     {
       "formula_id": "yan-2022-part-ii.ccot-ti",
@@ -115,11 +115,25 @@
       "expression": "Hi*Gid*GPWM"
     },
     {
+      "formula_id": "yan-2022-part-ii.ccot-tloop",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Ti"
+    },
+    {
       "formula_id": "yan-2022-part-ii.ccot-tc",
       "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Ti/(1+Ti)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-gvc",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "output/control",
+      "expression": "Gid*GPWM/(1+Ti)"
     }
   ],
   "formula_object_bindings": {
@@ -131,7 +145,9 @@
     "GPWM": "yan-2022-part-ii.ccot-gpwm",
     "Gid": "yan-2022-part-ii.ccot-gid-buck",
     "Ti": "yan-2022-part-ii.ccot-ti",
-    "Tc": "yan-2022-part-ii.ccot-tc"
+    "Tloop": "yan-2022-part-ii.ccot-tloop",
+    "Tc": "yan-2022-part-ii.ccot-tc",
+    "Gvc": "yan-2022-part-ii.ccot-gvc"
   },
   "sampling": {
     "sampling_instant": "modulator input intersection",
@@ -147,7 +163,7 @@
     "type": "COT_TWO_PULSE_TRAINS",
     "d1": "narrow pulse train at each sampling instant",
     "d2": "delayed inverse narrow pulse train after Ton",
-    "relation": "d2(t)=-d1(t-Ton)",
+    "relation": "d2(t)=-d1(t-T0)",
     "frequency_factor": "1-exp(-s*T0)",
     "T0": "Ton",
     "relation_formula_id": "yan-2022-part-ii.ccot-pulse-relation",
@@ -173,12 +189,36 @@
   "sideband": {
     "mode": "TRUNCATED_SUM_M",
     "M": 10,
+    "indices": [
+      -10,
+      -9,
+      -8,
+      -7,
+      -6,
+      -5,
+      -4,
+      -3,
+      -2,
+      -1,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "include_zero": false,
     "sum_expression": "SidebandPulse",
-    "numeric_expression": "(G(s+j*(-10)*ws)*(1-exp(-(s+j*(-10)*ws)*T0))) + (G(s+j*(-9)*ws)*(1-exp(-(s+j*(-9)*ws)*T0))) + (G(s+j*(-8)*ws)*(1-exp(-(s+j*(-8)*ws)*T0))) + (G(s+j*(-7)*ws)*(1-exp(-(s+j*(-7)*ws)*T0))) + (G(s+j*(-6)*ws)*(1-exp(-(s+j*(-6)*ws)*T0))) + (G(s+j*(-5)*ws)*(1-exp(-(s+j*(-5)*ws)*T0))) + (G(s+j*(-4)*ws)*(1-exp(-(s+j*(-4)*ws)*T0))) + (G(s+j*(-3)*ws)*(1-exp(-(s+j*(-3)*ws)*T0))) + (G(s+j*(-2)*ws)*(1-exp(-(s+j*(-2)*ws)*T0))) + (G(s+j*(-1)*ws)*(1-exp(-(s+j*(-1)*ws)*T0))) + (G(s+j*(0)*ws)*(1-exp(-(s+j*(0)*ws)*T0))) + (G(s+j*(1)*ws)*(1-exp(-(s+j*(1)*ws)*T0))) + (G(s+j*(2)*ws)*(1-exp(-(s+j*(2)*ws)*T0))) + (G(s+j*(3)*ws)*(1-exp(-(s+j*(3)*ws)*T0))) + (G(s+j*(4)*ws)*(1-exp(-(s+j*(4)*ws)*T0))) + (G(s+j*(5)*ws)*(1-exp(-(s+j*(5)*ws)*T0))) + (G(s+j*(6)*ws)*(1-exp(-(s+j*(6)*ws)*T0))) + (G(s+j*(7)*ws)*(1-exp(-(s+j*(7)*ws)*T0))) + (G(s+j*(8)*ws)*(1-exp(-(s+j*(8)*ws)*T0))) + (G(s+j*(9)*ws)*(1-exp(-(s+j*(9)*ws)*T0))) + (G(s+j*(10)*ws)*(1-exp(-(s+j*(10)*ws)*T0)))",
+    "numeric_expression": "((1 - exp(T0*(10*j*ws - s)))*G(-10*j*ws + s)) + ((1 - exp(T0*(9*j*ws - s)))*G(-9*j*ws + s)) + ((1 - exp(T0*(8*j*ws - s)))*G(-8*j*ws + s)) + ((1 - exp(T0*(7*j*ws - s)))*G(-7*j*ws + s)) + ((1 - exp(T0*(6*j*ws - s)))*G(-6*j*ws + s)) + ((1 - exp(T0*(5*j*ws - s)))*G(-5*j*ws + s)) + ((1 - exp(T0*(4*j*ws - s)))*G(-4*j*ws + s)) + ((1 - exp(T0*(3*j*ws - s)))*G(-3*j*ws + s)) + ((1 - exp(T0*(2*j*ws - s)))*G(-2*j*ws + s)) + ((1 - exp(T0*(j*ws - s)))*G(-j*ws + s)) + ((1 - exp(T0*(-j*ws - s)))*G(j*ws + s)) + ((1 - exp(T0*(-2*j*ws - s)))*G(2*j*ws + s)) + ((1 - exp(T0*(-3*j*ws - s)))*G(3*j*ws + s)) + ((1 - exp(T0*(-4*j*ws - s)))*G(4*j*ws + s)) + ((1 - exp(T0*(-5*j*ws - s)))*G(5*j*ws + s)) + ((1 - exp(T0*(-6*j*ws - s)))*G(6*j*ws + s)) + ((1 - exp(T0*(-7*j*ws - s)))*G(7*j*ws + s)) + ((1 - exp(T0*(-8*j*ws - s)))*G(8*j*ws + s)) + ((1 - exp(T0*(-9*j*ws - s)))*G(9*j*ws + s)) + ((1 - exp(T0*(-10*j*ws - s)))*G(10*j*ws + s))",
     "numeric_evaluable": true,
-    "approximation": "truncated sideband sum n=-10..10",
+    "approximation": "truncated nonzero sideband sum M=10",
     "formula_id": "yan-2022-part-ii.ccot-sideband-value",
-    "summation_definition": "sum n=-10..10 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
+    "numeric_approximation": "((1 - exp(T0*(10*j*ws - s)))*G(-10*j*ws + s)) + ((1 - exp(T0*(9*j*ws - s)))*G(-9*j*ws + s)) + ((1 - exp(T0*(8*j*ws - s)))*G(-8*j*ws + s)) + ((1 - exp(T0*(7*j*ws - s)))*G(-7*j*ws + s)) + ((1 - exp(T0*(6*j*ws - s)))*G(-6*j*ws + s)) + ((1 - exp(T0*(5*j*ws - s)))*G(-5*j*ws + s)) + ((1 - exp(T0*(4*j*ws - s)))*G(-4*j*ws + s)) + ((1 - exp(T0*(3*j*ws - s)))*G(-3*j*ws + s)) + ((1 - exp(T0*(2*j*ws - s)))*G(-2*j*ws + s)) + ((1 - exp(T0*(j*ws - s)))*G(-j*ws + s)) + ((1 - exp(T0*(-j*ws - s)))*G(j*ws + s)) + ((1 - exp(T0*(-2*j*ws - s)))*G(2*j*ws + s)) + ((1 - exp(T0*(-3*j*ws - s)))*G(3*j*ws + s)) + ((1 - exp(T0*(-4*j*ws - s)))*G(4*j*ws + s)) + ((1 - exp(T0*(-5*j*ws - s)))*G(5*j*ws + s)) + ((1 - exp(T0*(-6*j*ws - s)))*G(6*j*ws + s)) + ((1 - exp(T0*(-7*j*ws - s)))*G(7*j*ws + s)) + ((1 - exp(T0*(-8*j*ws - s)))*G(8*j*ws + s)) + ((1 - exp(T0*(-9*j*ws - s)))*G(9*j*ws + s)) + ((1 - exp(T0*(-10*j*ws - s)))*G(10*j*ws + s))",
+    "summation_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
   },
   "modulator_io": {
     "input": "is",
@@ -191,17 +231,19 @@
       "Gm",
       "GPWM",
       "Ti",
-      "Tc"
+      "Tloop",
+      "Tc",
+      "Gvc"
     ],
-    "requested_target": "Tc",
-    "mapping_rule": "Tc=Ti/(1+Ti)",
+    "requested_target": "Tloop",
+    "mapping_rule": "Tloop=Ti",
     "mapping_status": "REGISTERED_DERIVED"
   },
   "power_stage": {
     "Gid": {
       "formula_id": "yan-2022-part-ii.ccot-gid-buck",
-      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
-      "approximation": "ideal-ESR-power-stage"
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "approximation": "paper-esr-power-stage"
     }
   },
   "modulator": {
@@ -211,9 +253,9 @@
     "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Tc",
-    "formula_id": "yan-2022-part-ii.ccot-tc",
-    "expression": "Ti/(1+Ti)",
+    "target_transfer": "Tloop",
+    "formula_id": "yan-2022-part-ii.ccot-tloop",
+    "expression": "Ti",
     "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
@@ -241,8 +283,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "dd9ab6012997251a68668b76a0ccb07df7dcc8aa8c689f3445dc463c163378cb"
+      "sha256": "800214286e868b9e7d5a6e71dbba8545558d60b4ac295724d06be52d3b78537f"
     },
-    "artifact_sha256": "11881178868549714fcfeebd083c037a04524953106ffb89a1a2690ef0409991"
+    "artifact_sha256": "e9c1320343e215edb9798bbe6eea0507d14311dce585d74ee06dc20f5988fd8e"
   }
 }

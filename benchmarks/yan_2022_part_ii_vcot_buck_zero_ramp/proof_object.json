@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "V-COT",
-      "target": "Tc",
-      "target_transfer": "Tc",
+      "target": "Gvc",
+      "target_transfer": "Gvc",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -39,8 +39,10 @@
         "C": 0.0001,
         "R": 1.0,
         "rC": 0.01,
-        "m1": 1.0,
-        "m2": 4.0,
+        "m1": 4.0,
+        "m2": 1.0,
+        "D": 0.3,
+        "mc": 0.0,
         "Hv": 0.36,
         "H": 0.36,
         "SidebandPulse": 0.05
@@ -70,7 +72,7 @@
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-modulator",
       "dimension_signature": "1/slope_time",
-      "expression": "1/((m2-m1)*Ts/2)"
+      "expression": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)"
     },
     {
       "formula_id": "yan-2022-part-ii.vcot-pulse-relation",
@@ -105,7 +107,7 @@
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-power-stage",
       "dimension_signature": "voltage/duty",
-      "expression": "Vin/(L*C*s**2+(L/R)*s+1)"
+      "expression": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)"
     },
     {
       "formula_id": "yan-2022-part-ii.vcot-tv",
@@ -115,11 +117,25 @@
       "expression": "Hv*Gvd*GPWM"
     },
     {
+      "formula_id": "yan-2022-part-ii.vcot-tloop",
+      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Tv"
+    },
+    {
       "formula_id": "yan-2022-part-ii.vcot-tc",
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Tv/(1+Tv)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.vcot-gvc",
+      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "output/control",
+      "expression": "Gvd*GPWM/(1+Tv)"
     }
   ],
   "formula_object_bindings": {
@@ -131,7 +147,9 @@
     "GPWM": "yan-2022-part-ii.vcot-gpwm",
     "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
     "Tv": "yan-2022-part-ii.vcot-tv",
-    "Tc": "yan-2022-part-ii.vcot-tc"
+    "Tloop": "yan-2022-part-ii.vcot-tloop",
+    "Tc": "yan-2022-part-ii.vcot-tc",
+    "Gvc": "yan-2022-part-ii.vcot-gvc"
   },
   "sampling": {
     "sampling_instant": "modulator input intersection",
@@ -147,7 +165,7 @@
     "type": "COT_TWO_PULSE_TRAINS",
     "d1": "narrow pulse train at each sampling instant",
     "d2": "delayed inverse narrow pulse train after Ton",
-    "relation": "d2(t)=-d1(t-Ton)",
+    "relation": "d2(t)=-d1(t-T0)",
     "frequency_factor": "1-exp(-s*T0)",
     "T0": "Ton",
     "relation_formula_id": "yan-2022-part-ii.vcot-pulse-relation",
@@ -156,7 +174,7 @@
   },
   "Fm": {
     "type": "constant",
-    "expression": "1/((m2-m1)*Ts/2)",
+    "expression": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)",
     "origin": "sampled_data_derivation",
     "depends_on": [
       "m1",
@@ -173,12 +191,36 @@
   "sideband": {
     "mode": "TRUNCATED_SUM_M",
     "M": 10,
+    "indices": [
+      -10,
+      -9,
+      -8,
+      -7,
+      -6,
+      -5,
+      -4,
+      -3,
+      -2,
+      -1,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "include_zero": false,
     "sum_expression": "SidebandPulse",
-    "numeric_expression": "(G(s+j*(-10)*ws)*(1-exp(-(s+j*(-10)*ws)*T0))) + (G(s+j*(-9)*ws)*(1-exp(-(s+j*(-9)*ws)*T0))) + (G(s+j*(-8)*ws)*(1-exp(-(s+j*(-8)*ws)*T0))) + (G(s+j*(-7)*ws)*(1-exp(-(s+j*(-7)*ws)*T0))) + (G(s+j*(-6)*ws)*(1-exp(-(s+j*(-6)*ws)*T0))) + (G(s+j*(-5)*ws)*(1-exp(-(s+j*(-5)*ws)*T0))) + (G(s+j*(-4)*ws)*(1-exp(-(s+j*(-4)*ws)*T0))) + (G(s+j*(-3)*ws)*(1-exp(-(s+j*(-3)*ws)*T0))) + (G(s+j*(-2)*ws)*(1-exp(-(s+j*(-2)*ws)*T0))) + (G(s+j*(-1)*ws)*(1-exp(-(s+j*(-1)*ws)*T0))) + (G(s+j*(0)*ws)*(1-exp(-(s+j*(0)*ws)*T0))) + (G(s+j*(1)*ws)*(1-exp(-(s+j*(1)*ws)*T0))) + (G(s+j*(2)*ws)*(1-exp(-(s+j*(2)*ws)*T0))) + (G(s+j*(3)*ws)*(1-exp(-(s+j*(3)*ws)*T0))) + (G(s+j*(4)*ws)*(1-exp(-(s+j*(4)*ws)*T0))) + (G(s+j*(5)*ws)*(1-exp(-(s+j*(5)*ws)*T0))) + (G(s+j*(6)*ws)*(1-exp(-(s+j*(6)*ws)*T0))) + (G(s+j*(7)*ws)*(1-exp(-(s+j*(7)*ws)*T0))) + (G(s+j*(8)*ws)*(1-exp(-(s+j*(8)*ws)*T0))) + (G(s+j*(9)*ws)*(1-exp(-(s+j*(9)*ws)*T0))) + (G(s+j*(10)*ws)*(1-exp(-(s+j*(10)*ws)*T0)))",
+    "numeric_expression": "((1 - exp(T0*(10*j*ws - s)))*G(-10*j*ws + s)) + ((1 - exp(T0*(9*j*ws - s)))*G(-9*j*ws + s)) + ((1 - exp(T0*(8*j*ws - s)))*G(-8*j*ws + s)) + ((1 - exp(T0*(7*j*ws - s)))*G(-7*j*ws + s)) + ((1 - exp(T0*(6*j*ws - s)))*G(-6*j*ws + s)) + ((1 - exp(T0*(5*j*ws - s)))*G(-5*j*ws + s)) + ((1 - exp(T0*(4*j*ws - s)))*G(-4*j*ws + s)) + ((1 - exp(T0*(3*j*ws - s)))*G(-3*j*ws + s)) + ((1 - exp(T0*(2*j*ws - s)))*G(-2*j*ws + s)) + ((1 - exp(T0*(j*ws - s)))*G(-j*ws + s)) + ((1 - exp(T0*(-j*ws - s)))*G(j*ws + s)) + ((1 - exp(T0*(-2*j*ws - s)))*G(2*j*ws + s)) + ((1 - exp(T0*(-3*j*ws - s)))*G(3*j*ws + s)) + ((1 - exp(T0*(-4*j*ws - s)))*G(4*j*ws + s)) + ((1 - exp(T0*(-5*j*ws - s)))*G(5*j*ws + s)) + ((1 - exp(T0*(-6*j*ws - s)))*G(6*j*ws + s)) + ((1 - exp(T0*(-7*j*ws - s)))*G(7*j*ws + s)) + ((1 - exp(T0*(-8*j*ws - s)))*G(8*j*ws + s)) + ((1 - exp(T0*(-9*j*ws - s)))*G(9*j*ws + s)) + ((1 - exp(T0*(-10*j*ws - s)))*G(10*j*ws + s))",
     "numeric_evaluable": true,
-    "approximation": "truncated sideband sum n=-10..10",
+    "approximation": "truncated nonzero sideband sum M=10",
     "formula_id": "yan-2022-part-ii.vcot-sideband-value",
-    "summation_definition": "sum n=-10..10 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
+    "numeric_approximation": "((1 - exp(T0*(10*j*ws - s)))*G(-10*j*ws + s)) + ((1 - exp(T0*(9*j*ws - s)))*G(-9*j*ws + s)) + ((1 - exp(T0*(8*j*ws - s)))*G(-8*j*ws + s)) + ((1 - exp(T0*(7*j*ws - s)))*G(-7*j*ws + s)) + ((1 - exp(T0*(6*j*ws - s)))*G(-6*j*ws + s)) + ((1 - exp(T0*(5*j*ws - s)))*G(-5*j*ws + s)) + ((1 - exp(T0*(4*j*ws - s)))*G(-4*j*ws + s)) + ((1 - exp(T0*(3*j*ws - s)))*G(-3*j*ws + s)) + ((1 - exp(T0*(2*j*ws - s)))*G(-2*j*ws + s)) + ((1 - exp(T0*(j*ws - s)))*G(-j*ws + s)) + ((1 - exp(T0*(-j*ws - s)))*G(j*ws + s)) + ((1 - exp(T0*(-2*j*ws - s)))*G(2*j*ws + s)) + ((1 - exp(T0*(-3*j*ws - s)))*G(3*j*ws + s)) + ((1 - exp(T0*(-4*j*ws - s)))*G(4*j*ws + s)) + ((1 - exp(T0*(-5*j*ws - s)))*G(5*j*ws + s)) + ((1 - exp(T0*(-6*j*ws - s)))*G(6*j*ws + s)) + ((1 - exp(T0*(-7*j*ws - s)))*G(7*j*ws + s)) + ((1 - exp(T0*(-8*j*ws - s)))*G(8*j*ws + s)) + ((1 - exp(T0*(-9*j*ws - s)))*G(9*j*ws + s)) + ((1 - exp(T0*(-10*j*ws - s)))*G(10*j*ws + s))",
+    "summation_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
   },
   "modulator_io": {
     "input": "vfb",
@@ -190,17 +232,19 @@
     "available_registered_outputs": [
       "GPWM",
       "Tv",
-      "Tc"
+      "Tloop",
+      "Tc",
+      "Gvc"
     ],
-    "requested_target": "Tc",
-    "mapping_rule": "Tc=Tv/(1+Tv)",
+    "requested_target": "Gvc",
+    "mapping_rule": "Gvc=Gvd*GPWM/(1+Tv)",
     "mapping_status": "REGISTERED_DERIVED"
   },
   "power_stage": {
     "Gvd": {
       "formula_id": "yan-2022-part-ii.vcot-gvd-buck",
-      "expression": "Vin/(L*C*s**2+(L/R)*s+1)",
-      "approximation": "ideal-ESR-power-stage"
+      "expression": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "approximation": "paper-esr-power-stage"
     }
   },
   "modulator": {
@@ -210,9 +254,9 @@
     "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Tc",
-    "formula_id": "yan-2022-part-ii.vcot-tc",
-    "expression": "Tv/(1+Tv)",
+    "target_transfer": "Gvc",
+    "formula_id": "yan-2022-part-ii.vcot-gvc",
+    "expression": "Gvd*GPWM/(1+Tv)",
     "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
@@ -240,8 +284,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "845443b78a4ba8ce4f88cccbf219237166f2001a901cbff71c1c557ba3e58190"
+      "sha256": "1c699ab277505e1bc8c380faffc48913c9ae8fc968f30231ffa0981c4ba715b4"
     },
-    "artifact_sha256": "bd209fa479c1588b71bf06bbddbc7b405f58de42ad745788aa8d06233f86c2b8"
+    "artifact_sha256": "8d2287813c72a67ce09ffff76e40a6e65991ed001f183b49d839e367af309d7d"
   }
 }

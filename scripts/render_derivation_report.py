@@ -33,7 +33,25 @@ def build_report_artifacts(
         "",
         "The chain enforces sampling event → left/right limits → Dirichlet sampled value → Fm → pulse/sideband modulator → power-stage coupling → loop/closed-loop target.",
         "",
+        "## 12-step Yan sampled-data reasoning",
+        "",
+        "### Independent derivation path",
+        "",
     ]
+    for item in derivation.get("reasoning_method", {}).get("independent_derivation_path", []):
+        lines.append(f"- {item}")
+    lines.extend([
+        "",
+        "### Registry formula path",
+        "",
+    ])
+    for formula_id in derivation.get("reasoning_method", {}).get("registry_formula_path", []):
+        lines.append(f"- `{formula_id}`")
+    lines.extend([
+        "",
+        f"Dual-path check: {derivation.get('reasoning_method', {}).get('dual_path_check', 'not recorded')}.",
+        "",
+    ])
     for step in derivation["steps"]:
         lines.extend([
             f"### {step['index']}. {step['object']}",
@@ -45,16 +63,21 @@ def build_report_artifacts(
             f"- Dimension: `{step['dimension_signature']}`",
             "",
         ])
+    target_object = "GPWM" if derivation["target_transfer"] == "Gm" else derivation["target_transfer"]
     lines.extend([
         "## Requested result",
         "",
         f"- Target: `{derivation['target_transfer']}`",
-        f"- Registered relation: `${derivation['expressions'][derivation['target_transfer']]}$`",
+        f"- Response kind: `{derivation.get('response_kind', 'unknown')}`",
+        f"- Selected return ratio: `{derivation['selected_loop']}`",
+        f"- Target mapping: `{derivation['target_transfer']}={derivation['expressions'][target_object]}`",
+        f"- Registered relation: `${derivation['expressions'][target_object]}$`",
         f"- Expanded engineering expression: `${derivation['expanded_target_expression']}$`",
         "",
         "## Approximation and validity",
         "",
         f"Approximation set: `{', '.join(derivation['approximation_policy']['items'])}`.",
+        f"Sideband policy: `{json.dumps(derivation['approximation_policy'].get('sideband', {}), ensure_ascii=False, sort_keys=True)}`.",
         f"Validity statement: {derivation['approximation_policy']['valid_frequency']}.",
         "",
         f"Validation level: `{derivation['validation']['level']}`.",

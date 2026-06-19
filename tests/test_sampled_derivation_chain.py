@@ -15,6 +15,11 @@ from df_model_classifier import classify_intake_status
 
 def sampled_intake(control_family="C-COT", target="Tc"):
     sampled_variable = "vfb" if control_family.startswith("V-") else "is"
+    slope_params = (
+        {"m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0}
+        if control_family in {"PCM", "PVM", "V-COT", "V-COFT"}
+        else {"m1": 1.0, "m2": 4.0, "D": 0.3, "mc": 0.0}
+    )
     artifact = {
         "intake_version": "0.4",
         "status": "COMPLETE",
@@ -41,7 +46,7 @@ def sampled_intake(control_family="C-COT", target="Tc"):
             "parameters": {
                 "Vin": 12.0, "Vo": 1.2, "fs": 100000.0, "Ts": 1e-5,
                 "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6,
-                "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0,
+                "R": 1.0, "rC": 0.01, **slope_params,
                 "Hi": 0.1, "Hv": 0.2, "H": 0.1, "SumG": 0.05,
                 "SidebandPulse": 0.05,
             },
@@ -72,6 +77,12 @@ class SampledDerivationChainTests(unittest.TestCase):
     def test_sideband_expression_cannot_be_replaced(self):
         _, _, proof = build_chain("C-COT", "Tc")
         proof["sideband"]["sum_expression"] = "999999"
+        result = check_proof_object(proof)
+        self.assertEqual(result["status"], "FAIL_FORMULA_CONSISTENCY")
+
+    def test_sideband_full_sum_definition_cannot_be_rewritten(self):
+        _, _, proof = build_chain("V-COT", "Tc")
+        proof["sideband"]["summation_definition"] = "sum including n=0"
         result = check_proof_object(proof)
         self.assertEqual(result["status"], "FAIL_FORMULA_CONSISTENCY")
 
@@ -109,6 +120,32 @@ class SampledDerivationChainTests(unittest.TestCase):
         result = check_derivation_artifact(derivation, proof)
         self.assertEqual(result["status"], "FAIL_DERIVATION_FORMULA_CONSISTENCY")
 
+    def test_derivation_checker_rejects_gvc_or_tloop_aliasing_to_tc(self):
+        from sampled_derivation import derive_sampled_transfer
+        from check_derivation import check_derivation_artifact
+
+        _, _, gvc_proof = build_chain("V-COT", "Gvc")
+        gvc_derivation = derive_sampled_transfer(gvc_proof)
+        gvc_derivation["expressions"]["Gvc"] = "Tc"
+        gvc_derivation = attach_workflow(
+            gvc_derivation, state="DERIVATION", intent="user-circuit-derivation", predecessor=gvc_proof
+        )
+        self.assertEqual(
+            check_derivation_artifact(gvc_derivation, gvc_proof)["status"],
+            "FAIL_DERIVATION_FORMULA_CONSISTENCY",
+        )
+
+        _, _, tloop_proof = build_chain("C-COT", "Tloop")
+        tloop_derivation = derive_sampled_transfer(tloop_proof)
+        tloop_derivation["expressions"]["Tloop"] = "Tc"
+        tloop_derivation = attach_workflow(
+            tloop_derivation, state="DERIVATION", intent="user-circuit-derivation", predecessor=tloop_proof
+        )
+        self.assertEqual(
+            check_derivation_artifact(tloop_derivation, tloop_proof)["status"],
+            "FAIL_DERIVATION_FORMULA_CONSISTENCY",
+        )
+
     def test_derivation_checker_emits_hash_linked_checker_artifact(self):
         _, _, proof = build_chain("V-COT", "Tc")
         from sampled_derivation import derive_sampled_transfer
@@ -142,6 +179,54 @@ class SampledDerivationChainTests(unittest.TestCase):
         self.assertIn("Ti/(1+Ti)", markdown)
         self.assertIn("Approximation", markdown)
         self.assertIn("formula_id", markdown)
+
+    def test_direct_gm_report_uses_gpwm_registered_expression(self):
+        _, _, proof = build_chain("C-COT", "Gm")
+        from sampled_derivation import derive_sampled_transfer
+        from check_derivation import build_checker_artifact
+        from render_derivation_report import build_report_artifacts
+
+        derivation = derive_sampled_transfer(proof)
+        checker = build_checker_artifact(derivation, proof)
+        _, markdown = build_report_artifacts(derivation, checker)
+        self.assertIn(derivation["expressions"]["GPWM"], markdown)
+
+    def test_vcot_gvc_uses_power_stage_and_loop_not_tc_alias(self):
+        _, _, proof = build_chain("V-COT", "Gvc")
+        from sampled_derivation import derive_sampled_transfer
+
+        derivation = derive_sampled_transfer(proof)
+        self.assertEqual(derivation["target_transfer"], "Gvc")
+        self.assertEqual(derivation["selected_loop"], "Tv")
+        self.assertEqual(derivation["expressions"]["Tloop"], "Tv")
+        self.assertEqual(derivation["expressions"]["Gvc"], "Gvd*GPWM/(1+Tv)")
+        self.assertNotEqual(derivation["expressions"]["Gvc"], derivation["expressions"]["Tc"])
+        self.assertIn("Vin", derivation["expanded_target_expression"])
+
+    def test_ccot_tloop_is_registered_return_ratio(self):
+        _, _, proof = build_chain("C-COT", "Tloop")
+        from sampled_derivation import derive_sampled_transfer
+
+        derivation = derive_sampled_transfer(proof)
+        self.assertEqual(derivation["target_transfer"], "Tloop")
+        self.assertEqual(derivation["selected_loop"], "Ti")
+        self.assertEqual(derivation["expressions"]["Tloop"], "Ti")
+        self.assertEqual(derivation["response_kind"], "return_ratio")
+        self.assertEqual(derivation["expanded_target_expression"], derivation["expanded_expressions"]["Ti"])
+
+    def test_report_renders_twelve_step_yan_reasoning_and_dual_verification(self):
+        _, _, proof = build_chain("V-COT", "Gvc")
+        from sampled_derivation import derive_sampled_transfer
+        from check_derivation import build_checker_artifact
+        from render_derivation_report import build_report_artifacts
+
+        derivation = derive_sampled_transfer(proof)
+        checker = build_checker_artifact(derivation, proof)
+        _, markdown = build_report_artifacts(derivation, checker)
+        self.assertIn("12-step Yan sampled-data reasoning", markdown)
+        self.assertIn("Independent derivation path", markdown)
+        self.assertIn("Registry formula path", markdown)
+        self.assertIn("Gvc=Gvd*GPWM/(1+Tv)", markdown)
 
 
 if __name__ == "__main__":

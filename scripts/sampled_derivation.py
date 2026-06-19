@@ -63,6 +63,11 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
     target_object = "GPWM" if target == "Gm" else target
     if target_object not in expressions:
         raise SampledDerivationError(f"target {target} is not registered by {model_id}")
+    response_kind = (
+        "return_ratio" if target_object in {"Ti", "Tv", "Tloop"}
+        else "closed_loop" if target_object == "Tc"
+        else "transfer_function"
+    )
 
     steps = []
     for index, object_name in enumerate(contract["derivation_order"], start=1):
@@ -86,14 +91,41 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
         "selected_loop": selected_loop,
         "target_transfer": target,
         "target_formula_id": formula_objects[target_object],
+        "response_kind": response_kind,
         "expressions": expressions,
         "expanded_expressions": expanded_expressions,
         "expanded_target_expression": expanded_expressions[target_object],
+        "reasoning_method": {
+            "name": "12-step Yan sampled-data reasoning",
+            "independent_derivation_path": [
+                "1. identify control family and requested target",
+                "2. declare sampling event and sampled variable",
+                "3. write left and right limits",
+                "4. apply Dirichlet sampled value",
+                "5. derive or bind zero-ramp Fm from the sampled value",
+                "6. construct pulse train relation",
+                "7. construct pulse factor in the s-domain",
+                "8. attach sideband summation policy",
+                "9. build GPWM/Gm sampled modulator",
+                "10. bind Buck ESR power stage Gid/Gvd",
+                "11. form return ratio Ti/Tv and Tloop",
+                "12. close the loop for Tc or Gvc and verify against registry",
+            ],
+            "registry_formula_path": [
+                step["formula_id"] for step in steps
+            ],
+            "dual_path_check": "independent step composition must match registry-bound expanded_target_expression",
+        },
         "steps": steps,
         "approximation_policy": {
             "declared": True,
             "items": sorted({step["approximation"] for step in steps}),
             "valid_frequency": "limited by sampled-data paper contract and benchmark metadata",
+            "sideband": {
+                key: proof["sideband"][key]
+                for key in ("mode", "M", "indices", "include_zero", "numeric_approximation", "approximation")
+                if key in proof["sideband"]
+            },
         },
         "validation": {
             "level": proof["validation"]["level"],

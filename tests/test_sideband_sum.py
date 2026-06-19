@@ -21,8 +21,26 @@ class SidebandSumTests(unittest.TestCase):
         self.assertEqual(result["mode"], "TRUNCATED_SUM_M")
         self.assertTrue(result["numeric_evaluable"])
         self.assertEqual(result["M"], 2)
-        self.assertIn("n=-2..2", result["approximation"])
-        self.assertIn("1/(s+j*(-2)*ws)", result["numeric_expression"])
+        self.assertEqual(result["indices"], [-2, -1, 1, 2])
+        self.assertNotIn(0, result["indices"])
+        self.assertIn("nonzero", result["approximation"])
+
+    def test_symbolic_index_substitution_does_not_corrupt_identifiers(self):
+        result = build_sideband({
+            "mode": "TRUNCATED_SUM_M",
+            "base_expression": "Vin/(sin(theta)+den+n*ws)",
+            "M": 1,
+        })
+        expression = result["numeric_expression"]
+        self.assertIn("Vin", expression)
+        self.assertIn("sin", expression)
+        self.assertIn("den", expression)
+        self.assertNotIn("Vi(-1)", expression)
+
+    def test_truncated_sum_requires_positive_integer_m(self):
+        for bad in (0, -1, 1.5):
+            with self.subTest(M=bad), self.assertRaises(ValueError):
+                build_sideband({"mode": "TRUNCATED_SUM_M", "base_expression": "n", "M": bad})
 
     def test_paper_simplified_form_is_numeric_evaluable(self):
         result = build_sideband({"mode": "PAPER_SIMPLIFIED_FORM", "expression": "Fm*(1-exp(-s*Ton))"})

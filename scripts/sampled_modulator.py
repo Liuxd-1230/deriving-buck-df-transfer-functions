@@ -78,6 +78,7 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
         })
         pulse["relation_formula_id"] = formula_objects["pulse_relation"]
         pulse["relation_expression"] = get_formula(formula_objects["pulse_relation"])["canonical_sympy_expr"]
+        pulse["relation"] = contract["pulse_time_relation"]
         pulse["factor_formula_id"] = formula_objects["pulse_factor"]
         pulse["frequency_factor"] = get_formula(formula_objects["pulse_factor"])["canonical_sympy_expr"]
     else:
@@ -89,13 +90,18 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
     )
     sideband = build_sideband(sideband_spec)
     sideband["formula_id"] = formula_objects["sideband"]
-    sideband["summation_definition"] = sideband.get("sum_expression")
+    if sideband.get("numeric_expression"):
+        sideband["numeric_approximation"] = sideband["numeric_expression"]
+    sideband["summation_definition"] = contract["sideband_definition"]
     sideband["sum_expression"] = get_formula(formula_objects["sideband"])["canonical_sympy_expr"]
     available_outputs = list(model["supported_targets"])
     loop_name = "Ti" if contract["control_contract"] == "current" else "Tv"
+    plant_name = "Gid" if contract["control_contract"] == "current" else "Gvd"
     rules = {
         loop_name: f"{loop_name}={'Hi*Gid*GPWM' if loop_name == 'Ti' else 'Hv*Gvd*GPWM'}",
+        "Tloop": f"Tloop={loop_name}",
         "Tc": f"Tc={loop_name}/(1+{loop_name})",
+        "Gvc": f"Gvc={plant_name}*GPWM/(1+{loop_name})",
     }
     mapping = build_target_mapping(
         available_outputs=available_outputs,

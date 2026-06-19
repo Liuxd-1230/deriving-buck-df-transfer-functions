@@ -606,6 +606,7 @@ def _plot_one_bode(
     fs_hz: float,
     valid_limit_hz: float,
     out_png: Path,
+    response_kind: str,
 ) -> dict[str, Any]:
     import matplotlib
 
@@ -613,12 +614,13 @@ def _plot_one_bode(
     import matplotlib.pyplot as plt
 
     crossover = _crossing(frequencies, magnitude_db, 0.0)
+    margins_applicable = response_kind == "return_ratio"
     phase_margin = None
     extrapolated = False
-    if crossover is not None:
+    if margins_applicable and crossover is not None:
         phase_margin = 180.0 + _interp(frequencies, phase_deg, crossover)
         extrapolated = crossover > valid_limit_hz
-    phase_crossing = _crossing(frequencies, phase_deg, -180.0)
+    phase_crossing = _crossing(frequencies, phase_deg, -180.0) if margins_applicable else None
     gain_margin_db = None
     if phase_crossing is not None:
         gain_margin_db = -_interp(frequencies, magnitude_db, phase_crossing)
@@ -652,13 +654,21 @@ def _plot_one_bode(
     fig.tight_layout()
     fig.savefig(out_png, dpi=150)
     plt.close(fig)
+    markers = ["fs", "fs/2", "valid_frequency_limit", "0 dB crossing"]
+    if margins_applicable:
+        markers.extend(["phase margin", "gain margin"])
     return {
+        "response_kind": response_kind,
+        "stability_margins_status": (
+            "APPLICABLE_RETURN_RATIO" if margins_applicable
+            else "NOT_APPLICABLE_NON_RETURN_RATIO"
+        ),
         "zero_db_crossing_hz": crossover,
         "phase_margin_deg": phase_margin,
         "gain_margin_db": gain_margin_db,
         "phase_180_crossing_hz": phase_crossing,
         "validity": "EXTRAPOLATED_BEYOND_VALID_RANGE" if extrapolated else "WITHIN_DECLARED_RANGE",
-        "plot_markers": ["fs", "fs/2", "valid_frequency_limit", "0 dB crossing", "phase margin", "gain margin"],
+        "plot_markers": markers,
     }
 
 
@@ -671,7 +681,7 @@ def command_plot_bode(args: argparse.Namespace) -> int:
     if not requested:
         raise CaseError("plot-bode requires at least one target.")
     sampled_case = _is_sampled_data_numeric_case(case)
-    supported_targets = {"Gm", "GPWM", "Ti", "Tv", "Tc"} if sampled_case else {"Gvc", "Gvg", "Zout", "Tloop"}
+    supported_targets = {"Gm", "GPWM", "Ti", "Tv", "Tloop", "Tc", "Gvc"} if sampled_case else {"Gvc", "Gvg", "Zout", "Tloop"}
     unsupported = sorted(set(requested) - supported_targets)
     if unsupported:
         raise CaseError(f"plot-bode unsupported targets: {', '.join(unsupported)}")
@@ -693,7 +703,7 @@ def command_plot_bode(args: argparse.Namespace) -> int:
     }
     if sampled_case and isinstance(case.get("sideband"), dict):
         summary["sideband"] = case["sideband"]
-    if "Tloop" in requested:
+    if "Tloop" in requested and not sampled_case:
         feedback = case.get("feedback", {})
         loop_break = feedback.get("loop_break") if isinstance(feedback, dict) else None
         if not isinstance(loop_break, dict):
@@ -705,6 +715,15 @@ def command_plot_bode(args: argparse.Namespace) -> int:
             "notes": loop_break.get("notes", ""),
         }
     for target in requested:
+        declared_kinds = case.get("response_kinds") if isinstance(case.get("response_kinds"), dict) else {}
+        inferred_kind = (
+            "return_ratio" if target in {"Ti", "Tv", "Tloop"}
+            else "closed_loop" if target == "Tc"
+            else "transfer_function"
+        )
+        response_kind = declared_kinds.get(target, inferred_kind)
+        if response_kind not in {"return_ratio", "transfer_function", "closed_loop"}:
+            raise CaseError(f"Unsupported response_kind {response_kind!r} for {target}.")
         if sampled_case:
             expr, values = _sampled_expression_values(case=case, target=target, frequencies=frequencies)
         else:
@@ -734,6 +753,7 @@ def command_plot_bode(args: argparse.Namespace) -> int:
             fs_hz=fs_hz,
             valid_limit_hz=valid_limit_hz,
             out_png=out / f"{target}_bode.png",
+            response_kind=response_kind,
         )
     (out / "bode_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Wrote Bode plots: {out.resolve()}")

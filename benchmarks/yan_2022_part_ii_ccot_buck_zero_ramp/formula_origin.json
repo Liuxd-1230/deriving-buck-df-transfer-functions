@@ -9,7 +9,9 @@
     "yan-2022-part-ii.ccot-gpwm",
     "yan-2022-part-ii.ccot-gid-buck",
     "yan-2022-part-ii.ccot-ti",
-    "yan-2022-part-ii.ccot-tc"
+    "yan-2022-part-ii.ccot-tloop",
+    "yan-2022-part-ii.ccot-tc",
+    "yan-2022-part-ii.ccot-gvc"
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

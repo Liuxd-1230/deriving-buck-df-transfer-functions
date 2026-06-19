@@ -9,18 +9,18 @@
   "evaluator": "sampled-data-numeric",
   "results": {
     "Tc": {
+      "response_kind": "closed_loop",
+      "stability_margins_status": "NOT_APPLICABLE_NON_RETURN_RATIO",
       "zero_db_crossing_hz": null,
       "phase_margin_deg": null,
-      "gain_margin_db": 11.124111725631742,
-      "phase_180_crossing_hz": 167176.54063394375,
+      "gain_margin_db": null,
+      "phase_180_crossing_hz": null,
       "validity": "WITHIN_DECLARED_RANGE",
       "plot_markers": [
         "fs",
         "fs/2",
         "valid_frequency_limit",
-        "0 dB crossing",
-        "phase margin",
-        "gain margin"
+        "0 dB crossing"
       ]
     }
   },

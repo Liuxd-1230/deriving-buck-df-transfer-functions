@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 
 class SidebandError(ValueError):
@@ -31,15 +32,32 @@ def build_sideband(spec: dict[str, Any]) -> dict[str, Any]:
         }
     if mode == "TRUNCATED_SUM_M":
         base = str(_require(spec, "base_expression"))
-        m = int(_require(spec, "M"))
-        terms = [base.replace("n", f"({index})") for index in range(-m, m + 1)]
+        raw_m = _require(spec, "M")
+        if isinstance(raw_m, bool) or not isinstance(raw_m, int) or raw_m <= 0:
+            raise SidebandError("TRUNCATED_SUM_M requires M to be an explicit positive integer")
+        m = raw_m
+        import sympy as sp
+
+        n = sp.Symbol("n", integer=True)
+        function_names = set(re.findall(r"\b([A-Za-z_]\w*)\s*\(", base))
+        known_functions = {"exp": sp.exp, "sin": sp.sin, "cos": sp.cos, "sqrt": sp.sqrt}
+        identifiers = set(re.findall(r"\b[A-Za-z_]\w*\b", base))
+        local: dict[str, Any] = {name: sp.Symbol(name) for name in identifiers - function_names}
+        local["n"] = n
+        for name in function_names:
+            local[name] = known_functions.get(name, sp.Function(name))
+        expression = sp.sympify(base, locals=local)
+        indices = list(range(-m, 0)) + list(range(1, m + 1))
+        terms = [str(expression.subs(n, sp.Integer(index))) for index in indices]
         return {
             "mode": mode,
             "M": m,
-            "sum_expression": f"sum n=-{m}..{m} of {base}",
+            "indices": indices,
+            "include_zero": False,
+            "sum_expression": f"sum n in [-{m},-1] union [1,{m}] of {base}",
             "numeric_expression": " + ".join(f"({term})" for term in terms),
             "numeric_evaluable": True,
-            "approximation": f"truncated sideband sum n=-{m}..{m}",
+            "approximation": f"truncated nonzero sideband sum M={m}",
         }
     if mode == "PAPER_SIMPLIFIED_FORM":
         expression = str(_require(spec, "expression"))

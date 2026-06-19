@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "V-COT",
-    "target": "Tc",
-    "target_transfer": "Tc",
+    "target": "Gvc",
+    "target_transfer": "Gvc",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -39,8 +39,10 @@
       "C": 0.0001,
       "R": 1.0,
       "rC": 0.01,
-      "m1": 1.0,
-      "m2": 4.0,
+      "m1": 4.0,
+      "m2": 1.0,
+      "D": 0.3,
+      "mc": 0.0,
       "Hv": 0.36,
       "H": 0.36,
       "SidebandPulse": 0.05
@@ -60,6 +62,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "399b934bd8c9f41d8be47569f8efeb4093f199cec2c1f44e5364487dfbb51e56"
+    "artifact_sha256": "e1fba7578a79830bf846d42fedb5eadabc05a8ea0c84be26fc7efa4988062ac9"
   }
 }

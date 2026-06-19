@@ -123,6 +123,7 @@ def _sampled_common_artifacts(
         raise RuntimeError("sampled benchmark derivation checker failed")
     report_manifest, report_markdown = build_report_artifacts(derivation, checker)
     transfer_functions = {target: derivation["expanded_target_expression"]}
+    response_kinds = {target: derivation.get("response_kind", "transfer_function")}
 
     generated_case = {
         "case_version": "0.4-sampled-data",
@@ -131,6 +132,7 @@ def _sampled_common_artifacts(
         "parameters": parameters,
         "valid_frequency": {"max_hz": parameters["fs"] / 2},
         "transfer_functions": transfer_functions,
+        "response_kinds": response_kinds,
         "sideband": sideband,
     }
     formula_origin = {
@@ -140,6 +142,11 @@ def _sampled_common_artifacts(
         "pdf_bundled": False,
         "notes": "PDFs were used during development only; benchmark artifacts are self-contained.",
     }
+    for stale_target in ("Gm", "GPWM", "Ti", "Tv", "Tloop", "Tc", "Gvc"):
+        for suffix in ("_bode.csv", "_bode.png"):
+            stale = root / f"{stale_target}{suffix}"
+            if stale.exists():
+                stale.unlink()
     _json(root / "intake.json", intake)
     _json(root / "classification.json", classification)
     _json(root / "proof_object.json", proof)
@@ -482,7 +489,7 @@ def _lu2023(root: Path) -> dict[str, Any]:
 
 
 def _yan_part_i_pcm(root: Path) -> dict[str, Any]:
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 100e3, "Ts": 10e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0, "Hi": 0.1, "H": 0.1, "SumG": 0.05}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 100e3, "Ts": 10e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "mc": 0.0, "Hi": 0.1, "H": 0.1, "SumG": 0.05}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_i_pcm_buck",
@@ -508,7 +515,7 @@ def _yan_part_ii_ccot(root: Path) -> dict[str, Any]:
         model_id="yan-2022-part-ii-ccot-buck-zero-ramp",
         part_family="SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
         control_family="C-COT",
-        target="Tc",
+        target="Tloop",
         parameters=parameters,
         sampled_variable="is",
         sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
@@ -520,14 +527,14 @@ def _yan_part_ii_ccot(root: Path) -> dict[str, Any]:
 
 
 def _yan_part_ii_vcot(root: Path) -> dict[str, Any]:
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_ii_vcot_buck_zero_ramp",
         model_id="yan-2022-part-ii-vcot-buck-zero-ramp",
         part_family="SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
         control_family="V-COT",
-        target="Tc",
+        target="Gvc",
         parameters=parameters,
         sampled_variable="vfb",
         sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
@@ -554,7 +561,7 @@ def _yan_vcot_trend(root: Path) -> dict[str, Any]:
         "increase_C": "stability_margin_increases",
         "increase_Ton": "stability_margin_decreases",
     }
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": base["Ton"], "T0": base["T0"], "L": 10e-6, "R": 1.0, "m1": 1.0, "m2": 4.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05, **base}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": base["Ton"], "T0": base["T0"], "L": 10e-6, "R": 1.0, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05, **base}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_ii_vcot_time_constant_trend",

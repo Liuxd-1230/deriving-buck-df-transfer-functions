@@ -7,7 +7,9 @@
     "yan-2022-part-i.gpwm",
     "yan-2022-part-i.gid-buck",
     "yan-2022-part-i.ti",
-    "yan-2022-part-i.tc-current"
+    "yan-2022-part-i.tloop-current",
+    "yan-2022-part-i.tc-current",
+    "yan-2022-part-i.gvc-current"
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

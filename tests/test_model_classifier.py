@@ -68,8 +68,18 @@ class ModelClassifierTests(unittest.TestCase):
             "topology": "buck", "conduction_mode": "CCM", "phases": 4,
             "multiphase_overlap": True, "target": "Gvc",
         })
-        self.assertEqual(result["path"], "UNSUPPORTED")
-        self.assertEqual(result["validation_level"], "REJECTED_UNSUPPORTED")
+        self.assertEqual(result["path"], "MULTIPHASE_OVERLAP")
+        self.assertEqual(result["action"], "PLANNED_REGISTERED_MODEL_V05")
+        self.assertIn("REJECT_MULTIPHASE_OVERLAP_V05", result["unsupported_effects"])
+
+    def test_multiphase_nonoverlap_is_a_distinct_v05_boundary(self):
+        result = classify_intake({
+            "topology": "buck", "conduction_mode": "CCM", "phases": 2,
+            "overlap": False, "control_family": "C-COT", "target": "Ti",
+        })
+        self.assertEqual(result["path"], "MULTIPHASE_NONOVERLAP")
+        self.assertEqual(result["action"], "PLANNED_REGISTERED_MODEL_V05")
+        self.assertIn("REJECT_MULTIPHASE_NONOVERLAP_V05", result["unsupported_effects"])
 
     def test_average_model_cannot_be_declared_df(self):
         result = classify_intake({

@@ -35,6 +35,10 @@ def check_derivation_artifact(
         return _result("FAIL_DERIVATION_ORDER", ["derivation steps do not match paper contract"])
     errors: list[str] = []
     expressions = derivation.get("expressions") or {}
+    sideband_policy = (derivation.get("approximation_policy") or {}).get("sideband") or {}
+    for key in ("mode", "M", "indices", "include_zero", "numeric_approximation"):
+        if key in proof.get("sideband", {}) and sideband_policy.get(key) != proof["sideband"].get(key):
+            errors.append(f"sideband approximation field {key} differs from proof")
     expanded_expected = expand_registered_expressions(contract)
     if derivation.get("expanded_expressions") != expanded_expected:
         errors.append("expanded expressions do not match the registered derivation chain")

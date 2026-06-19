@@ -6,6 +6,39 @@
 
 The chain enforces sampling event → left/right limits → Dirichlet sampled value → Fm → pulse/sideband modulator → power-stage coupling → loop/closed-loop target.
 
+## 12-step Yan sampled-data reasoning
+
+### Independent derivation path
+
+- 1. identify control family and requested target
+- 2. declare sampling event and sampled variable
+- 3. write left and right limits
+- 4. apply Dirichlet sampled value
+- 5. derive or bind zero-ramp Fm from the sampled value
+- 6. construct pulse train relation
+- 7. construct pulse factor in the s-domain
+- 8. attach sideband summation policy
+- 9. build GPWM/Gm sampled modulator
+- 10. bind Buck ESR power stage Gid/Gvd
+- 11. form return ratio Ti/Tv and Tloop
+- 12. close the loop for Tc or Gvc and verify against registry
+
+### Registry formula path
+
+- `yan-2022-part-ii.ccot-dirichlet-value`
+- `yan-2022-part-ii.ccot-fm-zero-ramp`
+- `yan-2022-part-ii.ccot-pulse-relation`
+- `yan-2022-part-ii.ccot-pulse-factor`
+- `yan-2022-part-ii.ccot-sideband-value`
+- `yan-2022-part-ii.ccot-gpwm`
+- `yan-2022-part-ii.ccot-gid-buck`
+- `yan-2022-part-ii.ccot-ti`
+- `yan-2022-part-ii.ccot-tloop`
+- `yan-2022-part-ii.ccot-tc`
+- `yan-2022-part-ii.ccot-gvc`
+
+Dual-path check: independent step composition must match registry-bound expanded_target_expression.
+
 ### 1. sampling
 
 - `formula_id`: `yan-2022-part-ii.ccot-dirichlet-value`
@@ -57,9 +90,9 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 ### 7. Gid
 
 - `formula_id`: `yan-2022-part-ii.ccot-gid-buck`
-- Expression: `$Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)$`
-- Provenance: CCM-Buck-linearized-state-equations
-- Approximation: `ideal-ESR-power-stage`
+- Expression: `$Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)$`
+- Provenance: Yan-2022-Part-II-Eq9
+- Approximation: `paper-esr-power-stage`
 - Dimension: `current/duty`
 
 ### 8. Ti
@@ -70,7 +103,15 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - Approximation: `exact-block-composition`
 - Dimension: `return-ratio`
 
-### 9. Tc
+### 9. Tloop
+
+- `formula_id`: `yan-2022-part-ii.ccot-tloop`
+- Expression: `$Ti$`
+- Provenance: loop-break-return-ratio-identification
+- Approximation: `exact-block-composition`
+- Dimension: `return-ratio`
+
+### 10. Tc
 
 - `formula_id`: `yan-2022-part-ii.ccot-tc`
 - Expression: `$Ti/(1+Ti)$`
@@ -78,15 +119,27 @@ The chain enforces sampling event → left/right limits → Dirichlet sampled va
 - Approximation: `exact-feedback-identity`
 - Dimension: `closed-loop`
 
+### 11. Gvc
+
+- `formula_id`: `yan-2022-part-ii.ccot-gvc`
+- Expression: `$Gid*GPWM/(1+Ti)$`
+- Provenance: closed-loop-control-to-output-composition
+- Approximation: `exact-feedback-identity`
+- Dimension: `output/control`
+
 ## Requested result
 
-- Target: `Tc`
-- Registered relation: `$Ti/(1+Ti)$`
-- Expanded engineering expression: `$-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))$`
+- Target: `Tloop`
+- Response kind: `return_ratio`
+- Selected return ratio: `Ti`
+- Target mapping: `Tloop=Ti`
+- Registered relation: `$Ti$`
+- Expanded engineering expression: `$-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + C*R*rC*s + L*s + R))$`
 
 ## Approximation and validity
 
-Approximation set: `exact-block-composition, exact-delay-relation, exact-feedback-identity, exact-sampling-definition, exact-two-pulse-factor, ideal-ESR-power-stage, registered-sideband-form, symbolic-full-sum, zero-ramp-only`.
+Approximation set: `exact-block-composition, exact-delay-relation, exact-feedback-identity, exact-sampling-definition, exact-two-pulse-factor, paper-esr-power-stage, registered-sideband-form, symbolic-full-sum, zero-ramp-only`.
+Sideband policy: `{"M": 10, "approximation": "truncated nonzero sideband sum M=10", "include_zero": false, "indices": [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "mode": "TRUNCATED_SUM_M", "numeric_approximation": "((1 - exp(T0*(10*j*ws - s)))*G(-10*j*ws + s)) + ((1 - exp(T0*(9*j*ws - s)))*G(-9*j*ws + s)) + ((1 - exp(T0*(8*j*ws - s)))*G(-8*j*ws + s)) + ((1 - exp(T0*(7*j*ws - s)))*G(-7*j*ws + s)) + ((1 - exp(T0*(6*j*ws - s)))*G(-6*j*ws + s)) + ((1 - exp(T0*(5*j*ws - s)))*G(-5*j*ws + s)) + ((1 - exp(T0*(4*j*ws - s)))*G(-4*j*ws + s)) + ((1 - exp(T0*(3*j*ws - s)))*G(-3*j*ws + s)) + ((1 - exp(T0*(2*j*ws - s)))*G(-2*j*ws + s)) + ((1 - exp(T0*(j*ws - s)))*G(-j*ws + s)) + ((1 - exp(T0*(-j*ws - s)))*G(j*ws + s)) + ((1 - exp(T0*(-2*j*ws - s)))*G(2*j*ws + s)) + ((1 - exp(T0*(-3*j*ws - s)))*G(3*j*ws + s)) + ((1 - exp(T0*(-4*j*ws - s)))*G(4*j*ws + s)) + ((1 - exp(T0*(-5*j*ws - s)))*G(5*j*ws + s)) + ((1 - exp(T0*(-6*j*ws - s)))*G(6*j*ws + s)) + ((1 - exp(T0*(-7*j*ws - s)))*G(7*j*ws + s)) + ((1 - exp(T0*(-8*j*ws - s)))*G(8*j*ws + s)) + ((1 - exp(T0*(-9*j*ws - s)))*G(9*j*ws + s)) + ((1 - exp(T0*(-10*j*ws - s)))*G(10*j*ws + s))"}`.
 Validity statement: limited by sampled-data paper contract and benchmark metadata.
 
 Validation level: `SAMPLED_DATA_REGISTERED_PARTIAL`.

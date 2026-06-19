@@ -9,6 +9,8 @@
   "evaluator": "sampled-data-numeric",
   "results": {
     "Tc": {
+      "response_kind": "closed_loop",
+      "stability_margins_status": "NOT_APPLICABLE_NON_RETURN_RATIO",
       "zero_db_crossing_hz": null,
       "phase_margin_deg": null,
       "gain_margin_db": null,
@@ -18,9 +20,7 @@
         "fs",
         "fs/2",
         "valid_frequency_limit",
-        "0 dB crossing",
-        "phase margin",
-        "gain margin"
+        "0 dB crossing"
       ]
     }
   },

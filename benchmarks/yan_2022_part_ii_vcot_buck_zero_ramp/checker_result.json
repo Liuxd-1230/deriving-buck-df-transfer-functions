@@ -17,8 +17,8 @@
     "predecessor": {
       "artifact_type": "derivation",
       "state": "DERIVATION",
-      "sha256": "da9fa0fe507fa3bedb4f70ea403ff5fb83171f4ea1569209ac4cb60e6144a86f"
+      "sha256": "806b68ddaea791f656fbb645dd25a1bd42c994a6530d082cb1da484c892e69ef"
     },
-    "artifact_sha256": "6a80d4b87bac02ce14644f388ecc85ab9e1da1ea25998813b9bc66ec1328b6e7"
+    "artifact_sha256": "9de192e2dd3fdb4225aa69589f708ed006d9f9c3194bcf9c07681ab13946ecca"
   }
 }

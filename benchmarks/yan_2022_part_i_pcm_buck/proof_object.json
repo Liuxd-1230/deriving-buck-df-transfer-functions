@@ -37,8 +37,9 @@
         "C": 0.0001,
         "R": 1.0,
         "rC": 0.01,
-        "m1": 1.0,
-        "m2": 4.0,
+        "m1": 4.0,
+        "m2": 1.0,
+        "mc": 0.0,
         "Hi": 0.1,
         "H": 0.1,
         "SumG": 0.05
@@ -68,7 +69,7 @@
       "source_model_id": "yan-2022-part-i-pcm-buck",
       "interface": "sampled-data-modulator",
       "dimension_signature": "1/slope_time",
-      "expression": "1/((m2-m1)*Ts/2)"
+      "expression": "1/(((m1-m2)/2+mc)*Ts)"
     },
     {
       "formula_id": "yan-2022-part-i.sideband-value",
@@ -89,7 +90,7 @@
       "source_model_id": "yan-2022-part-i-pcm-buck",
       "interface": "sampled-data-power-stage",
       "dimension_signature": "current/duty",
-      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)"
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)"
     },
     {
       "formula_id": "yan-2022-part-i.ti",
@@ -99,11 +100,25 @@
       "expression": "Hi*Gid*GPWM"
     },
     {
+      "formula_id": "yan-2022-part-i.tloop-current",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Ti"
+    },
+    {
       "formula_id": "yan-2022-part-i.tc-current",
       "source_model_id": "yan-2022-part-i-pcm-buck",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Ti/(1+Ti)"
+    },
+    {
+      "formula_id": "yan-2022-part-i.gvc-current",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "output/control",
+      "expression": "Gid*GPWM/(1+Ti)"
     }
   ],
   "formula_object_bindings": {
@@ -113,7 +128,9 @@
     "GPWM": "yan-2022-part-i.gpwm",
     "Gid": "yan-2022-part-i.gid-buck",
     "Ti": "yan-2022-part-i.ti",
-    "Tc": "yan-2022-part-i.tc-current"
+    "Tloop": "yan-2022-part-i.tloop-current",
+    "Tc": "yan-2022-part-i.tc-current",
+    "Gvc": "yan-2022-part-i.gvc-current"
   },
   "sampling": {
     "sampling_instant": "modulator input intersection",
@@ -131,7 +148,7 @@
   },
   "Fm": {
     "type": "constant",
-    "expression": "1/((m2-m1)*Ts/2)",
+    "expression": "1/(((m1-m2)/2+mc)*Ts)",
     "origin": "sampled_data_derivation",
     "depends_on": [
       "m1",
@@ -152,7 +169,8 @@
     "numeric_evaluable": true,
     "approximation": "paper simplified sampled-data form",
     "formula_id": "yan-2022-part-i.sideband-value",
-    "summation_definition": "Fm"
+    "numeric_approximation": "Fm",
+    "summation_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)"
   },
   "modulator_io": {
     "input": "is",
@@ -165,7 +183,9 @@
       "Gm",
       "GPWM",
       "Ti",
-      "Tc"
+      "Tloop",
+      "Tc",
+      "Gvc"
     ],
     "requested_target": "Tc",
     "mapping_rule": "Tc=Ti/(1+Ti)",
@@ -174,8 +194,8 @@
   "power_stage": {
     "Gid": {
       "formula_id": "yan-2022-part-i.gid-buck",
-      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
-      "approximation": "ideal-ESR-power-stage"
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "approximation": "paper-esr-power-stage"
     }
   },
   "modulator": {
@@ -215,8 +235,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "8d3ae1aa27866a9135f2afed9bcb40292ef3a793d6563e4baf66927e08049f24"
+      "sha256": "7d544689711382617994858f38a13f5edfbb463753c6ae9e918e3b13847aee8a"
     },
-    "artifact_sha256": "d4b581039dc1cb742f31fc7a8222636aa073f706c6c824c79b1e92d61b612c17"
+    "artifact_sha256": "60c15cecfdfac3c55c05aafa1cd5cd78bd863a17dded0e2677eb71d5167b34db"
   }
 }

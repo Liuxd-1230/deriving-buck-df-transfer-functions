@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "C-COT",
-    "target": "Tc",
-    "target_transfer": "Tc",
+    "target": "Tloop",
+    "target_transfer": "Tloop",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -60,6 +60,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "7bcf7adb41e416653dbe4c5fc48e44775b22421a8b76737a745a26aeb4bc06ce"
+    "artifact_sha256": "d79f2af884ce83cb2d4882fd2bf9d08ffb468b9a6bbbd4dc7b8a48c66c64d448"
   }
 }

@@ -5,8 +5,9 @@
 v0.4 是 ESSF（Event–Sampling–Sideband Framework）的 Yan 2022 sampled-data registered path 最小闭环。它先建立不可绕过的 intake、formula registry 和 proof object 闭环，再把 Yan/Ruan/Li 2022 Part I/II 的 Dirichlet、sideband、COT/COFT 双脉冲和 zero-ramp `Fm` proof fragment 固化成可检查 artifact：
 
 ```text
-request/intake → intake_status.json → classification.json
-→ formula binding → proof_object.json → checkers → report
+INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY
+→ FORMULA_BINDING/proof_object.json → DERIVATION/derivation.json
+→ CHECKERS/checker_result.json → REPORT
 ```
 
 任一五问信息缺失时，固定返回 `INCOMPLETE → ASK_USER_ONLY`，不能推导、自选参数或画 Bode 图。新结构即使完整走完协议，也必须保持 `PROTOCOL_DERIVED_UNVERIFIED`。
@@ -17,7 +18,7 @@ request/intake → intake_status.json → classification.json
 - 用 `preflight_intake.py` 建立 intake 硬闸门。
 - 区分 `DF_REGISTERED_DIRECT`、`DF_REGISTERED_MULTIPORT`、`PROTOCOL_DERIVED_NEW`、信息不足和越界电路。
 - 区分 `SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM`、`SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT`、`SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT`。
-- 以 `registries/formula_registry.yaml` 作为注册公式唯一真源。
+- 以拆分后的 `model_registry.yaml`、`formula_registry.yaml`、`paper_contract_registry.yaml` 和 `validation_registry.yaml` 作为注册事实源。
 - 用 `check_proof_object.py` 和 `check_formula_consistency.py` 检查结构化证据。
 - 用 `sampling/Fm/sideband/pulse_structure/modulator_io/target_mapping` 防止 sampled-data 推导把 `Tc/Gvc/Tloop` 混称。
 - 强制新模型写出 `F=0`、可移动边沿、`delta_t`、扰动路径与来源标签。
@@ -55,7 +56,7 @@ flowchart TD
 | `yan-2022-part-ii-ccot-buck-zero-ramp` | C-COT/C-COFT zero-ramp sampled-data | two pulse trains + `1-exp(-s*T0)` | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 | `yan-2022-part-ii-vcot-buck-zero-ramp` | V-COT/V-COFT zero-ramp sampled-data | `GPWM/Tv/Tc` mapping + trend boundary | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 
-前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → checkers` 进入报告，并且不得直接输出未注册的 `Gvc/Gvg/Zout/Tloop`。
+前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → derivation → checkers` 进入报告。`Gvc/Tloop` 只有在 registry 明确给出 `Gm/GPWM → Gid/Gvd → Ti/Tv/Tloop → Gvc` 映射时才可输出；未注册的 `Gvg/Zout` 仍必须拒绝或标为 unverified。
 
 论文公式、适用范围和重排过程见 [DF coefficient library](references/df-coefficient-library.md)，来源与 DOI 见 [Zotero DF source map](references/zotero-df-source-map.md)，逐篇推理结构见 [paper proof skeletons](references/paper-proof-skeletons/)。
 
@@ -104,14 +105,27 @@ git -C "$HOME\.codex\skills\deriving-buck-df-transfer-functions" pull
 核心符号工具需要 Python 和 SymPy；离线 benchmark 还使用 NumPy 与 Matplotlib：
 
 ```powershell
-python -m pip install sympy numpy matplotlib
+python -m pip install -r requirements.txt
 ```
 
 Zotero 不是运行依赖。论文 PDF 也没有打包进仓库。v0.4 开发阶段阅读了 Yan 2022 Part I/II PDF 来提取 proof skeleton、公式片段和 benchmark 边界；交付物只保留可执行 registry、proof object、benchmark 和短 provenance。
 
 ## 快速开始
 
-主要入口：`preflight_intake.py`、`classify --intake-status`、`build_proof_object.py`、`check_proof_object.py`、`check_formula_consistency.py`、`make-protocol-case` 和 `derive --proof-object`。
+主要入口：`preflight_intake.py`、`classify --intake-status`、`build_proof_object.py`、`derive_transfer.py`、`check_derivation.py` 和 `render_derivation_report.py`。
+
+sampled-data registered 完整链：
+
+```powershell
+python scripts/preflight_intake.py --intake circuit.json --out intake_status.json
+python scripts/df_buck_sympy.py classify --intake-status intake_status.json --out classification.json
+python scripts/build_proof_object.py --intake-status intake_status.json --classification classification.json --out proof_object.json
+python scripts/check_proof_object.py --proof proof_object.json
+python scripts/check_formula_consistency.py --proof proof_object.json
+python scripts/derive_transfer.py --proof proof_object.json --out derivation.json
+python scripts/check_derivation.py --proof proof_object.json --derivation derivation.json --out checker_result.json
+python scripts/render_derivation_report.py --derivation derivation.json --checker checker_result.json --out derivation.md --manifest report_manifest.json
+```
 
 工程输出入口还包括：
 
@@ -201,7 +215,7 @@ python scripts/df_buck_sympy.py plot-bode `
   --out plots/
 ```
 
-每张图和 summary 必须标出 `fs`、`fs/2`、`valid_frequency_limit`、0 dB crossing、phase margin 和可得的 gain margin。若交越超过有效频率边界，summary 标为 `EXTRAPOLATED_BEYOND_VALID_RANGE`；不能把这种相位裕度当可信稳定性结论。
+每张图和 summary 必须标出 `fs`、`fs/2`、`valid_frequency_limit` 和 0 dB crossing。PM/GM 只对 `response_kind=return_ratio` 的 `Ti/Tv/Tloop` 计算；`Gm/GPWM/Gvc/Gvg/Zout/Tc` 返回 `NOT_APPLICABLE_NON_RETURN_RATIO`，其 0 dB crossing 不是稳定裕度。若 return ratio 交越超过有效边界，summary 标为 `EXTRAPOLATED_BEYOND_VALID_RANGE`。
 
 v0.4 sampled-data case 的 `plot-bode` 支持 `Gm/GPWM/Ti/Tv/Tc`、`exp(-s*T)`、`TRUNCATED_SUM_M` 和 `PAPER_SIMPLIFIED_FORM`。`SYMBOLIC_FULL_SUM` 不能数值画图，必须先选择截断项数或论文简化式。
 
@@ -217,14 +231,14 @@ KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))
 
 ### 结构化主路径与当前自动化边界
 
-`preflight → classification → proof_object → two checkers` 是机器检查的结构化主路径。Markdown 不是证据，只是报告渲染层。
+`INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY → FORMULA_BINDING → DERIVATION → CHECKERS → REPORT` 是机器检查主路径。每个 artifact 记录阶段、history、前驱 SHA-256 和自身 canonical JSON SHA-256。Markdown 不是证据，只是报告渲染层。
 
-对于 `proof_version=0.3.1/0.4`，`derive` 是报告渲染器：它不会自动把任意 `F(x,u,t)=0` 变成 `a_*`，更不会自动完成新结构的代数消元。
+对于 sampled-data registered path，`derive_transfer.py` 按 paper contract 生成 `GPWM → Gid/Gvd → Ti/Tv → Tc`，`check_derivation.py` 再独立复算。旧 `df_buck_sympy.py derive` 是兼容报告渲染器，仅保留 legacy 用途；它不会自动替代结构化 derivation artifact。
 
 1. agent 按 12 步协议推导候选事件敏感度、DF 关系和传函；
 2. proof object 保存候选式、formula ID、来源和未验证项；
 3. proof/formula checker 检查结构和 registry 一致性；
-4. 只有注册 v0.2/v0.3.1 DF 模型走现有 SymPy 功率级消元器；v0.4 sampled-data 模型走 proof-fragment + target mapping。
+4. 注册 v0.2/v0.3.1 DF 模型走现有 SymPy 功率级消元器；v0.4 sampled-data 模型走 registry-bound proof + independent derivation artifact。
 
 把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.4 已实现能力。
 
@@ -300,4 +314,4 @@ VALIDATION.md                    证据等级和未验证项
 3. `DF_REGISTERED_DIRECT` 不得构造 `a_*`或未注册的 `Gvg/Zout/Tloop`。
 4. 只要连接或 ramp 路径改变，就退回事件方程重新推导。
 5. 新模型在 benchmark 或开关仿真前始终保持未验证状态。
-6. sampled-data 论文给出的 `GPWM/Gm/Ti/Tv/Tc` 必须显式 target mapping；不能偷换成 `Gvc/Tloop`。
+6. sampled-data 论文给出的 `GPWM/Gm/Ti/Tv/Tc` 必须显式 target mapping；`Gvc/Tloop` 只能由注册的 power-stage coupling 和 return-ratio 关系派生，不能把 `Tc`、`Gvc`、`Tloop` 偷换成同一个量。

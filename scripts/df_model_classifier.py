@@ -101,6 +101,25 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(intake, dict):
         raise ValueError("Circuit intake must be a JSON object.")
 
+    phases = intake.get("phases", "unknown")
+    is_multiphase = isinstance(phases, int) and not isinstance(phases, bool) and phases > 1
+    if is_multiphase:
+        overlap = bool(intake.get("multiphase_overlap") or intake.get("overlap"))
+        path = "MULTIPHASE_OVERLAP" if overlap else "MULTIPHASE_NONOVERLAP"
+        code = "REJECT_MULTIPHASE_OVERLAP_V05" if overlap else "REJECT_MULTIPHASE_NONOVERLAP_V05"
+        return {
+            "topology": intake.get("topology", "unknown"),
+            "conduction_mode": intake.get("conduction_mode", "unknown"),
+            "phases": phases,
+            "control_family": intake.get("control_family", "unknown"),
+            "unsupported_effects": [code],
+            "path": path,
+            "model_match": {"known_model": False, "model_id": None, "confidence": "high"},
+            "action": "PLANNED_REGISTERED_MODEL_V05",
+            "validation_level": "REJECTED_UNSUPPORTED",
+            "missing_information": [],
+        }
+
     unsupported = _unsupported(intake)
     base = {
         "topology": intake.get("topology", "unknown"),

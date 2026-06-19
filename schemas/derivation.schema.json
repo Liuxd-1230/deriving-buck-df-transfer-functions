@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ESSF v0.4 derivation artifact",
   "type": "object",
-  "required": ["derivation_version", "case_id", "workflow", "classification", "control_contract", "selected_loop", "target_transfer", "target_formula_id", "expressions", "expanded_expressions", "expanded_target_expression", "steps", "approximation_policy", "validation"],
+  "required": ["derivation_version", "case_id", "workflow", "classification", "control_contract", "selected_loop", "target_transfer", "target_formula_id", "response_kind", "expressions", "expanded_expressions", "expanded_target_expression", "reasoning_method", "steps", "approximation_policy", "validation"],
   "properties": {
     "derivation_version": {"const": "0.4"},
     "workflow": {
@@ -12,7 +12,9 @@
     },
     "control_contract": {"enum": ["current", "voltage"]},
     "selected_loop": {"enum": ["Ti", "Tv"]},
+    "response_kind": {"enum": ["return_ratio", "transfer_function", "closed_loop"]},
     "expressions": {"type": "object"},
+    "reasoning_method": {"type": "object"},
     "steps": {
       "type": "array",
       "minItems": 7,

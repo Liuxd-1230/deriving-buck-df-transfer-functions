@@ -37,8 +37,10 @@
         "T0": 3e-06,
         "L": 1e-05,
         "R": 1.0,
-        "m1": 1.0,
-        "m2": 4.0,
+        "m1": 4.0,
+        "m2": 1.0,
+        "D": 0.3,
+        "mc": 0.0,
         "Hv": 0.36,
         "H": 0.36,
         "SidebandPulse": 0.05,
@@ -70,7 +72,7 @@
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-modulator",
       "dimension_signature": "1/slope_time",
-      "expression": "1/((m2-m1)*Ts/2)"
+      "expression": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)"
     },
     {
       "formula_id": "yan-2022-part-ii.vcot-pulse-relation",
@@ -105,7 +107,7 @@
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-power-stage",
       "dimension_signature": "voltage/duty",
-      "expression": "Vin/(L*C*s**2+(L/R)*s+1)"
+      "expression": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)"
     },
     {
       "formula_id": "yan-2022-part-ii.vcot-tv",
@@ -115,11 +117,25 @@
       "expression": "Hv*Gvd*GPWM"
     },
     {
+      "formula_id": "yan-2022-part-ii.vcot-tloop",
+      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Tv"
+    },
+    {
       "formula_id": "yan-2022-part-ii.vcot-tc",
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Tv/(1+Tv)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.vcot-gvc",
+      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "output/control",
+      "expression": "Gvd*GPWM/(1+Tv)"
     }
   ],
   "formula_object_bindings": {
@@ -131,7 +147,9 @@
     "GPWM": "yan-2022-part-ii.vcot-gpwm",
     "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
     "Tv": "yan-2022-part-ii.vcot-tv",
-    "Tc": "yan-2022-part-ii.vcot-tc"
+    "Tloop": "yan-2022-part-ii.vcot-tloop",
+    "Tc": "yan-2022-part-ii.vcot-tc",
+    "Gvc": "yan-2022-part-ii.vcot-gvc"
   },
   "sampling": {
     "sampling_instant": "modulator input intersection",
@@ -147,7 +165,7 @@
     "type": "COT_TWO_PULSE_TRAINS",
     "d1": "narrow pulse train at each sampling instant",
     "d2": "delayed inverse narrow pulse train after Ton",
-    "relation": "d2(t)=-d1(t-Ton)",
+    "relation": "d2(t)=-d1(t-T0)",
     "frequency_factor": "1-exp(-s*T0)",
     "T0": "Ton",
     "relation_formula_id": "yan-2022-part-ii.vcot-pulse-relation",
@@ -156,7 +174,7 @@
   },
   "Fm": {
     "type": "constant",
-    "expression": "1/((m2-m1)*Ts/2)",
+    "expression": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)",
     "origin": "sampled_data_derivation",
     "depends_on": [
       "m1",
@@ -177,7 +195,8 @@
     "numeric_evaluable": true,
     "approximation": "paper simplified sampled-data form",
     "formula_id": "yan-2022-part-ii.vcot-sideband-value",
-    "summation_definition": "Fm*(1-exp(-s*Ton))"
+    "numeric_approximation": "Fm*(1-exp(-s*Ton))",
+    "summation_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
   },
   "modulator_io": {
     "input": "vfb",
@@ -189,7 +208,9 @@
     "available_registered_outputs": [
       "GPWM",
       "Tv",
-      "Tc"
+      "Tloop",
+      "Tc",
+      "Gvc"
     ],
     "requested_target": "Tc",
     "mapping_rule": "Tc=Tv/(1+Tv)",
@@ -198,8 +219,8 @@
   "power_stage": {
     "Gvd": {
       "formula_id": "yan-2022-part-ii.vcot-gvd-buck",
-      "expression": "Vin/(L*C*s**2+(L/R)*s+1)",
-      "approximation": "ideal-ESR-power-stage"
+      "expression": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "approximation": "paper-esr-power-stage"
     }
   },
   "modulator": {
@@ -239,8 +260,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "da7638b5f539c418c2c5f30d95cfcf082a1444978a1ce472469d2fdaa8171af2"
+      "sha256": "43f9a531d36a7e9b4c492e4c606b2f65890b0e46ac79a2ca5274ffaf30e4c9e4"
     },
-    "artifact_sha256": "36927e049866d8fbc5c350e53a640226565298242fbd968af5ea93db668ce2e1"
+    "artifact_sha256": "96ff186017347eb86cf81eb1fef1b83146f23c617bf822821a7a4bc00732e7ce"
   }
 }

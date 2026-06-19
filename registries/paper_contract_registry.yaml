@@ -5,6 +5,7 @@
       "paper": "Yan/Ruan/Li 2022 Part I",
       "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
       "control_contract": "current",
+      "sideband_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)",
       "formula_objects": {
         "sampling": "yan-2022-part-i.dirichlet-value",
         "Fm": "yan-2022-part-i.pcm-fm-zero-ramp",
@@ -12,14 +13,17 @@
         "GPWM": "yan-2022-part-i.gpwm",
         "Gid": "yan-2022-part-i.gid-buck",
         "Ti": "yan-2022-part-i.ti",
-        "Tc": "yan-2022-part-i.tc-current"
+        "Tloop": "yan-2022-part-i.tloop-current",
+        "Tc": "yan-2022-part-i.tc-current",
+        "Gvc": "yan-2022-part-i.gvc-current"
       },
-      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gid", "Ti", "Tc"]
+      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gid", "Ti", "Tloop", "Tc", "Gvc"]
     },
     "yan-2022-part-i-voltage-buck": {
       "paper": "Yan/Ruan/Li 2022 Part I",
       "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
       "control_contract": "voltage",
+      "sideband_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)",
       "formula_objects": {
         "sampling": "yan-2022-part-i-voltage.dirichlet-value",
         "Fm": "yan-2022-part-i-voltage.fm-zero-ramp",
@@ -27,14 +31,18 @@
         "GPWM": "yan-2022-part-i-voltage.gpwm",
         "Gvd": "yan-2022-part-i-voltage.gvd-buck",
         "Tv": "yan-2022-part-i-voltage.tv",
-        "Tc": "yan-2022-part-i-voltage.tc-voltage"
+        "Tloop": "yan-2022-part-i-voltage.tloop-voltage",
+        "Tc": "yan-2022-part-i-voltage.tc-voltage",
+        "Gvc": "yan-2022-part-i-voltage.gvc-voltage"
       },
-      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gvd", "Tv", "Tc"]
+      "derivation_order": ["sampling", "Fm", "sideband", "GPWM", "Gvd", "Tv", "Tloop", "Tc", "Gvc"]
     },
     "yan-2022-part-ii-ccot-buck-zero-ramp": {
       "paper": "Yan/Ruan/Li 2022 Part II",
       "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
       "control_contract": "current",
+      "sideband_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))",
+      "pulse_time_relation": "d2(t)=-d1(t-T0)",
       "formula_objects": {
         "sampling": "yan-2022-part-ii.ccot-dirichlet-value",
         "Fm": "yan-2022-part-ii.ccot-fm-zero-ramp",
@@ -44,14 +52,18 @@
         "GPWM": "yan-2022-part-ii.ccot-gpwm",
         "Gid": "yan-2022-part-ii.ccot-gid-buck",
         "Ti": "yan-2022-part-ii.ccot-ti",
-        "Tc": "yan-2022-part-ii.ccot-tc"
+        "Tloop": "yan-2022-part-ii.ccot-tloop",
+        "Tc": "yan-2022-part-ii.ccot-tc",
+        "Gvc": "yan-2022-part-ii.ccot-gvc"
       },
-      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gid", "Ti", "Tc"]
+      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gid", "Ti", "Tloop", "Tc", "Gvc"]
     },
     "yan-2022-part-ii-vcot-buck-zero-ramp": {
       "paper": "Yan/Ruan/Li 2022 Part II",
       "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
       "control_contract": "voltage",
+      "sideband_definition": "sum over n in Z, n!=0 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))",
+      "pulse_time_relation": "d2(t)=-d1(t-T0)",
       "formula_objects": {
         "sampling": "yan-2022-part-ii.vcot-dirichlet-value",
         "Fm": "yan-2022-part-ii.vcot-fm-zero-ramp",
@@ -61,9 +73,11 @@
         "GPWM": "yan-2022-part-ii.vcot-gpwm",
         "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
         "Tv": "yan-2022-part-ii.vcot-tv",
-        "Tc": "yan-2022-part-ii.vcot-tc"
+        "Tloop": "yan-2022-part-ii.vcot-tloop",
+        "Tc": "yan-2022-part-ii.vcot-tc",
+        "Gvc": "yan-2022-part-ii.vcot-gvc"
       },
-      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gvd", "Tv", "Tc"]
+      "derivation_order": ["sampling", "Fm", "pulse_relation", "pulse_factor", "sideband", "GPWM", "Gvd", "Tv", "Tloop", "Tc", "Gvc"]
     }
   }
 }

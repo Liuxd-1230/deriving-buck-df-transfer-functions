@@ -1,4 +1,4 @@
-# Buck DF Skill v0.4 Validation
+# Buck DF Skill v0.4.1 Validation
 
 ## Material passport
 
@@ -15,16 +15,20 @@
 | Generic Buck matrix algebra | VERIFIED | Symbolic plant identities and adapter-substitution tests |
 | Four registered v0.2 paper models | PARTIALLY_VERIFIED | Formula/key-value benchmarks remain bundled; no original raw switching vectors |
 | Intake hard gate | VERIFIED | Text/JSON tests enforce `INCOMPLETE -> ASK_USER_ONLY`; registered model IDs cannot bypass preflight |
+| Runtime schemas and provenance | VERIFIED_STATIC | Draft 2020-12 validation plus canonical JSON SHA-256 links enforce every transition through `FORMULA_BINDING → DERIVATION → CHECKERS → REPORT` |
 | Model classification | VERIFIED | Paths are `DF_REGISTERED_DIRECT`, `DF_REGISTERED_MULTIPORT`, `PROTOCOL_DERIVED_NEW`, `INCOMPLETE`, and `UNSUPPORTED` |
 | Formula registry | VERIFIED | Four registered generators load canonical formulas from `formula_registry.yaml`; Q2 and bound-expression mutation tests fail as required |
-| Yan 2022 sampled-data registry | PARTIALLY_VERIFIED | Part I/II proof fragments are machine-readable registry entries; they are not full arbitrary sampled-data transfer functions |
+| Yan 2022 sampled-data registry | PARTIALLY_VERIFIED | Part I/II registered paths generate `GPWM → Gid/Gvd → Ti/Tv → Tc`; scope remains single-phase zero-ramp and does not imply arbitrary sampled-data support |
+| Sampled-data derivation checker | VERIFIED_STATIC | Every derivation step, target closure, approximation, order and predecessor hash is recomputed from paper/formula registries |
 | Proof object checker | VERIFIED | Direct fake `a_*`, unsupported target, incomplete intake, bad validation and formula mismatches are rejected |
 | Sampled-data proof contract | VERIFIED_STATIC | Checker requires sampling limits, Dirichlet value, Fm reference, sideband mode, modulator_io, target_mapping and registry formula bindings |
 | Dirichlet checker | VERIFIED_STATIC | `Fm.origin=sampled_data_derivation` without a Dirichlet reference returns `FAIL_FM_WITHOUT_DIRICHLET_REFERENCE` |
 | COT/COFT pulse structure | VERIFIED_STATIC | Part II proofs missing `d1/d2/d2(t)=-d1(t-T0)/1-exp(-s*T0)` return `FAIL_COT_TWO_PULSE_TRAINS` |
 | Zero-ramp Fm hard rejection | VERIFIED_STATIC | external/internal ramp, delay, RC injection and sense-filter cases reject with explicit v0.4/v0.5 boundary codes |
-| Sampled-data target mapping | VERIFIED_STATIC | `Gm/GPWM/Ti/Tv/Tc` are not renamed to `Gvc/Tloop`; unsupported targets are rejected or unverified |
+| Sampled-data target mapping | VERIFIED_STATIC | `Gvc/Tloop` are registered-derived only through `Gm/GPWM → Gid/Gvd → Ti/Tv/Tloop → Gvc`; unsupported targets are rejected or unverified |
 | Sideband numeric evaluator | VERIFIED_STATIC | `plot-bode` supports `exp(-s*T)`, `TRUNCATED_SUM_M`, and `PAPER_SIMPLIFIED_FORM`; `SYMBOLIC_FULL_SUM` is rejected for numeric plots |
+| Sideband substitution | VERIFIED_STATIC | SymPy `subs(n,Integer(k))` preserves identifiers; default truncation is `[-M,-1]∪[1,M]` with explicit positive integer `M` |
+| Stability-margin semantics | VERIFIED_STATIC | PM/GM are computed only for `Ti/Tv/Tloop` return ratios; other responses return `NOT_APPLICABLE_NON_RETURN_RATIO` |
 | V-COT time-constant trend | VERIFIED_STATIC | Benchmark guards Yan Part II boundary `rC*C > T0/2`; increasing `rC` or `C` improves margin, increasing `Ton/T0` reduces it |
 | Forward-test | VERIFIED_STATIC | “做一个谷值电压模 COT” returns missing questions only and creates no proof, transfer, or plot |
 | Engineering forward-test | VERIFIED_STATIC | Valley current-mode COT case requires `loop_break` for `Tloop`, preserves SIMPLIS Laplace semantics, and plots `Gvc/Tloop` with `fs/2` validity markers |
@@ -35,7 +39,8 @@
 | New RC-ramp coefficient formulas | NOT_VERIFIED | The example records required derivation evidence but intentionally contains no claimed closed-form coefficients |
 | Switching simulation | NOT_VERIFIED | No SIMPLIS/switching AC sweep validates a protocol-derived new model in v0.3.1 |
 | Independent agent forward-test | NOT_VERIFIED | The new prompt test is deterministic CLI evidence, not an isolated-agent behavioral run |
-| Multiphase overlap, DCM, skipping/burst | REJECTED_UNSUPPORTED | Classifier and checker reject these paths; no applicability claim |
+| Multiphase overlap/nonoverlap | PLANNED_V05 | Classifier emits distinct `MULTIPHASE_OVERLAP` / `MULTIPHASE_NONOVERLAP` paths and rejection codes; neither can enter a single-phase proof |
+| DCM, skipping/burst | REJECTED_UNSUPPORTED | Classifier and checker reject these paths; no applicability claim |
 | Average model represented as DF | `EXCLUDED_NON_DF` / REJECTED_UNSUPPORTED | Huang 2025 remains excluded; failure fixture returns `FAIL_FALSE_DF` |
 
 ## Paper-model evidence retained from v0.2
@@ -49,8 +54,10 @@
 
 - Part I: Dirichlet sampling contract and zero-ramp sampled `Fm` proof fragment are registered. Runtime artifacts do not require the PDF.
 - Part II C-COT/C-COFT: proof object requires two pulse trains and `1-exp(-s*T0)`; benchmark uses unified `plot-bode`.
-- Part II V-COT/V-COFT: proof object separates `GPWM/Tv/Tc` from `Gvc/Tloop`; trend benchmark protects `rC*C > T0/2`.
+- Part II V-COT/V-COFT: proof object separates `GPWM/Tv/Tc/Gvc/Tloop`; `Gvc` is closed-loop control-to-output, `Tloop` is return ratio, and the trend benchmark protects `rC*C > T0/2`.
 - Sideband policy: registry stores symbolic/paper skeletons; numeric Bode must declare `TRUNCATED_SUM_M` or `PAPER_SIMPLIFIED_FORM`.
+- Power-stage coupling: current contracts use `Gid/Hi/Ti`; voltage contracts use `Gvd/Hv/Tv`; `Tc` is generated only as `Ti/(1+Ti)` or `Tv/(1+Tv)`.
+- Margin policy: only `Ti/Tv/Tloop` are return ratios. `Gm/GPWM/Gvc/Gvg/Zout/Tc` report `NOT_APPLICABLE_NON_RETURN_RATIO` for PM/GM.
 
 ## v0.4 not covered
 

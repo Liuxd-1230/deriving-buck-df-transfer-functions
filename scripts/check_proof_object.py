@@ -126,6 +126,13 @@ def _check_sampled_formula_objects(proof: dict[str, Any]) -> list[str]:
     actual_objects = proof.get("formula_object_bindings")
     if actual_objects != expected_objects:
         return ["formula_object_bindings do not match the registered paper contract"]
+    sideband = proof.get("sideband") or {}
+    if sideband.get("summation_definition") != contract.get("sideband_definition"):
+        errors.append("sideband summation_definition does not match the paper contract")
+    if contract.get("pulse_time_relation"):
+        pulse = proof.get("pulse_structure") or {}
+        if pulse.get("relation") != contract["pulse_time_relation"]:
+            errors.append("pulse time-domain relation does not match the paper contract")
     bindings = proof.get("formula_bindings") or []
     by_id = {item.get("formula_id"): item for item in bindings if isinstance(item, dict)}
     for object_name, formula_id in expected_objects.items():

@@ -37,8 +37,10 @@
       "T0": 3e-06,
       "L": 1e-05,
       "R": 1.0,
-      "m1": 1.0,
-      "m2": 4.0,
+      "m1": 4.0,
+      "m2": 1.0,
+      "D": 0.3,
+      "mc": 0.0,
       "Hv": 0.36,
       "H": 0.36,
       "SidebandPulse": 0.05,
@@ -60,6 +62,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "c9d3af886519fbbb7248610fe39dfe017a7045c8845d93352bcdc52b95640197"
+    "artifact_sha256": "6c699489a79183bbdd370bf1de0022f47204cc533823db98db9e34aa98a38f4c"
   }
 }

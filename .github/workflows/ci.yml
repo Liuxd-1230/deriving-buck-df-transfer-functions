@@ -1,0 +1,33 @@
+name: ESSF validation
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -r requirements.txt pytest
+      - name: Unit tests
+        run: |
+          python -m unittest discover -s tests -p 'test_*.py' -v
+          python -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Focused sampled-data tests
+        run: |
+          pytest tests/test_sampled_data_dirichlet.py tests/test_fm_models_zero_ramp_only.py tests/test_sideband_sum.py -q
+          pytest tests/test_sampled_derivation_chain.py tests/test_plot_bode_sideband.py tests/test_sampled_control_family_targets.py -q
+      - name: Schemas formulas and benchmarks
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python scripts/validate_artifact.py --all-benchmarks
+          python scripts/check_formula_consistency.py --all
+          python scripts/run_benchmarks.py --all --output-root "$RUNNER_TEMP/df-benchmarks"
+      - run: git diff --check
