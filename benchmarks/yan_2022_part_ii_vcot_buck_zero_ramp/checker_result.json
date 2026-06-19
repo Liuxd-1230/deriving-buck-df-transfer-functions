@@ -1,0 +1,24 @@
+{
+  "checker_version": "0.4",
+  "status": "PASS",
+  "errors": [],
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "CHECKERS",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION",
+      "CHECKERS"
+    ],
+    "predecessor": {
+      "artifact_type": "derivation",
+      "state": "DERIVATION",
+      "sha256": "da9fa0fe507fa3bedb4f70ea403ff5fb83171f4ea1569209ac4cb60e6144a86f"
+    },
+    "artifact_sha256": "6a80d4b87bac02ce14644f388ecc85ab9e1da1ea25998813b9bc66ec1328b6e7"
+  }
+}

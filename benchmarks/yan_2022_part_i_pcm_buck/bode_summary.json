@@ -1,14 +1,14 @@
 {
   "case": "yan_2022_part_i_pcm_buck",
   "targets": [
-    "Gm"
+    "Tc"
   ],
   "fs_hz": 100000.0,
   "fs_half_hz": 50000.0,
   "valid_frequency_limit_hz": 50000.0,
   "evaluator": "sampled-data-numeric",
   "results": {
-    "Gm": {
+    "Tc": {
       "zero_db_crossing_hz": null,
       "phase_margin_deg": null,
       "gain_margin_db": null,

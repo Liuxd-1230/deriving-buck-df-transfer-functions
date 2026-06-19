@@ -1,8 +1,15 @@
 {
   "source": "formula_registry.yaml",
   "formula_ids": [
-    "yan-2022-part-ii.vcot-gpwm-pulse-factor",
-    "yan-2022-part-ii.vcot-tv-truncated"
+    "yan-2022-part-ii.vcot-dirichlet-value",
+    "yan-2022-part-ii.vcot-fm-zero-ramp",
+    "yan-2022-part-ii.vcot-pulse-relation",
+    "yan-2022-part-ii.vcot-pulse-factor",
+    "yan-2022-part-ii.vcot-sideband-value",
+    "yan-2022-part-ii.vcot-gpwm",
+    "yan-2022-part-ii.vcot-gvd-buck",
+    "yan-2022-part-ii.vcot-tv",
+    "yan-2022-part-ii.vcot-tc"
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

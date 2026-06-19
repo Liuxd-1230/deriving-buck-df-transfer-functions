@@ -1,0 +1,8 @@
+{
+  "registry_version": "0.4",
+  "levels": {
+    "SAMPLED_DATA_CONTRACT_ONLY": {"requires": ["proof_object", "formula_bindings"]},
+    "SAMPLED_DATA_REGISTERED_PARTIAL": {"requires": ["proof_object", "derivation", "formula_consistency", "numeric_probes", "valid_frequency"]},
+    "SAMPLED_DATA_REGISTERED_BENCHMARKED": {"requires": ["paper_curve_or_key_values", "error_statement", "all_partial_evidence"]}
+  }
+}

@@ -123,9 +123,10 @@ def check_proof_bindings(proof: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(bindings, list) or not bindings:
         errors.append("proof_object requires non-empty formula_bindings for a registered model")
     else:
+        sampled = (proof.get("classification") or {}).get("path") == "SAMPLED_DATA_REGISTERED"
         for binding in bindings:
             try:
-                errors.extend(check_binding(binding, target))
+                errors.extend(check_binding(binding, None if sampled else target))
             except FormulaRegistryError as exc:
                 errors.append(str(exc))
     return {"status": "PASS" if not errors else "FAIL", "errors": errors,

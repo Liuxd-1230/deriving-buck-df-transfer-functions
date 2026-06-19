@@ -1,18 +1,18 @@
 {
   "case": "yan_2022_part_ii_vcot_buck_zero_ramp",
   "targets": [
-    "GPWM"
+    "Tc"
   ],
   "fs_hz": 98000.0,
   "fs_half_hz": 49000.0,
   "valid_frequency_limit_hz": 49000.0,
   "evaluator": "sampled-data-numeric",
   "results": {
-    "GPWM": {
-      "zero_db_crossing_hz": 2122.303638711496,
-      "phase_margin_deg": 268.8539560350958,
-      "gain_margin_db": null,
-      "phase_180_crossing_hz": null,
+    "Tc": {
+      "zero_db_crossing_hz": 17924.414991385704,
+      "phase_margin_deg": 171.65212107750023,
+      "gain_margin_db": 2.365566875968268,
+      "phase_180_crossing_hz": 167699.24919369223,
       "validity": "WITHIN_DECLARED_RANGE",
       "plot_markers": [
         "fs",

@@ -3,19 +3,27 @@
   "name": "yan_2022_part_ii_ccot_buck_zero_ramp",
   "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
   "parameters": {
+    "Vin": 12.0,
+    "Vo": 1.2,
     "fs": 98000.0,
     "Ts": 1.0204081632653061e-05,
     "Ton": 3e-06,
     "T0": 3e-06,
+    "L": 1e-05,
+    "C": 0.0001,
+    "R": 1.0,
+    "rC": 0.01,
     "m1": 1.0,
     "m2": 4.0,
-    "Fm": 65333.333333333336
+    "Hi": 0.1,
+    "H": 0.1,
+    "SidebandPulse": 0.05
   },
   "valid_frequency": {
     "max_hz": 49000.0
   },
   "transfer_functions": {
-    "Gm": "Fm*(1-exp(-s*Ton))"
+    "Tc": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))"
   },
   "sideband": {
     "mode": "TRUNCATED_SUM_M",

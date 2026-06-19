@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "PCM",
-    "target": "Gm",
-    "target_transfer": "Gm",
+    "target": "Tc",
+    "target_transfer": "Tc",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -29,11 +29,24 @@
     "has_rc_injection": false,
     "has_filter_in_sense_path": false,
     "parameters": {
+      "Vin": 12.0,
+      "Vo": 1.2,
       "fs": 100000.0,
       "Ts": 1e-05,
+      "L": 1e-05,
+      "C": 0.0001,
+      "R": 1.0,
+      "rC": 0.01,
       "m1": 1.0,
       "m2": 4.0,
-      "Fm": 66666.66666666666
+      "Hi": 0.1,
+      "H": 0.1,
+      "SumG": 0.05
+    },
+    "sideband": {
+      "mode": "PAPER_SIMPLIFIED_FORM",
+      "numeric_evaluable": true,
+      "expression": "Fm"
     }
   },
   "workflow": {
@@ -45,6 +58,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "9254a34dd43eecb3a3da97e4c93c616e00ae611c1509de1745196e6d01b3bc44"
+    "artifact_sha256": "ee28a5729d2655197bb1542d5fbc96466f7f327bddd65d8a758f46d499584a0c"
   }
 }

@@ -1,10 +1,22 @@
 {
   "classification_version": "0.4",
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 1,
+  "control_family": "C-COT",
+  "unsupported_effects": [],
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
   "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-  "target_transfer": "Gm",
+  "target_transfer": "Tc",
+  "model_match": {
+    "known_model": true,
+    "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+    "confidence": "medium"
+  },
+  "action": "use_sampled_data_registered_model",
   "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "missing_information": [],
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -17,8 +29,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "51c9a6f77c49ffa83bc553f1a78d1899f407505b969e044b0dfd8f9f2593ef43"
+      "sha256": "7bcf7adb41e416653dbe4c5fc48e44775b22421a8b76737a745a26aeb4bc06ce"
     },
-    "artifact_sha256": "5a489bafbcf767a625e482b44fc6400092650960aaf9d2ac062dbdb01038783b"
+    "artifact_sha256": "dd9ab6012997251a68668b76a0ccb07df7dcc8aa8c689f3445dc463c163378cb"
   }
 }

@@ -3,17 +3,25 @@
   "name": "yan_2022_part_i_pcm_buck",
   "model_id": "yan-2022-part-i-pcm-buck",
   "parameters": {
+    "Vin": 12.0,
+    "Vo": 1.2,
     "fs": 100000.0,
     "Ts": 1e-05,
+    "L": 1e-05,
+    "C": 0.0001,
+    "R": 1.0,
+    "rC": 0.01,
     "m1": 1.0,
     "m2": 4.0,
-    "Fm": 66666.66666666666
+    "Hi": 0.1,
+    "H": 0.1,
+    "SumG": 0.05
   },
   "valid_frequency": {
     "max_hz": 50000.0
   },
   "transfer_functions": {
-    "Gm": "Fm"
+    "Tc": "-2*Hi*Vin*(C*R*s + 1)/(-2*C*H*L*R*SumG*s**2 - 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 - 2*H*L*SumG*s - 2*H*R*SumG - 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + R*Ts*m1 - R*Ts*m2)"
   },
   "sideband": {
     "mode": "PAPER_SIMPLIFIED_FORM",

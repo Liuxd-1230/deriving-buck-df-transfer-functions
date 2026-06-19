@@ -74,7 +74,7 @@ class SampledDataRegisteredModelsTests(unittest.TestCase):
             proof = json.loads(proof_path.read_text(encoding="utf-8"))
             self.assertEqual(proof["proof_version"], "0.4")
             self.assertEqual(proof["pulse_structure"]["type"], "COT_TWO_PULSE_TRAINS")
-            self.assertIn("1-exp(-s*Ton)", proof["pulse_structure"]["frequency_factor"])
+            self.assertEqual(proof["pulse_structure"]["frequency_factor"], "1-exp(-s*T0)")
             self.assertEqual(proof["target_mapping"]["mapping_status"], "REGISTERED_DIRECT")
             checked = subprocess.run([sys.executable, str(CHECKER), "--proof", str(proof_path)],
                                      cwd=ROOT, text=True, capture_output=True, timeout=60)

@@ -8,6 +8,7 @@ from typing import Any
 from cot_pulse_train import build_cot_pulse_structure
 from fm_models import build_fm_model
 from sideband_sum import build_sideband
+from formula_registry import get_formula, get_paper_contract, model_specs
 
 
 def build_target_mapping(
@@ -47,15 +48,26 @@ def build_sampling_contract(*, sampled_variable: str, sampling_instant: str) -> 
 
 def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
     family = spec["part_family"]
+    model_id = spec["model_id"]
+    contract = get_paper_contract(model_id)
+    formula_objects = contract["formula_objects"]
+    model = model_specs()[model_id]
     sampled_variable = spec.get("sampled_variable", "is")
     target = spec.get("target_transfer", "Gm")
+    if target not in model["supported_targets"]:
+        return {"status": "REJECT_TARGET_NOT_REGISTERED", "target": target, "model_id": model_id}
     sampling = build_sampling_contract(
         sampled_variable=sampled_variable,
         sampling_instant=spec.get("sampling_instant", "modulator input intersection"),
     )
+    sampling["formula_id"] = formula_objects["sampling"]
+    sampling["expression"] = get_formula(formula_objects["sampling"])["canonical_sympy_expr"]
+    sampling["dirichlet_value"] = sampling["expression"]
     fm = build_fm_model(spec)
     if fm["status"] != "OK":
         return fm
+    fm["Fm"]["formula_id"] = formula_objects["Fm"]
+    fm["Fm"]["expression"] = get_formula(formula_objects["Fm"])["canonical_sympy_expr"]
     if family in {
         "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
         "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
@@ -64,13 +76,27 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
             "control_family": spec.get("control_family", "C-COT"),
             "fixed_interval": spec.get("fixed_interval", "Ton"),
         })
-        modulator_expr = f"({fm['Fm']['expression']})*({pulse['frequency_factor']})"
+        pulse["relation_formula_id"] = formula_objects["pulse_relation"]
+        pulse["relation_expression"] = get_formula(formula_objects["pulse_relation"])["canonical_sympy_expr"]
+        pulse["factor_formula_id"] = formula_objects["pulse_factor"]
+        pulse["frequency_factor"] = get_formula(formula_objects["pulse_factor"])["canonical_sympy_expr"]
     else:
         pulse = {"type": "SINGLE_PULSE_TRAIN", "frequency_factor": "1"}
-        modulator_expr = fm["Fm"]["expression"]
-    sideband = build_sideband(spec.get("sideband", {"mode": "SYMBOLIC_FULL_SUM", "base_expression": "Gid(s+j*n*ws)"}))
-    available_outputs = spec.get("available_outputs", ["Gm"])
-    rules = spec.get("target_rules", {})
+    sideband_spec = dict(spec.get("sideband") or {"mode": "SYMBOLIC_FULL_SUM"})
+    sideband_spec.setdefault(
+        "base_expression",
+        "G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))" if "PART_II" in family else "G(s+j*n*ws)",
+    )
+    sideband = build_sideband(sideband_spec)
+    sideband["formula_id"] = formula_objects["sideband"]
+    sideband["summation_definition"] = sideband.get("sum_expression")
+    sideband["sum_expression"] = get_formula(formula_objects["sideband"])["canonical_sympy_expr"]
+    available_outputs = list(model["supported_targets"])
+    loop_name = "Ti" if contract["control_contract"] == "current" else "Tv"
+    rules = {
+        loop_name: f"{loop_name}={'Hi*Gid*GPWM' if loop_name == 'Ti' else 'Hv*Gvd*GPWM'}",
+        "Tc": f"Tc={loop_name}/(1+{loop_name})",
+    }
     mapping = build_target_mapping(
         available_outputs=available_outputs,
         requested_target=target,
@@ -78,7 +104,9 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
     )
     return {
         "status": "OK",
-        "formula_id": _formula_id_for_family(family, spec.get("control_family", "C-COT")),
+        "formula_id": formula_objects["GPWM"],
+        "formula_objects": formula_objects,
+        "control_contract": contract["control_contract"],
         "sampling": sampling,
         "pulse_structure": pulse,
         "Fm": fm["Fm"],
@@ -90,11 +118,21 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
             "sign_convention": spec.get("sign_convention", "negative"),
         },
         "target_mapping": mapping,
+        "power_stage": {
+            name: {
+                "formula_id": formula_objects[name],
+                "expression": get_formula(formula_objects[name])["canonical_sympy_expr"],
+                "approximation": get_formula(formula_objects[name])["approximation"],
+            }
+            for name in ("Gid", "Gvd") if name in formula_objects
+        },
         "modulator": {
-            "model_type": "Gm",
-            "expression": modulator_expr,
+            "model_type": "GPWM",
+            "formula_id": formula_objects["GPWM"],
+            "expression": get_formula(formula_objects["GPWM"])["canonical_sympy_expr"],
             "origin": "sampled_data_registered",
         },
+        "target_formula_id": formula_objects[target if target != "Gm" else "GPWM"],
     }
 
 

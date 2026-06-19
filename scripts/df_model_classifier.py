@@ -13,6 +13,7 @@ from preflight_intake import require_complete_intake
 from fm_models import build_fm_model
 from artifact_workflow import attach_workflow, verify_workflow
 from schema_validation import validate_artifact
+from formula_registry import model_specs
 
 
 BASE_PARAMETERS = ("Vin", "Vo", "L", "C", "R", "rC")
@@ -135,11 +136,24 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
     part_family = _sampled_data_part_family(intake)
     if part_family:
         target = intake.get("target_transfer") or intake.get("target")
+        normalized_family = _normalized_family(intake.get("control_family"))
+        part_i_model = (
+            "yan-2022-part-i-voltage-buck"
+            if normalized_family in {"PVM", "VVM"}
+            else "yan-2022-part-i-pcm-buck"
+        )
         model_id = {
-            "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM": "yan-2022-part-i-pcm-buck",
+            "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM": part_i_model,
             "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT": "yan-2022-part-ii-ccot-buck-zero-ramp",
             "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT": "yan-2022-part-ii-vcot-buck-zero-ramp",
         }[part_family]
+        if target not in model_specs()[model_id]["supported_targets"]:
+            return {**base, "path": "UNSUPPORTED", "model_id": model_id,
+                    "model_match": {"known_model": True, "model_id": model_id, "confidence": "high"},
+                    "action": "reject_unregistered_target",
+                    "validation_level": "REJECTED_UNSUPPORTED",
+                    "unsupported_effects": [f"TARGET_NOT_REGISTERED:{target}"],
+                    "missing_information": []}
         return {**base, "path": "SAMPLED_DATA_REGISTERED",
                 "part_family": part_family, "model_id": model_id,
                 "target_transfer": target,

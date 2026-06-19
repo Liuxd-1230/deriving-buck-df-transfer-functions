@@ -1,0 +1,163 @@
+{
+  "derivation_version": "0.4",
+  "case_id": "yan_2022_part_ii_ccot_buck_zero_ramp",
+  "classification": {
+    "path": "SAMPLED_DATA_REGISTERED",
+    "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
+    "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp"
+  },
+  "control_contract": "current",
+  "selected_loop": "Ti",
+  "target_transfer": "Tc",
+  "target_formula_id": "yan-2022-part-ii.ccot-tc",
+  "expressions": {
+    "sampling": "(x_left+x_right)/2",
+    "Fm": "1/((m2-m1)*Ts/2)",
+    "pulse_relation": "-exp(-s*T0)",
+    "pulse_factor": "1-exp(-s*T0)",
+    "sideband": "SidebandPulse",
+    "GPWM": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+    "Gid": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+    "Ti": "Hi*Gid*GPWM",
+    "Tc": "Ti/(1+Ti)"
+  },
+  "expanded_expressions": {
+    "sampling": "(x_left + x_right)/2",
+    "Fm": "-2/(Ts*(m1 - m2))",
+    "pulse_relation": "-exp(-T0*s)",
+    "pulse_factor": "(exp(T0*s) - 1)*exp(-T0*s)",
+    "sideband": "SidebandPulse",
+    "GPWM": "-2*(exp(T0*s) - 1)*exp(-T0*s)/(-2*H*SidebandPulse + Ts*m1 - Ts*m2)",
+    "Gid": "Vin*(C*R*s + 1)/(C*L*R*s**2 + L*s + R)",
+    "Ti": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((-2*H*SidebandPulse + Ts*m1 - Ts*m2)*(C*L*R*s**2 + L*s + R))",
+    "Tc": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))"
+  },
+  "expanded_target_expression": "-2*Hi*Vin*(C*R*s + 1)*(exp(T0*s) - 1)/(-2*C*H*L*R*SidebandPulse*s**2*exp(T0*s) - 2*C*Hi*R*Vin*s*exp(T0*s) + 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2*exp(T0*s) - C*L*R*Ts*m2*s**2*exp(T0*s) - 2*H*L*SidebandPulse*s*exp(T0*s) - 2*H*R*SidebandPulse*exp(T0*s) - 2*Hi*Vin*exp(T0*s) + 2*Hi*Vin + L*Ts*m1*s*exp(T0*s) - L*Ts*m2*s*exp(T0*s) + R*Ts*m1*exp(T0*s) - R*Ts*m2*exp(T0*s))",
+  "steps": [
+    {
+      "index": 1,
+      "object": "sampling",
+      "formula_id": "yan-2022-part-ii.ccot-dirichlet-value",
+      "expression": "(x_left+x_right)/2",
+      "source_equation": "Yan-2022-Part-II-Dirichlet-condition",
+      "approximation": "exact-sampling-definition",
+      "dimension_signature": "sampled-variable"
+    },
+    {
+      "index": 2,
+      "object": "Fm",
+      "formula_id": "yan-2022-part-ii.ccot-fm-zero-ramp",
+      "expression": "1/((m2-m1)*Ts/2)",
+      "source_equation": "Yan-2022-Part-II-zero-ramp-Fm",
+      "approximation": "zero-ramp-only",
+      "dimension_signature": "1/slope_time"
+    },
+    {
+      "index": 3,
+      "object": "pulse_relation",
+      "formula_id": "yan-2022-part-ii.ccot-pulse-relation",
+      "expression": "-exp(-s*T0)",
+      "source_equation": "Yan-2022-Part-II-d2-delayed-inverse-d1",
+      "approximation": "exact-delay-relation",
+      "dimension_signature": "D2/D1"
+    },
+    {
+      "index": 4,
+      "object": "pulse_factor",
+      "formula_id": "yan-2022-part-ii.ccot-pulse-factor",
+      "expression": "1-exp(-s*T0)",
+      "source_equation": "Yan-2022-Part-II-d1-plus-d2",
+      "approximation": "exact-two-pulse-factor",
+      "dimension_signature": "dimensionless"
+    },
+    {
+      "index": 5,
+      "object": "sideband",
+      "formula_id": "yan-2022-part-ii.ccot-sideband-value",
+      "expression": "SidebandPulse",
+      "source_equation": "Yan-2022-Part-II-nonzero-sideband-sum-with-pulse-factor",
+      "approximation": "symbolic-full-sum",
+      "dimension_signature": "pulse-weighted-sideband-sum"
+    },
+    {
+      "index": 6,
+      "object": "GPWM",
+      "formula_id": "yan-2022-part-ii.ccot-gpwm",
+      "expression": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+      "source_equation": "Yan-2022-Part-II-sampled-modulator",
+      "approximation": "registered-sideband-form",
+      "dimension_signature": "duty/input"
+    },
+    {
+      "index": 7,
+      "object": "Gid",
+      "formula_id": "yan-2022-part-ii.ccot-gid-buck",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+      "source_equation": "CCM-Buck-linearized-state-equations",
+      "approximation": "ideal-ESR-power-stage",
+      "dimension_signature": "current/duty"
+    },
+    {
+      "index": 8,
+      "object": "Ti",
+      "formula_id": "yan-2022-part-ii.ccot-ti",
+      "expression": "Hi*Gid*GPWM",
+      "source_equation": "current-loop-block-composition",
+      "approximation": "exact-block-composition",
+      "dimension_signature": "return-ratio"
+    },
+    {
+      "index": 9,
+      "object": "Tc",
+      "formula_id": "yan-2022-part-ii.ccot-tc",
+      "expression": "Ti/(1+Ti)",
+      "source_equation": "negative-feedback-closure",
+      "approximation": "exact-feedback-identity",
+      "dimension_signature": "closed-loop"
+    }
+  ],
+  "approximation_policy": {
+    "declared": true,
+    "items": [
+      "exact-block-composition",
+      "exact-delay-relation",
+      "exact-feedback-identity",
+      "exact-sampling-definition",
+      "exact-two-pulse-factor",
+      "ideal-ESR-power-stage",
+      "registered-sideband-form",
+      "symbolic-full-sum",
+      "zero-ramp-only"
+    ],
+    "valid_frequency": "limited by sampled-data paper contract and benchmark metadata"
+  },
+  "validation": {
+    "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+    "completed": [
+      "registry-bound-step-generation",
+      "proof-expression-consistency"
+    ],
+    "missing": [
+      "paper-figure-reproduction",
+      "switching-simulation"
+    ]
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "DERIVATION",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION"
+    ],
+    "predecessor": {
+      "artifact_type": "proof_object",
+      "state": "FORMULA_BINDING",
+      "sha256": "11881178868549714fcfeebd083c037a04524953106ffb89a1a2690ef0409991"
+    },
+    "artifact_sha256": "188a4e9dddeaf308126d1d1ccb5de174f4afa7dcffc22060c0ed4f67fb14013b"
+  }
+}

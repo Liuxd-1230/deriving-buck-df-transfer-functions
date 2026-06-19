@@ -3,7 +3,11 @@
   "formula_ids": [
     "yan-2022-part-i.dirichlet-value",
     "yan-2022-part-i.pcm-fm-zero-ramp",
-    "yan-2022-part-i.sideband-symbolic"
+    "yan-2022-part-i.sideband-value",
+    "yan-2022-part-i.gpwm",
+    "yan-2022-part-i.gid-buck",
+    "yan-2022-part-i.ti",
+    "yan-2022-part-i.tc-current"
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

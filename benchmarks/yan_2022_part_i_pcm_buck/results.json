@@ -3,14 +3,14 @@
   "plot_bode": {
     "case": "yan_2022_part_i_pcm_buck",
     "targets": [
-      "Gm"
+      "Tc"
     ],
     "fs_hz": 100000.0,
     "fs_half_hz": 50000.0,
     "valid_frequency_limit_hz": 50000.0,
     "evaluator": "sampled-data-numeric",
     "results": {
-      "Gm": {
+      "Tc": {
         "zero_db_crossing_hz": null,
         "phase_margin_deg": null,
         "gain_margin_db": null,
@@ -37,7 +37,11 @@
     "formula_ids": [
       "yan-2022-part-i.dirichlet-value",
       "yan-2022-part-i.pcm-fm-zero-ramp",
-      "yan-2022-part-i.sideband-symbolic"
+      "yan-2022-part-i.sideband-value",
+      "yan-2022-part-i.gpwm",
+      "yan-2022-part-i.gid-buck",
+      "yan-2022-part-i.ti",
+      "yan-2022-part-i.tc-current"
     ],
     "handwritten_formula_variants": false,
     "pdf_bundled": false,

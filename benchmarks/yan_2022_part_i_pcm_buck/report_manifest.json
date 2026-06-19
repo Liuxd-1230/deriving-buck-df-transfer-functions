@@ -1,0 +1,28 @@
+{
+  "report_version": "0.4",
+  "case_id": "yan_2022_part_i_pcm_buck",
+  "format": "markdown",
+  "markdown_sha256": "a67c111879640f6894883f680edb9e76ff8dd6af18927968b2e1b62a0173fe04",
+  "source_derivation_sha256": "dfe0d5e8d48b20f1411d77fb96836254d32cdf048ecceca5021a8d4d9361204e",
+  "source_checker_sha256": "7d970390cc11c191f326070225618d05eb4219ea0e62a43169fcab806dcdd5d5",
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "REPORT",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION",
+      "CHECKERS",
+      "REPORT"
+    ],
+    "predecessor": {
+      "artifact_type": "checker_result",
+      "state": "CHECKERS",
+      "sha256": "7d970390cc11c191f326070225618d05eb4219ea0e62a43169fcab806dcdd5d5"
+    },
+    "artifact_sha256": "20c09932726030222023566907c6c0749e802a9d42d339f5c983c1782adffe7a"
+  }
+}

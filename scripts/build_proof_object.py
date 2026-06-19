@@ -128,8 +128,17 @@ def build_proof_object(
         }
         sampled = build_sampled_modulator_proof(spec)
         if sampled.get("status") != "OK":
-            raise ProofBuildError(sampled.get("status", "sampled-data proof construction failed"))
+            status = sampled.get("status", "sampled-data proof construction failed")
+            if status == "REJECT_TARGET_NOT_REGISTERED":
+                raise ProofBuildError(
+                    f"Target {sampled.get('target')} is not registered for {sampled.get('model_id')}."
+                )
+            raise ProofBuildError(status)
         target = normalized.get("target_transfer") or normalized.get("target")
+        formula_object_bindings = sampled["formula_objects"]
+        binding_ids = list(dict.fromkeys(formula_object_bindings.values()))
+        target_formula_id = sampled["target_formula_id"]
+        target_expression = get_formula(target_formula_id)["canonical_sympy_expr"]
         proof = {
             "proof_version": "0.4",
             "case_id": normalized.get("case_id", classification.get("model_id", "sampled-data-case")),
@@ -139,19 +148,21 @@ def build_proof_object(
                 "part_family": classification.get("part_family"),
                 "model_id": classification.get("model_id"),
             },
-            "formula_bindings": [formula_binding(sampled["formula_id"])],
+            "formula_bindings": [formula_binding(formula_id) for formula_id in binding_ids],
+            "formula_object_bindings": formula_object_bindings,
             "sampling": sampled["sampling"],
             "pulse_structure": sampled["pulse_structure"],
             "Fm": sampled["Fm"],
             "sideband": sampled["sideband"],
             "modulator_io": sampled["modulator_io"],
             "target_mapping": sampled["target_mapping"],
+            "power_stage": sampled["power_stage"],
             "modulator": sampled["modulator"],
             "transfer": {
                 "target_transfer": target,
-                "formula_id": None,
-                "expression": sampled["modulator"]["expression"],
-                "origin": "sampled-data-registered-modulator",
+                "formula_id": target_formula_id,
+                "expression": target_expression,
+                "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact",
             },
             "validation": {
                 "level": classification.get("validation_level", "SAMPLED_DATA_REGISTERED_PARTIAL"),
@@ -167,6 +178,14 @@ def build_proof_object(
             proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)
         validate_artifact(proof, "proof_object.schema.json")
         return proof
+    if path == "UNSUPPORTED" and any(
+        str(item).startswith("TARGET_NOT_REGISTERED:")
+        for item in classification.get("unsupported_effects", [])
+    ):
+        raise ProofBuildError(
+            f"Target {normalized.get('target_transfer') or normalized.get('target')} is not registered "
+            f"for {classification.get('model_id')}."
+        )
     if path != "PROTOCOL_DERIVED_NEW":
         raise ProofBuildError(f"Cannot build proof object for classification path {path!r}.")
     relation = normalized.get("df_relation")

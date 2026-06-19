@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF v0.4 report manifest",
+  "type": "object",
+  "required": ["report_version", "case_id", "format", "markdown_sha256", "source_derivation_sha256", "source_checker_sha256", "workflow"],
+  "properties": {
+    "report_version": {"const": "0.4"},
+    "format": {"const": "markdown"},
+    "markdown_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "workflow": {"type": "object", "properties": {"version": {"const": "0.4"}, "state": {"const": "REPORT"}}, "required": ["version", "state", "artifact_sha256"]}
+  }
+}

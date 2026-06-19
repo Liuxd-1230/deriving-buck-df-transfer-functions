@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from check_formula_consistency import check_binding, check_proof_bindings
-from formula_registry import FormulaRegistryError, load_registry
+from formula_registry import FormulaRegistryError, get_formula, get_paper_contract, load_registry
 from artifact_workflow import WorkflowError, verify_workflow
 from schema_validation import ArtifactSchemaError, validate_artifact
 
@@ -118,6 +118,60 @@ def _check_sampled_data_contract(proof: dict[str, Any]) -> dict[str, Any] | None
     return None
 
 
+def _check_sampled_formula_objects(proof: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    model_id = (proof.get("classification") or {}).get("model_id")
+    contract = get_paper_contract(model_id)
+    expected_objects = contract["formula_objects"]
+    actual_objects = proof.get("formula_object_bindings")
+    if actual_objects != expected_objects:
+        return ["formula_object_bindings do not match the registered paper contract"]
+    bindings = proof.get("formula_bindings") or []
+    by_id = {item.get("formula_id"): item for item in bindings if isinstance(item, dict)}
+    for object_name, formula_id in expected_objects.items():
+        if formula_id not in by_id:
+            errors.append(f"{object_name}: missing registry binding {formula_id}")
+            continue
+        formula = get_formula(formula_id)
+        if formula.get("source_model_id") != model_id:
+            errors.append(f"{object_name}: formula model does not match {model_id}")
+        errors.extend(check_binding(by_id[formula_id], None))
+
+    object_expressions: dict[str, Any] = {
+        "sampling": (proof.get("sampling") or {}).get("expression"),
+        "Fm": (proof.get("Fm") or {}).get("expression"),
+        "sideband": (proof.get("sideband") or {}).get("sum_expression"),
+        "GPWM": (proof.get("modulator") or {}).get("expression"),
+    }
+    pulse = proof.get("pulse_structure") or {}
+    if "pulse_relation" in expected_objects:
+        object_expressions["pulse_relation"] = pulse.get("relation_expression")
+    if "pulse_factor" in expected_objects:
+        object_expressions["pulse_factor"] = pulse.get("frequency_factor")
+    power_stage = proof.get("power_stage") or {}
+    for name in ("Gid", "Gvd"):
+        if name in expected_objects:
+            object_expressions[name] = (power_stage.get(name) or {}).get("expression")
+    transfer = proof.get("transfer") or {}
+    requested = transfer.get("target_transfer")
+    target_object = "GPWM" if requested == "Gm" else requested
+    if target_object in expected_objects:
+        object_expressions[target_object] = transfer.get("expression")
+        if transfer.get("formula_id") != expected_objects[target_object]:
+            errors.append(f"{target_object}: transfer formula_id does not match paper contract")
+
+    for object_name, expression in object_expressions.items():
+        formula_id = expected_objects.get(object_name)
+        if not formula_id:
+            continue
+        binding = dict(by_id.get(formula_id, {}))
+        binding["expression"] = expression
+        object_errors = check_binding(binding, None) if binding.get("formula_id") else ["binding absent"]
+        if object_errors:
+            errors.append(f"{object_name}: " + "; ".join(object_errors))
+    return errors
+
+
 def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(proof, dict) or proof.get("proof_version") not in {"0.3.1", "0.4"}:
         return _result("FAIL_NOT_PROOF_OBJECT", ["proof_version=0.3.1 or 0.4 is required"])
@@ -146,6 +200,8 @@ def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
             "sampled-data-sampling",
             "sampled-data-modulator",
             "sampled-data-sideband",
+            "sampled-data-pulse",
+            "sampled-data-power-stage",
             "sampled-data-target-mapping",
             "sampled-data-stability-boundary",
         }
@@ -156,9 +212,9 @@ def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
                 return _result("FAIL_FORMULA_CONSISTENCY", [
                     f"{binding.get('formula_id')} is not a sampled-data registry binding for {model_id}"
                 ])
-        formula_result = check_proof_bindings(proof)
-        if formula_result["status"] != "PASS":
-            return _result("FAIL_FORMULA_CONSISTENCY", formula_result["errors"])
+        object_errors = _check_sampled_formula_objects(proof)
+        if object_errors:
+            return _result("FAIL_FORMULA_CONSISTENCY", object_errors)
         return _result("PASS", [])
 
     if path in REGISTERED_PATHS:

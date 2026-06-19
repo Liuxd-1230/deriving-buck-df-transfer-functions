@@ -3,16 +3,16 @@
   "plot_bode": {
     "case": "yan_2022_part_ii_ccot_buck_zero_ramp",
     "targets": [
-      "Gm"
+      "Tc"
     ],
     "fs_hz": 98000.0,
     "fs_half_hz": 49000.0,
     "valid_frequency_limit_hz": 49000.0,
     "evaluator": "sampled-data-numeric",
     "results": {
-      "Gm": {
-        "zero_db_crossing_hz": 0.8120653784146288,
-        "phase_margin_deg": 269.999561484786,
+      "Tc": {
+        "zero_db_crossing_hz": 445.1888742819471,
+        "phase_margin_deg": 207.5422550529873,
         "gain_margin_db": null,
         "phase_180_crossing_hz": null,
         "validity": "WITHIN_DECLARED_RANGE",
@@ -35,8 +35,15 @@
   "formula_origin": {
     "source": "formula_registry.yaml",
     "formula_ids": [
-      "yan-2022-part-ii.ccot-gpwm-pulse-factor",
-      "yan-2022-part-ii.ccot-ti-truncated"
+      "yan-2022-part-ii.ccot-dirichlet-value",
+      "yan-2022-part-ii.ccot-fm-zero-ramp",
+      "yan-2022-part-ii.ccot-pulse-relation",
+      "yan-2022-part-ii.ccot-pulse-factor",
+      "yan-2022-part-ii.ccot-sideband-value",
+      "yan-2022-part-ii.ccot-gpwm",
+      "yan-2022-part-ii.ccot-gid-buck",
+      "yan-2022-part-ii.ccot-ti",
+      "yan-2022-part-ii.ccot-tc"
     ],
     "handwritten_formula_variants": false,
     "pdf_bundled": false,

@@ -1,0 +1,139 @@
+{
+  "derivation_version": "0.4",
+  "case_id": "yan_2022_part_i_pcm_buck",
+  "classification": {
+    "path": "SAMPLED_DATA_REGISTERED",
+    "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
+    "model_id": "yan-2022-part-i-pcm-buck"
+  },
+  "control_contract": "current",
+  "selected_loop": "Ti",
+  "target_transfer": "Tc",
+  "target_formula_id": "yan-2022-part-i.tc-current",
+  "expressions": {
+    "sampling": "(x_left+x_right)/2",
+    "Fm": "1/((m2-m1)*Ts/2)",
+    "sideband": "SumG",
+    "GPWM": "Fm/(1+Fm*H*SumG)",
+    "Gid": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+    "Ti": "Hi*Gid*GPWM",
+    "Tc": "Ti/(1+Ti)"
+  },
+  "expanded_expressions": {
+    "sampling": "(x_left + x_right)/2",
+    "Fm": "-2/(Ts*(m1 - m2))",
+    "sideband": "SumG",
+    "GPWM": "-2/(-2*H*SumG + Ts*m1 - Ts*m2)",
+    "Gid": "Vin*(C*R*s + 1)/(C*L*R*s**2 + L*s + R)",
+    "Ti": "-2*Hi*Vin*(C*R*s + 1)/((-2*H*SumG + Ts*m1 - Ts*m2)*(C*L*R*s**2 + L*s + R))",
+    "Tc": "-2*Hi*Vin*(C*R*s + 1)/(-2*C*H*L*R*SumG*s**2 - 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 - 2*H*L*SumG*s - 2*H*R*SumG - 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + R*Ts*m1 - R*Ts*m2)"
+  },
+  "expanded_target_expression": "-2*Hi*Vin*(C*R*s + 1)/(-2*C*H*L*R*SumG*s**2 - 2*C*Hi*R*Vin*s + C*L*R*Ts*m1*s**2 - C*L*R*Ts*m2*s**2 - 2*H*L*SumG*s - 2*H*R*SumG - 2*Hi*Vin + L*Ts*m1*s - L*Ts*m2*s + R*Ts*m1 - R*Ts*m2)",
+  "steps": [
+    {
+      "index": 1,
+      "object": "sampling",
+      "formula_id": "yan-2022-part-i.dirichlet-value",
+      "expression": "(x_left+x_right)/2",
+      "source_equation": "Yan-2022-Part-I-Dirichlet-condition",
+      "approximation": "exact-sampling-definition",
+      "dimension_signature": "sampled-variable"
+    },
+    {
+      "index": 2,
+      "object": "Fm",
+      "formula_id": "yan-2022-part-i.pcm-fm-zero-ramp",
+      "expression": "1/((m2-m1)*Ts/2)",
+      "source_equation": "Yan-2022-Part-I-Fm-via-Dirichlet-sampled-value",
+      "approximation": "zero-ramp-proof-fragment",
+      "dimension_signature": "1/slope_time"
+    },
+    {
+      "index": 3,
+      "object": "sideband",
+      "formula_id": "yan-2022-part-i.sideband-value",
+      "expression": "SumG",
+      "source_equation": "Yan-2022-Part-I-sideband-sum-nonzero-indices",
+      "approximation": "symbolic-full-sum",
+      "dimension_signature": "plant-sideband-sum"
+    },
+    {
+      "index": 4,
+      "object": "GPWM",
+      "formula_id": "yan-2022-part-i.gpwm",
+      "expression": "Fm/(1+Fm*H*SumG)",
+      "source_equation": "Yan-2022-Part-I-sampled-modulator",
+      "approximation": "registered-sideband-form",
+      "dimension_signature": "duty/input"
+    },
+    {
+      "index": 5,
+      "object": "Gid",
+      "formula_id": "yan-2022-part-i.gid-buck",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+      "source_equation": "CCM-Buck-linearized-state-equations",
+      "approximation": "ideal-ESR-power-stage",
+      "dimension_signature": "current/duty"
+    },
+    {
+      "index": 6,
+      "object": "Ti",
+      "formula_id": "yan-2022-part-i.ti",
+      "expression": "Hi*Gid*GPWM",
+      "source_equation": "current-loop-block-composition",
+      "approximation": "exact-block-composition",
+      "dimension_signature": "return-ratio"
+    },
+    {
+      "index": 7,
+      "object": "Tc",
+      "formula_id": "yan-2022-part-i.tc-current",
+      "expression": "Ti/(1+Ti)",
+      "source_equation": "negative-feedback-closure",
+      "approximation": "exact-feedback-identity",
+      "dimension_signature": "closed-loop"
+    }
+  ],
+  "approximation_policy": {
+    "declared": true,
+    "items": [
+      "exact-block-composition",
+      "exact-feedback-identity",
+      "exact-sampling-definition",
+      "ideal-ESR-power-stage",
+      "registered-sideband-form",
+      "symbolic-full-sum",
+      "zero-ramp-proof-fragment"
+    ],
+    "valid_frequency": "limited by sampled-data paper contract and benchmark metadata"
+  },
+  "validation": {
+    "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+    "completed": [
+      "registry-bound-step-generation",
+      "proof-expression-consistency"
+    ],
+    "missing": [
+      "paper-figure-reproduction",
+      "switching-simulation"
+    ]
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "DERIVATION",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION"
+    ],
+    "predecessor": {
+      "artifact_type": "proof_object",
+      "state": "FORMULA_BINDING",
+      "sha256": "d4b581039dc1cb742f31fc7a8222636aa073f706c6c824c79b1e92d61b612c17"
+    },
+    "artifact_sha256": "dfe0d5e8d48b20f1411d77fb96836254d32cdf048ecceca5021a8d4d9361204e"
+  }
+}

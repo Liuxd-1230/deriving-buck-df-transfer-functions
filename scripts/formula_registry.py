@@ -12,6 +12,8 @@ from typing import Any
 
 
 REGISTRY_PATH = Path(__file__).resolve().parents[1] / "registries" / "formula_registry.yaml"
+MODEL_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "registries" / "model_registry.yaml"
+PAPER_CONTRACT_REGISTRY_PATH = Path(__file__).resolve().parents[1] / "registries" / "paper_contract_registry.yaml"
 PLACEHOLDER = re.compile(r"\{([A-Za-z_]\w*)\}")
 
 
@@ -27,9 +29,32 @@ def load_registry() -> dict[str, Any]:
         raise FormulaRegistryError(f"Cannot load formula registry: {exc}") from exc
     if registry.get("registry_version") not in {"0.3.1", "0.4"}:
         raise FormulaRegistryError("formula_registry.yaml must declare registry_version=0.3.1 or 0.4")
-    if not isinstance(registry.get("models"), dict) or not isinstance(registry.get("formulas"), dict):
-        raise FormulaRegistryError("Formula registry requires models and formulas objects.")
+    try:
+        model_registry = json.loads(MODEL_REGISTRY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FormulaRegistryError(f"Cannot load model registry: {exc}") from exc
+    if not isinstance(model_registry.get("models"), dict) or not isinstance(registry.get("formulas"), dict):
+        raise FormulaRegistryError("Model and formula registries require models/formulas objects.")
+    registry["models"] = model_registry["models"]
     return registry
+
+
+@lru_cache(maxsize=1)
+def load_paper_contract_registry() -> dict[str, Any]:
+    try:
+        registry = json.loads(PAPER_CONTRACT_REGISTRY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise FormulaRegistryError(f"Cannot load paper contract registry: {exc}") from exc
+    if registry.get("registry_version") != "0.4" or not isinstance(registry.get("contracts"), dict):
+        raise FormulaRegistryError("paper_contract_registry.yaml must declare v0.4 contracts")
+    return registry
+
+
+def get_paper_contract(model_id: str) -> dict[str, Any]:
+    try:
+        return deepcopy(load_paper_contract_registry()["contracts"][model_id])
+    except KeyError as exc:
+        raise FormulaRegistryError(f"No registered paper contract for {model_id}") from exc
 
 
 def model_specs() -> dict[str, dict[str, Any]]:

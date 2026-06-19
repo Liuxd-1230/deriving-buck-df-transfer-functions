@@ -1,0 +1,28 @@
+{
+  "report_version": "0.4",
+  "case_id": "yan_2022_part_ii_ccot_buck_zero_ramp",
+  "format": "markdown",
+  "markdown_sha256": "6372006a16400d6a7b6bee5530ba6ff426c86d5f48a839c80eb155caf3b05155",
+  "source_derivation_sha256": "188a4e9dddeaf308126d1d1ccb5de174f4afa7dcffc22060c0ed4f67fb14013b",
+  "source_checker_sha256": "138896cc12b47a5420b1f5813488327a50e83d61af1296a7d62b7381cd22b33e",
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "REPORT",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION",
+      "CHECKERS",
+      "REPORT"
+    ],
+    "predecessor": {
+      "artifact_type": "checker_result",
+      "state": "CHECKERS",
+      "sha256": "138896cc12b47a5420b1f5813488327a50e83d61af1296a7d62b7381cd22b33e"
+    },
+    "artifact_sha256": "71d060d7887dd573130b5760e38bf8ab1b61c6ba3e298ad1fb87bf54efe88b2a"
+  }
+}

@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "V-COT",
-    "target": "GPWM",
-    "target_transfer": "GPWM",
+    "target": "Tc",
+    "target_transfer": "Tc",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -29,12 +29,26 @@
     "has_rc_injection": false,
     "has_filter_in_sense_path": false,
     "parameters": {
+      "Vin": 12.0,
+      "Vo": 1.2,
       "fs": 98000.0,
       "Ts": 1.0204081632653061e-05,
       "Ton": 3e-06,
       "T0": 3e-06,
-      "Fm": 25.0,
-      "Hv": 0.36
+      "L": 1e-05,
+      "C": 0.0001,
+      "R": 1.0,
+      "rC": 0.01,
+      "m1": 1.0,
+      "m2": 4.0,
+      "Hv": 0.36,
+      "H": 0.36,
+      "SidebandPulse": 0.05
+    },
+    "sideband": {
+      "mode": "TRUNCATED_SUM_M",
+      "M": 10,
+      "numeric_evaluable": true
     }
   },
   "workflow": {
@@ -46,6 +60,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "9fa49b79ef55427955c0c3f6685cc2b689886af6e002051dc413a1ed4aaac7db"
+    "artifact_sha256": "399b934bd8c9f41d8be47569f8efeb4093f199cec2c1f44e5364487dfbb51e56"
   }
 }

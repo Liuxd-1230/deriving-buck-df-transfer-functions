@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "PCM",
-      "target": "Gm",
-      "target_transfer": "Gm",
+      "target": "Tc",
+      "target_transfer": "Tc",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -29,37 +29,31 @@
       "has_rc_injection": false,
       "has_filter_in_sense_path": false,
       "parameters": {
+        "Vin": 12.0,
+        "Vo": 1.2,
         "fs": 100000.0,
         "Ts": 1e-05,
+        "L": 1e-05,
+        "C": 0.0001,
+        "R": 1.0,
+        "rC": 0.01,
         "m1": 1.0,
         "m2": 4.0,
-        "Fm": 66666.66666666666
+        "Hi": 0.1,
+        "H": 0.1,
+        "SumG": 0.05
+      },
+      "sideband": {
+        "mode": "PAPER_SIMPLIFIED_FORM",
+        "numeric_evaluable": true,
+        "expression": "Fm"
       }
     }
   },
   "classification": {
-    "classification_version": "0.4",
     "path": "SAMPLED_DATA_REGISTERED",
     "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
-    "model_id": "yan-2022-part-i-pcm-buck",
-    "target_transfer": "Gm",
-    "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
-    "workflow": {
-      "version": "0.4",
-      "intent": "paper-benchmark",
-      "state": "MODEL_CLASSIFY",
-      "history": [
-        "INTENT_CLASSIFY",
-        "PREFLIGHT_INTAKE",
-        "MODEL_CLASSIFY"
-      ],
-      "predecessor": {
-        "artifact_type": "intake_status",
-        "state": "PREFLIGHT_INTAKE",
-        "sha256": "9254a34dd43eecb3a3da97e4c93c616e00ae611c1509de1745196e6d01b3bc44"
-      },
-      "artifact_sha256": "3ce5cbffff601f989f8198ec6df8a3dbfebac2f0071dc3f5b8196efc500cb5af"
-    }
+    "model_id": "yan-2022-part-i-pcm-buck"
   },
   "formula_bindings": [
     {
@@ -77,20 +71,63 @@
       "expression": "1/((m2-m1)*Ts/2)"
     },
     {
-      "formula_id": "yan-2022-part-i.sideband-symbolic",
+      "formula_id": "yan-2022-part-i.sideband-value",
       "source_model_id": "yan-2022-part-i-pcm-buck",
       "interface": "sampled-data-sideband",
-      "dimension_signature": "dimensionless",
-      "expression": "1+Fm*H*SumG"
+      "dimension_signature": "plant-sideband-sum",
+      "expression": "SumG"
+    },
+    {
+      "formula_id": "yan-2022-part-i.gpwm",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-modulator",
+      "dimension_signature": "duty/input",
+      "expression": "Fm/(1+Fm*H*SumG)"
+    },
+    {
+      "formula_id": "yan-2022-part-i.gid-buck",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-power-stage",
+      "dimension_signature": "current/duty",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)"
+    },
+    {
+      "formula_id": "yan-2022-part-i.ti",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Hi*Gid*GPWM"
+    },
+    {
+      "formula_id": "yan-2022-part-i.tc-current",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "closed-loop",
+      "expression": "Ti/(1+Ti)"
     }
   ],
+  "formula_object_bindings": {
+    "sampling": "yan-2022-part-i.dirichlet-value",
+    "Fm": "yan-2022-part-i.pcm-fm-zero-ramp",
+    "sideband": "yan-2022-part-i.sideband-value",
+    "GPWM": "yan-2022-part-i.gpwm",
+    "Gid": "yan-2022-part-i.gid-buck",
+    "Ti": "yan-2022-part-i.ti",
+    "Tc": "yan-2022-part-i.tc-current"
+  },
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "is",
     "left_limit": "is(k-)",
     "right_limit": "is(k+)",
-    "dirichlet_value": "(is(k-)+is(k+))/2",
-    "dirichlet_required": true
+    "dirichlet_value": "(x_left+x_right)/2",
+    "dirichlet_required": true,
+    "formula_id": "yan-2022-part-i.dirichlet-value",
+    "expression": "(x_left+x_right)/2"
+  },
+  "pulse_structure": {
+    "type": "SINGLE_PULSE_TRAIN",
+    "frequency_factor": "1"
   },
   "Fm": {
     "type": "constant",
@@ -101,51 +138,69 @@
       "m2",
       "Ts"
     ],
-    "dirichlet_reference": "sampling.dirichlet_value"
+    "dirichlet_reference": "sampling.dirichlet_value",
+    "derivation_steps": [
+      "sample feedback perturbation at sampling.dirichlet_value",
+      "derive d1_hat / sampled_variable_hat using zero-ramp slopes"
+    ],
+    "formula_id": "yan-2022-part-i.pcm-fm-zero-ramp"
   },
   "sideband": {
     "mode": "PAPER_SIMPLIFIED_FORM",
+    "sum_expression": "SumG",
+    "numeric_expression": "Fm",
     "numeric_evaluable": true,
-    "expression": "Fm"
+    "approximation": "paper simplified sampled-data form",
+    "formula_id": "yan-2022-part-i.sideband-value",
+    "summation_definition": "Fm"
   },
   "modulator_io": {
     "input": "is",
     "output": "d",
-    "definition": "Gm=-dsum_hat/input_hat",
+    "definition": "Gm=-d_hat/is_hat",
     "sign_convention": "negative"
   },
   "target_mapping": {
     "available_registered_outputs": [
-      "Gm"
+      "Gm",
+      "GPWM",
+      "Ti",
+      "Tc"
     ],
-    "requested_target": "Gm",
-    "mapping_rule": "registered sampled-data benchmark expression from formula registry fragments",
-    "mapping_status": "REGISTERED_DIRECT"
+    "requested_target": "Tc",
+    "mapping_rule": "Tc=Ti/(1+Ti)",
+    "mapping_status": "REGISTERED_DERIVED"
+  },
+  "power_stage": {
+    "Gid": {
+      "formula_id": "yan-2022-part-i.gid-buck",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+      "approximation": "ideal-ESR-power-stage"
+    }
   },
   "modulator": {
-    "model_type": "sampled-data",
-    "expression": "Fm"
+    "model_type": "GPWM",
+    "formula_id": "yan-2022-part-i.gpwm",
+    "expression": "Fm/(1+Fm*H*SumG)",
+    "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Gm",
-    "formula_id": null,
-    "expression": "Fm"
+    "target_transfer": "Tc",
+    "formula_id": "yan-2022-part-i.tc-current",
+    "expression": "Ti/(1+Ti)",
+    "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
     "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
     "completed": [
       "sampled-data-contract",
       "dirichlet-reference",
-      "unified-plot-bode"
+      "single-pulse-structure"
     ],
     "missing": [
-      "paper-figure-digitization",
+      "paper-figure-reproduction",
       "switching-simulation"
     ]
-  },
-  "pulse_structure": {
-    "type": "SINGLE_PULSE_TRAIN",
-    "frequency_factor": "1"
   },
   "workflow": {
     "version": "0.4",
@@ -160,8 +215,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "3ce5cbffff601f989f8198ec6df8a3dbfebac2f0071dc3f5b8196efc500cb5af"
+      "sha256": "8d3ae1aa27866a9135f2afed9bcb40292ef3a793d6563e4baf66927e08049f24"
     },
-    "artifact_sha256": "70ea020d82c89f5e00e13dd0a03bf429602f3a4e5204c08dfee680206d0fd375"
+    "artifact_sha256": "d4b581039dc1cb742f31fc7a8222636aa073f706c6c824c79b1e92d61b612c17"
   }
 }

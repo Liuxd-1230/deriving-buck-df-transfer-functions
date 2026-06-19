@@ -38,6 +38,14 @@ class V04SchemaRuntimeTests(unittest.TestCase):
         proof = ROOT / "tests" / "fixtures" / "valid_li_lee_2009_direct.json"
         self.assertEqual(self.run_validator("proof_object.schema.json", proof).returncode, 0)
 
+    def test_all_sampled_benchmark_artifacts_and_hash_chain_validate(self):
+        result = subprocess.run(
+            [sys.executable, str(VALIDATOR), "--all-benchmarks"],
+            cwd=ROOT, text=True, capture_output=True, timeout=60,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertGreaterEqual(json.loads(result.stdout)["checked"], 24)
+
 
 if __name__ == "__main__":
     unittest.main()

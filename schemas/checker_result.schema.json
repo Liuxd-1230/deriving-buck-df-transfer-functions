@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF v0.4 checker artifact",
+  "type": "object",
+  "required": ["checker_version", "status", "errors", "workflow"],
+  "properties": {
+    "checker_version": {"const": "0.4"},
+    "status": {"enum": ["PASS", "FAIL_DERIVATION_PROVENANCE", "FAIL_DERIVATION_ORDER", "FAIL_DERIVATION_FORMULA_CONSISTENCY"]},
+    "errors": {"type": "array"},
+    "workflow": {
+      "type": "object",
+      "required": ["version", "intent", "state", "history", "predecessor", "artifact_sha256"],
+      "properties": {"version": {"const": "0.4"}, "state": {"const": "CHECKERS"}}
+    }
+  }
+}

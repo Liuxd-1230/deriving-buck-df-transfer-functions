@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "C-COT",
-      "target": "Gm",
-      "target_transfer": "Gm",
+      "target": "Tc",
+      "target_transfer": "Tc",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -29,56 +29,130 @@
       "has_rc_injection": false,
       "has_filter_in_sense_path": false,
       "parameters": {
+        "Vin": 12.0,
+        "Vo": 1.2,
         "fs": 98000.0,
         "Ts": 1.0204081632653061e-05,
         "Ton": 3e-06,
         "T0": 3e-06,
+        "L": 1e-05,
+        "C": 0.0001,
+        "R": 1.0,
+        "rC": 0.01,
         "m1": 1.0,
         "m2": 4.0,
-        "Fm": 65333.333333333336
+        "Hi": 0.1,
+        "H": 0.1,
+        "SidebandPulse": 0.05
+      },
+      "sideband": {
+        "mode": "TRUNCATED_SUM_M",
+        "M": 10,
+        "numeric_evaluable": true
       }
     }
   },
   "classification": {
-    "classification_version": "0.4",
     "path": "SAMPLED_DATA_REGISTERED",
     "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
-    "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-    "target_transfer": "Gm",
-    "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
-    "workflow": {
-      "version": "0.4",
-      "intent": "paper-benchmark",
-      "state": "MODEL_CLASSIFY",
-      "history": [
-        "INTENT_CLASSIFY",
-        "PREFLIGHT_INTAKE",
-        "MODEL_CLASSIFY"
-      ],
-      "predecessor": {
-        "artifact_type": "intake_status",
-        "state": "PREFLIGHT_INTAKE",
-        "sha256": "51c9a6f77c49ffa83bc553f1a78d1899f407505b969e044b0dfd8f9f2593ef43"
-      },
-      "artifact_sha256": "5a489bafbcf767a625e482b44fc6400092650960aaf9d2ac062dbdb01038783b"
-    }
+    "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp"
   },
   "formula_bindings": [
     {
-      "formula_id": "yan-2022-part-ii.ccot-gpwm-pulse-factor",
+      "formula_id": "yan-2022-part-ii.ccot-dirichlet-value",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-sampling",
+      "dimension_signature": "sampled-variable",
+      "expression": "(x_left+x_right)/2"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-fm-zero-ramp",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-modulator",
+      "dimension_signature": "1/slope_time",
+      "expression": "1/((m2-m1)*Ts/2)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-pulse-relation",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-pulse",
+      "dimension_signature": "D2/D1",
+      "expression": "-exp(-s*T0)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-pulse-factor",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-pulse",
+      "dimension_signature": "dimensionless",
+      "expression": "1-exp(-s*T0)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-sideband-value",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-sideband",
+      "dimension_signature": "pulse-weighted-sideband-sum",
+      "expression": "SidebandPulse"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-gpwm",
       "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
       "interface": "sampled-data-modulator",
       "dimension_signature": "duty/input",
-      "expression": "Fm*(1-exp(-s*T0))"
+      "expression": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-gid-buck",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-power-stage",
+      "dimension_signature": "current/duty",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-ti",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "return-ratio",
+      "expression": "Hi*Gid*GPWM"
+    },
+    {
+      "formula_id": "yan-2022-part-ii.ccot-tc",
+      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
+      "interface": "sampled-data-target-mapping",
+      "dimension_signature": "closed-loop",
+      "expression": "Ti/(1+Ti)"
     }
   ],
+  "formula_object_bindings": {
+    "sampling": "yan-2022-part-ii.ccot-dirichlet-value",
+    "Fm": "yan-2022-part-ii.ccot-fm-zero-ramp",
+    "pulse_relation": "yan-2022-part-ii.ccot-pulse-relation",
+    "pulse_factor": "yan-2022-part-ii.ccot-pulse-factor",
+    "sideband": "yan-2022-part-ii.ccot-sideband-value",
+    "GPWM": "yan-2022-part-ii.ccot-gpwm",
+    "Gid": "yan-2022-part-ii.ccot-gid-buck",
+    "Ti": "yan-2022-part-ii.ccot-ti",
+    "Tc": "yan-2022-part-ii.ccot-tc"
+  },
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "is",
     "left_limit": "is(k-)",
     "right_limit": "is(k+)",
-    "dirichlet_value": "(is(k-)+is(k+))/2",
-    "dirichlet_required": true
+    "dirichlet_value": "(x_left+x_right)/2",
+    "dirichlet_required": true,
+    "formula_id": "yan-2022-part-ii.ccot-dirichlet-value",
+    "expression": "(x_left+x_right)/2"
+  },
+  "pulse_structure": {
+    "type": "COT_TWO_PULSE_TRAINS",
+    "d1": "narrow pulse train at each sampling instant",
+    "d2": "delayed inverse narrow pulse train after Ton",
+    "relation": "d2(t)=-d1(t-Ton)",
+    "frequency_factor": "1-exp(-s*T0)",
+    "T0": "Ton",
+    "relation_formula_id": "yan-2022-part-ii.ccot-pulse-relation",
+    "relation_expression": "-exp(-s*T0)",
+    "factor_formula_id": "yan-2022-part-ii.ccot-pulse-factor"
   },
   "Fm": {
     "type": "constant",
@@ -89,55 +163,70 @@
       "m2",
       "Ts"
     ],
-    "dirichlet_reference": "sampling.dirichlet_value"
+    "dirichlet_reference": "sampling.dirichlet_value",
+    "derivation_steps": [
+      "sample feedback perturbation at sampling.dirichlet_value",
+      "derive d1_hat / sampled_variable_hat using zero-ramp slopes"
+    ],
+    "formula_id": "yan-2022-part-ii.ccot-fm-zero-ramp"
   },
   "sideband": {
     "mode": "TRUNCATED_SUM_M",
     "M": 10,
-    "numeric_evaluable": true
+    "sum_expression": "SidebandPulse",
+    "numeric_expression": "(G(s+j*(-10)*ws)*(1-exp(-(s+j*(-10)*ws)*T0))) + (G(s+j*(-9)*ws)*(1-exp(-(s+j*(-9)*ws)*T0))) + (G(s+j*(-8)*ws)*(1-exp(-(s+j*(-8)*ws)*T0))) + (G(s+j*(-7)*ws)*(1-exp(-(s+j*(-7)*ws)*T0))) + (G(s+j*(-6)*ws)*(1-exp(-(s+j*(-6)*ws)*T0))) + (G(s+j*(-5)*ws)*(1-exp(-(s+j*(-5)*ws)*T0))) + (G(s+j*(-4)*ws)*(1-exp(-(s+j*(-4)*ws)*T0))) + (G(s+j*(-3)*ws)*(1-exp(-(s+j*(-3)*ws)*T0))) + (G(s+j*(-2)*ws)*(1-exp(-(s+j*(-2)*ws)*T0))) + (G(s+j*(-1)*ws)*(1-exp(-(s+j*(-1)*ws)*T0))) + (G(s+j*(0)*ws)*(1-exp(-(s+j*(0)*ws)*T0))) + (G(s+j*(1)*ws)*(1-exp(-(s+j*(1)*ws)*T0))) + (G(s+j*(2)*ws)*(1-exp(-(s+j*(2)*ws)*T0))) + (G(s+j*(3)*ws)*(1-exp(-(s+j*(3)*ws)*T0))) + (G(s+j*(4)*ws)*(1-exp(-(s+j*(4)*ws)*T0))) + (G(s+j*(5)*ws)*(1-exp(-(s+j*(5)*ws)*T0))) + (G(s+j*(6)*ws)*(1-exp(-(s+j*(6)*ws)*T0))) + (G(s+j*(7)*ws)*(1-exp(-(s+j*(7)*ws)*T0))) + (G(s+j*(8)*ws)*(1-exp(-(s+j*(8)*ws)*T0))) + (G(s+j*(9)*ws)*(1-exp(-(s+j*(9)*ws)*T0))) + (G(s+j*(10)*ws)*(1-exp(-(s+j*(10)*ws)*T0)))",
+    "numeric_evaluable": true,
+    "approximation": "truncated sideband sum n=-10..10",
+    "formula_id": "yan-2022-part-ii.ccot-sideband-value",
+    "summation_definition": "sum n=-10..10 of G(s+j*n*ws)*(1-exp(-(s+j*n*ws)*T0))"
   },
   "modulator_io": {
     "input": "is",
     "output": "dsum",
-    "definition": "Gm=-dsum_hat/input_hat",
+    "definition": "Gm=-d_hat/is_hat",
     "sign_convention": "negative"
   },
   "target_mapping": {
     "available_registered_outputs": [
-      "Gm"
+      "Gm",
+      "GPWM",
+      "Ti",
+      "Tc"
     ],
-    "requested_target": "Gm",
-    "mapping_rule": "registered sampled-data benchmark expression from formula registry fragments",
-    "mapping_status": "REGISTERED_DIRECT"
+    "requested_target": "Tc",
+    "mapping_rule": "Tc=Ti/(1+Ti)",
+    "mapping_status": "REGISTERED_DERIVED"
+  },
+  "power_stage": {
+    "Gid": {
+      "formula_id": "yan-2022-part-ii.ccot-gid-buck",
+      "expression": "Vin*(C*s+1/R)/(L*C*s**2+(L/R)*s+1)",
+      "approximation": "ideal-ESR-power-stage"
+    }
   },
   "modulator": {
-    "model_type": "sampled-data",
-    "expression": "Fm*(1-exp(-s*Ton))"
+    "model_type": "GPWM",
+    "formula_id": "yan-2022-part-ii.ccot-gpwm",
+    "expression": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+    "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Gm",
-    "formula_id": null,
-    "expression": "Fm*(1-exp(-s*Ton))"
+    "target_transfer": "Tc",
+    "formula_id": "yan-2022-part-ii.ccot-tc",
+    "expression": "Ti/(1+Ti)",
+    "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
     "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
     "completed": [
       "sampled-data-contract",
       "dirichlet-reference",
-      "unified-plot-bode"
+      "cot-pulse-structure"
     ],
     "missing": [
-      "paper-figure-digitization",
+      "paper-figure-reproduction",
       "switching-simulation"
     ]
-  },
-  "pulse_structure": {
-    "type": "COT_TWO_PULSE_TRAINS",
-    "d1": "narrow pulse train at sampling instant",
-    "d2": "delayed inverse pulse train by Ton",
-    "relation": "d2(t)=-d1(t-Ton)",
-    "frequency_factor": "1-exp(-s*Ton)",
-    "T0": "Ton"
   },
   "workflow": {
     "version": "0.4",
@@ -152,8 +241,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "5a489bafbcf767a625e482b44fc6400092650960aaf9d2ac062dbdb01038783b"
+      "sha256": "dd9ab6012997251a68668b76a0ccb07df7dcc8aa8c689f3445dc463c163378cb"
     },
-    "artifact_sha256": "4db7942149626ec31c94a6f45ddc077f276f9c210230f47675d306aed259a339"
+    "artifact_sha256": "11881178868549714fcfeebd083c037a04524953106ffb89a1a2690ef0409991"
   }
 }
