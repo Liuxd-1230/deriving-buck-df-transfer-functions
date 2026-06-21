@@ -1,0 +1,32 @@
+{
+  "case": "yan_2022_part_i_pcm_buck",
+  "targets": [
+    "Tc"
+  ],
+  "fs_hz": 100000.0,
+  "fs_half_hz": 50000.0,
+  "valid_frequency_limit_hz": 50000.0,
+  "evaluator": "sampled-data-numeric",
+  "results": {
+    "Tc": {
+      "response_kind": "closed_loop",
+      "stability_margins_status": "NOT_APPLICABLE_NON_RETURN_RATIO",
+      "zero_db_crossing_hz": null,
+      "phase_margin_deg": null,
+      "gain_margin_db": null,
+      "phase_180_crossing_hz": null,
+      "validity": "WITHIN_DECLARED_RANGE",
+      "plot_markers": [
+        "fs",
+        "fs/2",
+        "valid_frequency_limit",
+        "0 dB crossing"
+      ]
+    }
+  },
+  "sideband": {
+    "mode": "PAPER_SIMPLIFIED_FORM",
+    "numeric_evaluable": true,
+    "expression": "Fm"
+  }
+}

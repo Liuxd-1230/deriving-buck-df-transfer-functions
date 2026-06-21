@@ -1,0 +1,54 @@
+{
+  "status": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "plot_bode": {
+    "case": "yan_2022_part_ii_vcot_buck_zero_ramp",
+    "targets": [
+      "Gvc"
+    ],
+    "fs_hz": 98000.0,
+    "fs_half_hz": 49000.0,
+    "valid_frequency_limit_hz": 49000.0,
+    "evaluator": "sampled-data-numeric",
+    "results": {
+      "Gvc": {
+        "response_kind": "transfer_function",
+        "stability_margins_status": "NOT_APPLICABLE_NON_RETURN_RATIO",
+        "zero_db_crossing_hz": 85.48531996994112,
+        "phase_margin_deg": null,
+        "gain_margin_db": null,
+        "phase_180_crossing_hz": null,
+        "validity": "WITHIN_DECLARED_RANGE",
+        "plot_markers": [
+          "fs",
+          "fs/2",
+          "valid_frequency_limit",
+          "0 dB crossing"
+        ]
+      }
+    },
+    "sideband": {
+      "mode": "TRUNCATED_SUM_M",
+      "M": 10,
+      "numeric_evaluable": true
+    }
+  },
+  "formula_origin": {
+    "source": "formula_registry.yaml",
+    "formula_ids": [
+      "yan-2022-part-ii.vcot-dirichlet-value",
+      "yan-2022-part-ii.vcot-fm-zero-ramp",
+      "yan-2022-part-ii.vcot-pulse-relation",
+      "yan-2022-part-ii.vcot-pulse-factor",
+      "yan-2022-part-ii.vcot-sideband-value",
+      "yan-2022-part-ii.vcot-gpwm",
+      "yan-2022-part-ii.vcot-gvd-buck",
+      "yan-2022-part-ii.vcot-tv",
+      "yan-2022-part-ii.vcot-tloop",
+      "yan-2022-part-ii.vcot-tc",
+      "yan-2022-part-ii.vcot-gvc"
+    ],
+    "handwritten_formula_variants": false,
+    "pdf_bundled": false,
+    "notes": "PDFs were used during development only; benchmark artifacts are self-contained."
+  }
+}

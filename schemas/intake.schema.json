@@ -1,28 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/deriving-buck-df-transfer-functions/intake.schema.json",
-  "title": "ESSF v0.3.1 intake status",
+  "title": "ESSF intake status",
   "type": "object",
   "required": ["intake_version", "status", "missing", "action", "normalized"],
   "properties": {
-    "intake_version": {"const": "0.3.1"},
+    "intake_version": {"enum": ["0.3.1", "0.4"]},
     "status": {"enum": ["COMPLETE", "INCOMPLETE", "INCOMPLETE_TLOOP_INTAKE"]},
-    "missing": {
-      "type": "array",
-      "items": {
-        "enum": [
-          "target_transfer",
-          "operating_mode",
-          "sampling_or_switching_event",
-          "comparator_inputs",
-          "parameters",
-          "loop_break"
-        ]
-      },
-      "uniqueItems": true
-    },
+    "missing": {"type": "array", "uniqueItems": true},
     "action": {"enum": ["CONTINUE_TO_CLASSIFICATION", "ASK_USER_ONLY"]},
-    "normalized": {"type": "object"}
+    "normalized": {"type": "object"},
+    "workflow": {
+      "type": "object",
+      "required": ["version", "intent", "state", "history", "predecessor", "artifact_sha256"],
+      "properties": {"version": {"const": "0.4"}, "state": {"const": "PREFLIGHT_INTAKE"}}
+    }
   },
-  "additionalProperties": true
+  "allOf": [
+    {"if": {"properties": {"intake_version": {"const": "0.4"}}}, "then": {"required": ["workflow"]}}
+  ]
 }

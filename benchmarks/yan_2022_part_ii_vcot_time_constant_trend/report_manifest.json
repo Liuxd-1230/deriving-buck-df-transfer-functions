@@ -1,0 +1,28 @@
+{
+  "report_version": "0.4",
+  "case_id": "yan_2022_part_ii_vcot_time_constant_trend",
+  "format": "markdown",
+  "markdown_sha256": "71b2e222d9c1e4a0802d4075fa7915c6aa75595ca9ae4496b104661b8f36d735",
+  "source_derivation_sha256": "b69556f3d9e2d8542c489d17c754bb609a1cab6dce0568173ada71868d7c1416",
+  "source_checker_sha256": "5824d9df0cbe6dc597ee5fdaa67207bc2483f20e22ce2d4ebb0d64f3d3883e20",
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "REPORT",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION",
+      "CHECKERS",
+      "REPORT"
+    ],
+    "predecessor": {
+      "artifact_type": "checker_result",
+      "state": "CHECKERS",
+      "sha256": "5824d9df0cbe6dc597ee5fdaa67207bc2483f20e22ce2d4ebb0d64f3d3883e20"
+    },
+    "artifact_sha256": "4200c8253a0696259fb95beb506eca736af0e24ec1e4b50339b7e74487d6176f"
+  }
+}

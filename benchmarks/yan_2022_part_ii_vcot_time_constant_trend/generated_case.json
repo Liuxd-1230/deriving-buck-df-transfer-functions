@@ -1,0 +1,38 @@
+{
+  "case_version": "0.4-sampled-data",
+  "name": "yan_2022_part_ii_vcot_time_constant_trend",
+  "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+  "parameters": {
+    "Vin": 12.0,
+    "Vo": 1.2,
+    "fs": 98000.0,
+    "Ts": 1.0204081632653061e-05,
+    "Ton": 3e-06,
+    "T0": 3e-06,
+    "L": 1e-05,
+    "R": 1.0,
+    "m1": 4.0,
+    "m2": 1.0,
+    "D": 0.3,
+    "mc": 0.0,
+    "Hv": 0.36,
+    "H": 0.36,
+    "SidebandPulse": 0.05,
+    "C": 0.0002,
+    "rC": 0.01
+  },
+  "valid_frequency": {
+    "max_hz": 49000.0
+  },
+  "transfer_functions": {
+    "Tc": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)/(2*C**2*H*L*R*SidebandPulse*s**2*exp(T0*s) + 2*C**2*H*R*SidebandPulse*rC*s*exp(T0*s) + C**2*Hv*L*R*Ts*m1*rC*s**2*exp(T0*s) - C**2*Hv*L*R*Ts*m2*rC*s**2*exp(T0*s) + C**2*Hv*R*Ts*m1*rC**2*s*exp(T0*s) - C**2*Hv*R*Ts*m2*rC**2*s*exp(T0*s) + 2*C**2*Hv*R*Vin*rC*s*exp(T0*s) - 2*C**2*Hv*R*Vin*rC*s + 2*C**2*L*R*Ts*mc*s**2*exp(T0*s) + 2*C**2*R*Ts*mc*rC*s*exp(T0*s) + C*D*Hv*L*R*Ts**2*m1*s**2*exp(T0*s) + C*D*Hv*R*Ts**2*m1*rC*s*exp(T0*s) + 2*C*H*L*SidebandPulse*s*exp(T0*s) + 2*C*H*R*SidebandPulse*exp(T0*s) + C*Hv*L*Ts*m1*rC*s*exp(T0*s) - C*Hv*L*Ts*m2*rC*s*exp(T0*s) + C*Hv*R*Ts*m1*rC*exp(T0*s) - C*Hv*R*Ts*m2*rC*exp(T0*s) + 2*C*Hv*R*Vin*exp(T0*s) - 2*C*Hv*R*Vin + 2*C*L*Ts*mc*s*exp(T0*s) + 2*C*R*Ts*mc*exp(T0*s) + D*Hv*L*Ts**2*m1*s*exp(T0*s) + D*Hv*R*Ts**2*m1*exp(T0*s))"
+  },
+  "response_kinds": {
+    "Tc": "closed_loop"
+  },
+  "sideband": {
+    "mode": "PAPER_SIMPLIFIED_FORM",
+    "numeric_evaluable": true,
+    "expression": "Fm*(1-exp(-s*Ton))"
+  }
+}

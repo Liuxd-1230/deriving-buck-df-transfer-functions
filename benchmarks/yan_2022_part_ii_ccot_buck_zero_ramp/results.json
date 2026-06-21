@@ -1,0 +1,56 @@
+{
+  "status": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "plot_bode": {
+    "case": "yan_2022_part_ii_ccot_buck_zero_ramp",
+    "targets": [
+      "Tloop"
+    ],
+    "fs_hz": 98000.0,
+    "fs_half_hz": 49000.0,
+    "valid_frequency_limit_hz": 49000.0,
+    "evaluator": "sampled-data-numeric",
+    "results": {
+      "Tloop": {
+        "response_kind": "return_ratio",
+        "stability_margins_status": "APPLICABLE_RETURN_RATIO",
+        "zero_db_crossing_hz": 219.27208980375292,
+        "phase_margin_deg": 276.8560842176576,
+        "gain_margin_db": null,
+        "phase_180_crossing_hz": null,
+        "validity": "WITHIN_DECLARED_RANGE",
+        "plot_markers": [
+          "fs",
+          "fs/2",
+          "valid_frequency_limit",
+          "0 dB crossing",
+          "phase margin",
+          "gain margin"
+        ]
+      }
+    },
+    "sideband": {
+      "mode": "TRUNCATED_SUM_M",
+      "M": 10,
+      "numeric_evaluable": true
+    }
+  },
+  "formula_origin": {
+    "source": "formula_registry.yaml",
+    "formula_ids": [
+      "yan-2022-part-ii.ccot-dirichlet-value",
+      "yan-2022-part-ii.ccot-fm-zero-ramp",
+      "yan-2022-part-ii.ccot-pulse-relation",
+      "yan-2022-part-ii.ccot-pulse-factor",
+      "yan-2022-part-ii.ccot-sideband-value",
+      "yan-2022-part-ii.ccot-gpwm",
+      "yan-2022-part-ii.ccot-gid-buck",
+      "yan-2022-part-ii.ccot-ti",
+      "yan-2022-part-ii.ccot-tloop",
+      "yan-2022-part-ii.ccot-tc",
+      "yan-2022-part-ii.ccot-gvc"
+    ],
+    "handwritten_formula_variants": false,
+    "pdf_bundled": false,
+    "notes": "PDFs were used during development only; benchmark artifacts are self-contained."
+  }
+}

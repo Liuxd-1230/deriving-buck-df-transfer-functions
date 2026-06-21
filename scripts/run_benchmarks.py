@@ -8,6 +8,8 @@ import csv
 import json
 import math
 import sys
+import subprocess
+import shutil
 from pathlib import Path
 from typing import Any, Callable
 
@@ -25,18 +27,149 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from df_model_library import generate_case  # noqa: E402
+from build_proof_object import build_proof_object  # noqa: E402
+from check_derivation import build_checker_artifact  # noqa: E402
+from df_model_classifier import classify_intake_status  # noqa: E402
+from sampled_derivation import derive_sampled_transfer  # noqa: E402
+from render_derivation_report import build_report_artifacts  # noqa: E402
+from artifact_workflow import attach_workflow  # noqa: E402
 
 
-BENCHMARK_NAMES = (
+LEGACY_BENCHMARK_NAMES = (
     "tian2015_external_ramp",
     "li_lee2010_cot_cm",
     "li_lee2009_v2_rbcot",
     "lu2023_rbcot_loopgain",
 )
+SAMPLED_DATA_BENCHMARK_NAMES = (
+    "yan_2022_part_i_pcm_buck",
+    "yan_2022_part_ii_ccot_buck_zero_ramp",
+    "yan_2022_part_ii_vcot_buck_zero_ramp",
+    "yan_2022_part_ii_vcot_time_constant_trend",
+)
+BENCHMARK_NAMES = LEGACY_BENCHMARK_NAMES + SAMPLED_DATA_BENCHMARK_NAMES
 
 
 def _json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _run_plot_bode(case_path: Path, targets: str, out_dir: Path) -> None:
+    command = [
+        sys.executable,
+        str(SCRIPT_DIR / "df_buck_sympy.py"),
+        "plot-bode",
+        "--case",
+        str(case_path),
+        "--targets",
+        targets,
+        "--out",
+        str(out_dir),
+    ]
+    completed = subprocess.run(command, cwd=SKILL_DIR, text=True, capture_output=True, timeout=120)
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr or completed.stdout)
+
+
+def _sampled_common_artifacts(
+    *,
+    root: Path,
+    name: str,
+    model_id: str,
+    part_family: str,
+    control_family: str,
+    target: str,
+    parameters: dict[str, Any],
+    sampled_variable: str,
+    sideband: dict[str, Any],
+    expected: dict[str, Any],
+    trends: dict[str, Any] | None,
+    notes: str,
+) -> dict[str, Any]:
+    intake = {
+        "intake_version": "0.4",
+        "status": "COMPLETE",
+        "missing": [],
+        "action": "CONTINUE_TO_CLASSIFICATION",
+        "normalized": {
+            "case_id": name,
+            "topology": "buck",
+            "conduction_mode": "CCM",
+            "phases": 1,
+            "control_family": control_family,
+            "target": target,
+            "target_transfer": target,
+            "sampling_event": "modulator input intersection",
+            "switching_events": [{"name": "sample", "equation": "input-reference=0"}],
+            "comparator_inputs": {"positive": sampled_variable, "negative": "reference"},
+            "sampled_variable": sampled_variable,
+            "has_external_ramp": False,
+            "has_internal_ramp": False,
+            "has_delay": False,
+            "has_rc_injection": False,
+            "has_filter_in_sense_path": False,
+            "parameters": parameters,
+            "sideband": sideband,
+        },
+    }
+    intake = attach_workflow(intake, state="PREFLIGHT_INTAKE", intent="paper-benchmark")
+    classification = classify_intake_status(intake)
+    if classification.get("model_id") != model_id or classification.get("part_family") != part_family:
+        raise RuntimeError("sampled benchmark classifier does not match its declared paper contract")
+    proof = build_proof_object(intake, classification)
+    derivation = derive_sampled_transfer(proof)
+    checker = build_checker_artifact(derivation, proof)
+    if checker["status"] != "PASS":
+        raise RuntimeError("sampled benchmark derivation checker failed")
+    report_manifest, report_markdown = build_report_artifacts(derivation, checker)
+    transfer_functions = {target: derivation["expanded_target_expression"]}
+    response_kinds = {target: derivation.get("response_kind", "transfer_function")}
+
+    generated_case = {
+        "case_version": "0.4-sampled-data",
+        "name": name,
+        "model_id": model_id,
+        "parameters": parameters,
+        "valid_frequency": {"max_hz": parameters["fs"] / 2},
+        "transfer_functions": transfer_functions,
+        "response_kinds": response_kinds,
+        "sideband": sideband,
+    }
+    formula_origin = {
+        "source": "formula_registry.yaml",
+        "formula_ids": [item["formula_id"] for item in proof["formula_bindings"]],
+        "handwritten_formula_variants": False,
+        "pdf_bundled": False,
+        "notes": "PDFs were used during development only; benchmark artifacts are self-contained.",
+    }
+    for stale_target in ("Gm", "GPWM", "Ti", "Tv", "Tloop", "Tc", "Gvc"):
+        for suffix in ("_bode.csv", "_bode.png"):
+            stale = root / f"{stale_target}{suffix}"
+            if stale.exists():
+                stale.unlink()
+    _json(root / "intake.json", intake)
+    _json(root / "classification.json", classification)
+    _json(root / "proof_object.json", proof)
+    _json(root / "derivation.json", derivation)
+    _json(root / "checker_result.json", checker)
+    _json(root / "report_manifest.json", report_manifest)
+    (root / "derivation_report.md").write_text(report_markdown, encoding="utf-8")
+    _json(root / "formula_origin.json", formula_origin)
+    _json(root / "generated_case.json", generated_case)
+    _json(root / "expected_key_values.json", expected)
+    if trends is not None:
+        _json(root / "expected_trends.json", trends)
+    (root / "notes.md").write_text(notes, encoding="utf-8")
+    _run_plot_bode(root / "generated_case.json", ",".join(transfer_functions), root)
+    summary = json.loads((root / "bode_summary.json").read_text(encoding="utf-8"))
+    first_target = next(iter(transfer_functions))
+    first_csv = root / f"{first_target}_bode.csv"
+    first_png = root / f"{first_target}_bode.png"
+    if first_csv.exists():
+        shutil.copyfile(first_csv, root / "bode_model.csv")
+    if first_png.exists():
+        shutil.copyfile(first_png, root / "bode.png")
+    return {"status": "SAMPLED_DATA_REGISTERED_PARTIAL", "plot_bode": summary, "formula_origin": formula_origin}
 
 
 def _symbolic_context(parameters: dict[str, Any]) -> tuple[dict[str, Any], dict[sp.Symbol, sp.Expr]]:
@@ -355,11 +488,112 @@ def _lu2023(root: Path) -> dict[str, Any]:
     return {"parameters": {"common": common, "esr_values": esr_values}, "case": {"model_id": "rbcot-esr-lu-2023", "cases": generated}, "expected": expected, "results": results}
 
 
+def _yan_part_i_pcm(root: Path) -> dict[str, Any]:
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 100e3, "Ts": 10e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "mc": 0.0, "Hi": 0.1, "H": 0.1, "SumG": 0.05}
+    result = _sampled_common_artifacts(
+        root=root,
+        name="yan_2022_part_i_pcm_buck",
+        model_id="yan-2022-part-i-pcm-buck",
+        part_family="SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
+        control_family="PCM",
+        target="Tc",
+        parameters=parameters,
+        sampled_variable="is",
+        sideband={"mode": "PAPER_SIMPLIFIED_FORM", "numeric_evaluable": True, "expression": "Fm"},
+        expected={"dirichlet_required": True, "Fm_origin": "sampled_data_derivation"},
+        trends=None,
+        notes="# Yan 2022 Part I PCM sampled-data benchmark\n\nContract benchmark for Dirichlet-based Fm and sampled modulator proof skeleton.\n",
+    )
+    return {"parameters": parameters, "case": json.loads((root / "generated_case.json").read_text(encoding="utf-8")), "expected": {"dirichlet_required": True}, "results": result}
+
+
+def _yan_part_ii_ccot(root: Path) -> dict[str, Any]:
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0, "Hi": 0.1, "H": 0.1, "SidebandPulse": 0.05}
+    result = _sampled_common_artifacts(
+        root=root,
+        name="yan_2022_part_ii_ccot_buck_zero_ramp",
+        model_id="yan-2022-part-ii-ccot-buck-zero-ramp",
+        part_family="SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
+        control_family="C-COT",
+        target="Tloop",
+        parameters=parameters,
+        sampled_variable="is",
+        sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
+        expected={"pulse_factor": "1-exp(-s*T0)", "T0": "Ton"},
+        trends=None,
+        notes="# Yan 2022 Part II C-COT zero-ramp benchmark\n\nChecks the two-pulse-train factor and unified plot-bode numeric path. It is not a v0.5 external-ramp Fm(s) model.\n",
+    )
+    return {"parameters": parameters, "case": json.loads((root / "generated_case.json").read_text(encoding="utf-8")), "expected": {"T0": "Ton"}, "results": result}
+
+
+def _yan_part_ii_vcot(root: Path) -> dict[str, Any]:
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05}
+    result = _sampled_common_artifacts(
+        root=root,
+        name="yan_2022_part_ii_vcot_buck_zero_ramp",
+        model_id="yan-2022-part-ii-vcot-buck-zero-ramp",
+        part_family="SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+        control_family="V-COT",
+        target="Gvc",
+        parameters=parameters,
+        sampled_variable="vfb",
+        sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
+        expected={"pulse_factor": "1-exp(-s*T0)", "T0": "Ton"},
+        trends=None,
+        notes="# Yan 2022 Part II V-COT zero-ramp benchmark\n\nKeeps V-COT sampled-data path separate from Li/Lee V² COT direct-transfer and Lu RBCOT loop-gain models.\n",
+    )
+    return {"parameters": parameters, "case": json.loads((root / "generated_case.json").read_text(encoding="utf-8")), "expected": {"T0": "Ton"}, "results": result}
+
+
+def _yan_vcot_trend(root: Path) -> dict[str, Any]:
+    base = {"C": 200e-6, "rC": 0.010, "Ton": 3e-6, "T0": 3e-6}
+    def margin(values: dict[str, float]) -> float:
+        return values["rC"] * values["C"] - values["T0"] / 2
+    margins = {
+        "base": margin(base),
+        "higher_rC": margin(base | {"rC": 0.012}),
+        "higher_C": margin(base | {"C": 240e-6}),
+        "higher_Ton": margin(base | {"Ton": 4e-6, "T0": 4e-6}),
+    }
+    trends = {
+        "criterion": "rC*C > T0/2",
+        "increase_rC": "stability_margin_increases",
+        "increase_C": "stability_margin_increases",
+        "increase_Ton": "stability_margin_decreases",
+    }
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": base["Ton"], "T0": base["T0"], "L": 10e-6, "R": 1.0, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05, **base}
+    result = _sampled_common_artifacts(
+        root=root,
+        name="yan_2022_part_ii_vcot_time_constant_trend",
+        model_id="yan-2022-part-ii-vcot-buck-zero-ramp",
+        part_family="SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+        control_family="V-COT",
+        target="Tc",
+        parameters=parameters,
+        sampled_variable="vfb",
+        sideband={"mode": "PAPER_SIMPLIFIED_FORM", "numeric_evaluable": True, "expression": "Fm*(1-exp(-s*Ton))"},
+        expected={"boundary_margin_seconds": margins["base"]},
+        trends=trends,
+        notes="# Yan 2022 Part II V-COT time-constant trend benchmark\n\nGuards the paper boundary `rC*C > T0/2`: increasing ESR or C must improve the margin, increasing Ton/T0 must reduce it.\n",
+    )
+    result["trend_checks"] = {
+        "increase_rC": margins["higher_rC"] > margins["base"],
+        "increase_C": margins["higher_C"] > margins["base"],
+        "increase_Ton": margins["higher_Ton"] < margins["base"],
+    }
+    result["margins_seconds"] = margins
+    return {"parameters": parameters, "case": json.loads((root / "generated_case.json").read_text(encoding="utf-8")), "expected": {"criterion": trends["criterion"]}, "results": result}
+
+
 BUILDERS: dict[str, Callable[[Path], dict[str, Any]]] = {
     "tian2015_external_ramp": _tian,
     "li_lee2010_cot_cm": _li2010,
     "li_lee2009_v2_rbcot": _li2009,
     "lu2023_rbcot_loopgain": _lu2023,
+    "yan_2022_part_i_pcm_buck": _yan_part_i_pcm,
+    "yan_2022_part_ii_ccot_buck_zero_ramp": _yan_part_ii_ccot,
+    "yan_2022_part_ii_vcot_buck_zero_ramp": _yan_part_ii_vcot,
+    "yan_2022_part_ii_vcot_time_constant_trend": _yan_vcot_trend,
 }
 
 

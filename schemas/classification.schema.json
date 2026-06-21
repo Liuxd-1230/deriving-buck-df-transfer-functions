@@ -1,11 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ESSF v0.3.1 model classification",
-  "type": "object",
-  "required": ["path"],
-  "properties": {
-    "path": {"enum": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "PROTOCOL_DERIVED_NEW", "INCOMPLETE", "UNSUPPORTED"]},
-    "model_id": {"type": ["string", "null"]}
-  },
-  "additionalProperties": true
+  "title": "ESSF model classification",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": {"enum": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "PROTOCOL_DERIVED_NEW", "INCOMPLETE", "UNSUPPORTED"]}
+      },
+      "not": {"required": ["classification_version"]}
+    },
+    {
+      "type": "object",
+      "required": ["classification_version", "path", "workflow"],
+      "properties": {
+        "classification_version": {"const": "0.4"},
+        "path": {"enum": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "SAMPLED_DATA_REGISTERED", "PROTOCOL_DERIVED_NEW", "NEAR_MODEL", "NEW_MODEL", "MULTIPHASE_NONOVERLAP", "MULTIPHASE_OVERLAP", "INCOMPLETE", "UNSUPPORTED"]},
+        "workflow": {
+          "type": "object",
+          "required": ["version", "intent", "state", "history", "predecessor", "artifact_sha256"],
+          "properties": {"version": {"const": "0.4"}, "state": {"const": "MODEL_CLASSIFY"}}
+        }
+      }
+    }
+  ]
 }

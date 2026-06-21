@@ -33,6 +33,37 @@ class FormulaConsistencyTests(unittest.TestCase):
         ):
             self.assertIn(key, q2)
 
+    def test_registry_contains_sampled_data_formula_fragments(self):
+        registry_path = ROOT / "registries" / "formula_registry.yaml"
+        model_registry_path = ROOT / "registries" / "model_registry.yaml"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        model_registry = json.loads(model_registry_path.read_text(encoding="utf-8"))
+        self.assertEqual(registry["registry_version"], "0.4")
+        for model_id in (
+            "yan-2022-part-i-pcm-buck",
+            "yan-2022-part-ii-ccot-buck-zero-ramp",
+            "yan-2022-part-ii-vcot-buck-zero-ramp",
+        ):
+            self.assertIn(model_id, model_registry["models"])
+            self.assertEqual(model_registry["models"][model_id]["method"], "sampled-data")
+        ccot = registry["formulas"]["yan-2022-part-ii.ccot-gpwm-pulse-factor"]
+        self.assertEqual(ccot["canonical_sympy_expr"], "Fm*(1-exp(-s*T0))")
+        self.assertEqual(ccot["interface"], "sampled-data-modulator")
+
+    def test_yan_registered_power_stage_and_fm_match_paper_equations(self):
+        registry = json.loads((ROOT / "registries" / "formula_registry.yaml").read_text(encoding="utf-8"))
+        formulas = registry["formulas"]
+        self.assertEqual(
+            formulas["yan-2022-part-ii.ccot-gid-buck"]["canonical_sympy_expr"],
+            "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+        )
+        self.assertEqual(
+            formulas["yan-2022-part-ii.vcot-gvd-buck"]["canonical_sympy_expr"],
+            "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)",
+        )
+        self.assertIn("mc", formulas["yan-2022-part-i.pcm-fm-zero-ramp"]["canonical_sympy_expr"])
+        self.assertIn("mc", formulas["yan-2022-part-i-voltage.fm-zero-ramp"]["canonical_sympy_expr"])
+
 
 if __name__ == "__main__":
     unittest.main()

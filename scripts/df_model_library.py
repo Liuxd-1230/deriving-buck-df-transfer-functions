@@ -19,7 +19,11 @@ class ModelError(ValueError):
     """Raised when a requested paper model is unsupported or invalid."""
 
 
-MODEL_SPECS = model_specs()
+MODEL_SPECS = {
+    model_id: spec
+    for model_id, spec in model_specs().items()
+    if spec.get("method") == "describing-function"
+}
 
 EXCLUDED_MODELS = {
     "rbcot-internal-ramp-huang-2025": (

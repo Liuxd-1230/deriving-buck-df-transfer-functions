@@ -1,19 +1,62 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ESSF v0.3.1 proof object",
-  "type": "object",
-  "required": ["proof_version", "case_id", "intake", "classification", "formula_bindings", "modulator", "transfer", "validation"],
-  "properties": {
-    "proof_version": {"const": "0.3.1"},
-    "case_id": {"type": "string", "minLength": 1},
-    "intake": {"type": "object", "required": ["status", "normalized"]},
-    "classification": {"type": "object", "required": ["path"]},
-    "formula_bindings": {"type": "array"},
-    "modulator": {"type": "object", "required": ["model_type"]},
-    "compensator": {"type": "object"},
-    "loop_break": {"type": "object"},
-    "transfer": {"type": "object", "required": ["target_transfer", "expression"]},
-    "validation": {"type": "object", "required": ["level", "completed", "missing"]}
+  "title": "ESSF proof object",
+  "$defs": {
+    "workflow": {
+      "type": "object",
+      "required": ["version", "intent", "state", "history", "predecessor", "artifact_sha256"],
+      "properties": {
+        "version": {"const": "0.4"},
+        "intent": {"enum": ["demo", "paper-benchmark", "user-circuit-derivation"]},
+        "state": {"const": "FORMULA_BINDING"},
+        "history": {"type": "array", "contains": {"const": "MODEL_CLASSIFY"}},
+        "predecessor": {"type": "object", "required": ["artifact_type", "state", "sha256"]},
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
   },
-  "additionalProperties": false
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["proof_version", "case_id", "intake", "classification", "formula_bindings", "modulator", "transfer", "validation"],
+      "properties": {"proof_version": {"const": "0.3.1"}}
+    },
+    {
+      "type": "object",
+      "required": ["proof_version", "case_id", "workflow", "intake", "classification", "formula_bindings", "modulator", "transfer", "validation"],
+      "properties": {
+        "proof_version": {"const": "0.4"},
+        "workflow": {"$ref": "#/$defs/workflow"},
+        "classification": {"type": "object", "required": ["path"]},
+        "formula_bindings": {"type": "array"},
+        "formula_object_bindings": {"type": "object"},
+        "sampling": {"type": "object", "required": ["sampling_instant", "sampled_variable", "left_limit", "right_limit", "dirichlet_value", "dirichlet_required"]},
+        "pulse_structure": {"type": "object", "required": ["type", "frequency_factor"]},
+        "Fm": {"type": "object", "required": ["type", "expression", "origin", "depends_on"]},
+        "sideband": {"type": "object", "required": ["mode"]},
+        "modulator_io": {"type": "object", "required": ["input", "output", "definition", "sign_convention"]},
+        "target_mapping": {"type": "object", "required": ["requested_target", "mapping_status"]},
+        "power_stage": {"type": "object"},
+        "modulator": {"type": "object", "required": ["model_type"]},
+        "transfer": {"type": "object", "required": ["target_transfer", "expression"]},
+        "validation": {"type": "object", "required": ["level", "completed", "missing"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"classification": {"properties": {"path": {"enum": ["DF_REGISTERED_DIRECT", "DF_REGISTERED_MULTIPORT", "SAMPLED_DATA_REGISTERED"]}}}}},
+          "then": {"properties": {"formula_bindings": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"classification": {"properties": {"path": {"const": "SAMPLED_DATA_REGISTERED"}}}}},
+          "then": {
+            "required": ["formula_object_bindings", "sampling", "pulse_structure", "Fm", "sideband", "modulator_io", "target_mapping", "power_stage"],
+            "properties": {
+              "classification": {"required": ["part_family", "model_id"]},
+              "modulator": {"required": ["expression"]}
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

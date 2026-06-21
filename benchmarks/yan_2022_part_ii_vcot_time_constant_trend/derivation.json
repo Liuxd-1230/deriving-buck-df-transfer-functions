@@ -1,0 +1,222 @@
+{
+  "derivation_version": "0.4",
+  "case_id": "yan_2022_part_ii_vcot_time_constant_trend",
+  "classification": {
+    "path": "SAMPLED_DATA_REGISTERED",
+    "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+    "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp"
+  },
+  "control_contract": "voltage",
+  "selected_loop": "Tv",
+  "target_transfer": "Tc",
+  "target_formula_id": "yan-2022-part-ii.vcot-tc",
+  "response_kind": "closed_loop",
+  "expressions": {
+    "sampling": "(x_left+x_right)/2",
+    "Fm": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)",
+    "pulse_relation": "-exp(-s*T0)",
+    "pulse_factor": "1-exp(-s*T0)",
+    "sideband": "SidebandPulse",
+    "GPWM": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+    "Gvd": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)",
+    "Tv": "Hv*Gvd*GPWM",
+    "Tloop": "Tv",
+    "Tc": "Tv/(1+Tv)",
+    "Gvc": "Gvd*GPWM/(1+Tv)"
+  },
+  "expanded_expressions": {
+    "sampling": "(x_left + x_right)/2",
+    "Fm": "2*C/(Ts*(C*Hv*m1*rC - C*Hv*m2*rC + 2*C*mc + D*Hv*Ts*m1))",
+    "pulse_relation": "-exp(-T0*s)",
+    "pulse_factor": "(exp(T0*s) - 1)*exp(-T0*s)",
+    "sideband": "SidebandPulse",
+    "GPWM": "2*C*(exp(T0*s) - 1)*exp(-T0*s)/(2*C*H*SidebandPulse + C*Hv*Ts*m1*rC - C*Hv*Ts*m2*rC + 2*C*Ts*mc + D*Hv*Ts**2*m1)",
+    "Gvd": "R*Vin*(C*rC*s + 1)/(C*L*R*s**2 + C*R*rC*s + L*s + R)",
+    "Tv": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((C*L*R*s**2 + C*R*rC*s + L*s + R)*(2*C*H*SidebandPulse + C*Hv*Ts*m1*rC - C*Hv*Ts*m2*rC + 2*C*Ts*mc + D*Hv*Ts**2*m1))",
+    "Tloop": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)*exp(-T0*s)/((C*L*R*s**2 + C*R*rC*s + L*s + R)*(2*C*H*SidebandPulse + C*Hv*Ts*m1*rC - C*Hv*Ts*m2*rC + 2*C*Ts*mc + D*Hv*Ts**2*m1))",
+    "Tc": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)/(2*C**2*H*L*R*SidebandPulse*s**2*exp(T0*s) + 2*C**2*H*R*SidebandPulse*rC*s*exp(T0*s) + C**2*Hv*L*R*Ts*m1*rC*s**2*exp(T0*s) - C**2*Hv*L*R*Ts*m2*rC*s**2*exp(T0*s) + C**2*Hv*R*Ts*m1*rC**2*s*exp(T0*s) - C**2*Hv*R*Ts*m2*rC**2*s*exp(T0*s) + 2*C**2*Hv*R*Vin*rC*s*exp(T0*s) - 2*C**2*Hv*R*Vin*rC*s + 2*C**2*L*R*Ts*mc*s**2*exp(T0*s) + 2*C**2*R*Ts*mc*rC*s*exp(T0*s) + C*D*Hv*L*R*Ts**2*m1*s**2*exp(T0*s) + C*D*Hv*R*Ts**2*m1*rC*s*exp(T0*s) + 2*C*H*L*SidebandPulse*s*exp(T0*s) + 2*C*H*R*SidebandPulse*exp(T0*s) + C*Hv*L*Ts*m1*rC*s*exp(T0*s) - C*Hv*L*Ts*m2*rC*s*exp(T0*s) + C*Hv*R*Ts*m1*rC*exp(T0*s) - C*Hv*R*Ts*m2*rC*exp(T0*s) + 2*C*Hv*R*Vin*exp(T0*s) - 2*C*Hv*R*Vin + 2*C*L*Ts*mc*s*exp(T0*s) + 2*C*R*Ts*mc*exp(T0*s) + D*Hv*L*Ts**2*m1*s*exp(T0*s) + D*Hv*R*Ts**2*m1*exp(T0*s))",
+    "Gvc": "2*C*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)/(2*C**2*H*L*R*SidebandPulse*s**2*exp(T0*s) + 2*C**2*H*R*SidebandPulse*rC*s*exp(T0*s) + C**2*Hv*L*R*Ts*m1*rC*s**2*exp(T0*s) - C**2*Hv*L*R*Ts*m2*rC*s**2*exp(T0*s) + C**2*Hv*R*Ts*m1*rC**2*s*exp(T0*s) - C**2*Hv*R*Ts*m2*rC**2*s*exp(T0*s) + 2*C**2*Hv*R*Vin*rC*s*exp(T0*s) - 2*C**2*Hv*R*Vin*rC*s + 2*C**2*L*R*Ts*mc*s**2*exp(T0*s) + 2*C**2*R*Ts*mc*rC*s*exp(T0*s) + C*D*Hv*L*R*Ts**2*m1*s**2*exp(T0*s) + C*D*Hv*R*Ts**2*m1*rC*s*exp(T0*s) + 2*C*H*L*SidebandPulse*s*exp(T0*s) + 2*C*H*R*SidebandPulse*exp(T0*s) + C*Hv*L*Ts*m1*rC*s*exp(T0*s) - C*Hv*L*Ts*m2*rC*s*exp(T0*s) + C*Hv*R*Ts*m1*rC*exp(T0*s) - C*Hv*R*Ts*m2*rC*exp(T0*s) + 2*C*Hv*R*Vin*exp(T0*s) - 2*C*Hv*R*Vin + 2*C*L*Ts*mc*s*exp(T0*s) + 2*C*R*Ts*mc*exp(T0*s) + D*Hv*L*Ts**2*m1*s*exp(T0*s) + D*Hv*R*Ts**2*m1*exp(T0*s))"
+  },
+  "expanded_target_expression": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)/(2*C**2*H*L*R*SidebandPulse*s**2*exp(T0*s) + 2*C**2*H*R*SidebandPulse*rC*s*exp(T0*s) + C**2*Hv*L*R*Ts*m1*rC*s**2*exp(T0*s) - C**2*Hv*L*R*Ts*m2*rC*s**2*exp(T0*s) + C**2*Hv*R*Ts*m1*rC**2*s*exp(T0*s) - C**2*Hv*R*Ts*m2*rC**2*s*exp(T0*s) + 2*C**2*Hv*R*Vin*rC*s*exp(T0*s) - 2*C**2*Hv*R*Vin*rC*s + 2*C**2*L*R*Ts*mc*s**2*exp(T0*s) + 2*C**2*R*Ts*mc*rC*s*exp(T0*s) + C*D*Hv*L*R*Ts**2*m1*s**2*exp(T0*s) + C*D*Hv*R*Ts**2*m1*rC*s*exp(T0*s) + 2*C*H*L*SidebandPulse*s*exp(T0*s) + 2*C*H*R*SidebandPulse*exp(T0*s) + C*Hv*L*Ts*m1*rC*s*exp(T0*s) - C*Hv*L*Ts*m2*rC*s*exp(T0*s) + C*Hv*R*Ts*m1*rC*exp(T0*s) - C*Hv*R*Ts*m2*rC*exp(T0*s) + 2*C*Hv*R*Vin*exp(T0*s) - 2*C*Hv*R*Vin + 2*C*L*Ts*mc*s*exp(T0*s) + 2*C*R*Ts*mc*exp(T0*s) + D*Hv*L*Ts**2*m1*s*exp(T0*s) + D*Hv*R*Ts**2*m1*exp(T0*s))",
+  "reasoning_method": {
+    "name": "12-step Yan sampled-data reasoning",
+    "independent_derivation_path": [
+      "1. identify control family and requested target",
+      "2. declare sampling event and sampled variable",
+      "3. write left and right limits",
+      "4. apply Dirichlet sampled value",
+      "5. derive or bind zero-ramp Fm from the sampled value",
+      "6. construct pulse train relation",
+      "7. construct pulse factor in the s-domain",
+      "8. attach sideband summation policy",
+      "9. build GPWM/Gm sampled modulator",
+      "10. bind Buck ESR power stage Gid/Gvd",
+      "11. form return ratio Ti/Tv and Tloop",
+      "12. close the loop for Tc or Gvc and verify against registry"
+    ],
+    "registry_formula_path": [
+      "yan-2022-part-ii.vcot-dirichlet-value",
+      "yan-2022-part-ii.vcot-fm-zero-ramp",
+      "yan-2022-part-ii.vcot-pulse-relation",
+      "yan-2022-part-ii.vcot-pulse-factor",
+      "yan-2022-part-ii.vcot-sideband-value",
+      "yan-2022-part-ii.vcot-gpwm",
+      "yan-2022-part-ii.vcot-gvd-buck",
+      "yan-2022-part-ii.vcot-tv",
+      "yan-2022-part-ii.vcot-tloop",
+      "yan-2022-part-ii.vcot-tc",
+      "yan-2022-part-ii.vcot-gvc"
+    ],
+    "dual_path_check": "independent step composition must match registry-bound expanded_target_expression"
+  },
+  "steps": [
+    {
+      "index": 1,
+      "object": "sampling",
+      "formula_id": "yan-2022-part-ii.vcot-dirichlet-value",
+      "expression": "(x_left+x_right)/2",
+      "source_equation": "Yan-2022-Part-II-Dirichlet-condition",
+      "approximation": "exact-sampling-definition",
+      "dimension_signature": "sampled-variable"
+    },
+    {
+      "index": 2,
+      "object": "Fm",
+      "formula_id": "yan-2022-part-ii.vcot-fm-zero-ramp",
+      "expression": "1/(Hv*(rC*(m1-m2)/2+m1*D*Ts/(2*C))*Ts+mc*Ts)",
+      "source_equation": "Yan-2022-Part-II-Eq16 references Part-I PVM/VVM Fm",
+      "approximation": "paper-PVM-zero-ramp",
+      "dimension_signature": "1/slope_time"
+    },
+    {
+      "index": 3,
+      "object": "pulse_relation",
+      "formula_id": "yan-2022-part-ii.vcot-pulse-relation",
+      "expression": "-exp(-s*T0)",
+      "source_equation": "Yan-2022-Part-II-d2-delayed-inverse-d1",
+      "approximation": "exact-delay-relation",
+      "dimension_signature": "D2/D1"
+    },
+    {
+      "index": 4,
+      "object": "pulse_factor",
+      "formula_id": "yan-2022-part-ii.vcot-pulse-factor",
+      "expression": "1-exp(-s*T0)",
+      "source_equation": "Yan-2022-Part-II-d1-plus-d2",
+      "approximation": "exact-two-pulse-factor",
+      "dimension_signature": "dimensionless"
+    },
+    {
+      "index": 5,
+      "object": "sideband",
+      "formula_id": "yan-2022-part-ii.vcot-sideband-value",
+      "expression": "SidebandPulse",
+      "source_equation": "Yan-2022-Part-II-nonzero-sideband-sum-with-pulse-factor",
+      "approximation": "symbolic-full-sum",
+      "dimension_signature": "pulse-weighted-sideband-sum"
+    },
+    {
+      "index": 6,
+      "object": "GPWM",
+      "formula_id": "yan-2022-part-ii.vcot-gpwm",
+      "expression": "Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+      "source_equation": "Yan-2022-Part-II-sampled-modulator",
+      "approximation": "registered-sideband-form",
+      "dimension_signature": "duty/input"
+    },
+    {
+      "index": 7,
+      "object": "Gvd",
+      "formula_id": "yan-2022-part-ii.vcot-gvd-buck",
+      "expression": "Vin*(rC*C*s+1)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "source_equation": "Yan-2022-Part-II-Eq17",
+      "approximation": "paper-esr-power-stage",
+      "dimension_signature": "voltage/duty"
+    },
+    {
+      "index": 8,
+      "object": "Tv",
+      "formula_id": "yan-2022-part-ii.vcot-tv",
+      "expression": "Hv*Gvd*GPWM",
+      "source_equation": "voltage-loop-block-composition",
+      "approximation": "exact-block-composition",
+      "dimension_signature": "return-ratio"
+    },
+    {
+      "index": 9,
+      "object": "Tloop",
+      "formula_id": "yan-2022-part-ii.vcot-tloop",
+      "expression": "Tv",
+      "source_equation": "loop-break-return-ratio-identification",
+      "approximation": "exact-block-composition",
+      "dimension_signature": "return-ratio"
+    },
+    {
+      "index": 10,
+      "object": "Tc",
+      "formula_id": "yan-2022-part-ii.vcot-tc",
+      "expression": "Tv/(1+Tv)",
+      "source_equation": "negative-feedback-closure",
+      "approximation": "exact-feedback-identity",
+      "dimension_signature": "closed-loop"
+    },
+    {
+      "index": 11,
+      "object": "Gvc",
+      "formula_id": "yan-2022-part-ii.vcot-gvc",
+      "expression": "Gvd*GPWM/(1+Tv)",
+      "source_equation": "closed-loop-control-to-output-composition",
+      "approximation": "exact-feedback-identity",
+      "dimension_signature": "output/control"
+    }
+  ],
+  "approximation_policy": {
+    "declared": true,
+    "items": [
+      "exact-block-composition",
+      "exact-delay-relation",
+      "exact-feedback-identity",
+      "exact-sampling-definition",
+      "exact-two-pulse-factor",
+      "paper-PVM-zero-ramp",
+      "paper-esr-power-stage",
+      "registered-sideband-form",
+      "symbolic-full-sum"
+    ],
+    "valid_frequency": "limited by sampled-data paper contract and benchmark metadata",
+    "sideband": {
+      "mode": "PAPER_SIMPLIFIED_FORM",
+      "numeric_approximation": "Fm*(1-exp(-s*Ton))",
+      "approximation": "paper simplified sampled-data form"
+    }
+  },
+  "validation": {
+    "level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+    "completed": [
+      "registry-bound-step-generation",
+      "proof-expression-consistency"
+    ],
+    "missing": [
+      "paper-figure-reproduction",
+      "switching-simulation"
+    ]
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "DERIVATION",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY",
+      "FORMULA_BINDING",
+      "DERIVATION"
+    ],
+    "predecessor": {
+      "artifact_type": "proof_object",
+      "state": "FORMULA_BINDING",
+      "sha256": "96ff186017347eb86cf81eb1fef1b83146f23c617bf822821a7a4bc00732e7ce"
+    },
+    "artifact_sha256": "b69556f3d9e2d8542c489d17c754bb609a1cab6dce0568173ada71868d7c1416"
+  }
+}

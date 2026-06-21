@@ -1,0 +1,13 @@
+{
+  "registry_version": "0.4",
+  "models": {
+    "cot-cm-li-lee-2010": {"method": "describing-function", "source": "Li and Lee, IEEE TPEL 2010", "interface": "a-star", "supported_targets": ["Gvc", "Gvg", "Zout"]},
+    "cot-cm-external-ramp-tian-2015": {"method": "describing-function", "source": "Tian et al., IEEE TPEL 2016 (early access 2015)", "interface": "a-star", "supported_targets": ["Gvc", "Gvg", "Zout"]},
+    "rbcot-esr-lu-2023": {"method": "describing-function", "source": "Lu et al., IEEE TPEL 2023", "interface": "a-star", "supported_targets": ["Gvc", "Gvg", "Zout"]},
+    "v2-cot-li-lee-2009": {"method": "describing-function", "source": "Li and Lee, IEEE ECCE 2009", "interface": "direct-transfer", "supported_targets": ["Gvc"]},
+    "yan-2022-part-i-pcm-buck": {"method": "sampled-data", "source": "Yan/Ruan/Li, IEEE TPEL 2022 Part I", "interface": "sampled-data-current", "control_contract": "current", "supported_targets": ["Gm", "GPWM", "Ti", "Tloop", "Tc", "Gvc"], "compatibility_alias": true},
+    "yan-2022-part-i-voltage-buck": {"method": "sampled-data", "source": "Yan/Ruan/Li, IEEE TPEL 2022 Part I", "interface": "sampled-data-voltage", "control_contract": "voltage", "supported_targets": ["GPWM", "Tv", "Tloop", "Tc", "Gvc"]},
+    "yan-2022-part-ii-ccot-buck-zero-ramp": {"method": "sampled-data", "source": "Yan/Ruan/Li, IEEE TPEL 2022 Part II", "interface": "sampled-data-current", "control_contract": "current", "supported_targets": ["Gm", "GPWM", "Ti", "Tloop", "Tc", "Gvc"]},
+    "yan-2022-part-ii-vcot-buck-zero-ramp": {"method": "sampled-data", "source": "Yan/Ruan/Li, IEEE TPEL 2022 Part II", "interface": "sampled-data-voltage", "control_contract": "voltage", "supported_targets": ["GPWM", "Tv", "Tloop", "Tc", "Gvc"]}
+  }
+}

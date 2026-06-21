@@ -1,0 +1,64 @@
+{
+  "intake_version": "0.4",
+  "status": "COMPLETE",
+  "missing": [],
+  "action": "CONTINUE_TO_CLASSIFICATION",
+  "normalized": {
+    "case_id": "yan_2022_part_i_pcm_buck",
+    "topology": "buck",
+    "conduction_mode": "CCM",
+    "phases": 1,
+    "control_family": "PCM",
+    "target": "Tc",
+    "target_transfer": "Tc",
+    "sampling_event": "modulator input intersection",
+    "switching_events": [
+      {
+        "name": "sample",
+        "equation": "input-reference=0"
+      }
+    ],
+    "comparator_inputs": {
+      "positive": "is",
+      "negative": "reference"
+    },
+    "sampled_variable": "is",
+    "has_external_ramp": false,
+    "has_internal_ramp": false,
+    "has_delay": false,
+    "has_rc_injection": false,
+    "has_filter_in_sense_path": false,
+    "parameters": {
+      "Vin": 12.0,
+      "Vo": 1.2,
+      "fs": 100000.0,
+      "Ts": 1e-05,
+      "L": 1e-05,
+      "C": 0.0001,
+      "R": 1.0,
+      "rC": 0.01,
+      "m1": 4.0,
+      "m2": 1.0,
+      "mc": 0.0,
+      "Hi": 0.1,
+      "H": 0.1,
+      "SumG": 0.05
+    },
+    "sideband": {
+      "mode": "PAPER_SIMPLIFIED_FORM",
+      "numeric_evaluable": true,
+      "expression": "Fm"
+    }
+  },
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "PREFLIGHT_INTAKE",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE"
+    ],
+    "predecessor": null,
+    "artifact_sha256": "e0037aa12d9271bbc8cfc0fe167f8edd94a5411d6841ab2764c508eefbc8dbc9"
+  }
+}

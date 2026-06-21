@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["level", "completed", "missing"],
+  "properties": {
+    "level": {"enum": ["PAPER_GROUNDED_PARTIAL", "SAMPLED_DATA_CONTRACT_ONLY", "SAMPLED_DATA_REGISTERED_PARTIAL", "SAMPLED_DATA_REGISTERED_BENCHMARKED", "PROTOCOL_DERIVED_UNVERIFIED", "REJECTED_UNSUPPORTED"]},
+    "completed": {"type": "array"},
+    "missing": {"type": "array"}
+  }
+}

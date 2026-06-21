@@ -1,0 +1,36 @@
+{
+  "classification_version": "0.4",
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 1,
+  "control_family": "PCM",
+  "unsupported_effects": [],
+  "path": "SAMPLED_DATA_REGISTERED",
+  "part_family": "SAMPLED_DATA_REGISTERED_PART_I_PCM_VCM_PVM_VVM",
+  "model_id": "yan-2022-part-i-pcm-buck",
+  "target_transfer": "Tc",
+  "model_match": {
+    "known_model": true,
+    "model_id": "yan-2022-part-i-pcm-buck",
+    "confidence": "medium"
+  },
+  "action": "use_sampled_data_registered_model",
+  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "missing_information": [],
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "MODEL_CLASSIFY",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY"
+    ],
+    "predecessor": {
+      "artifact_type": "intake_status",
+      "state": "PREFLIGHT_INTAKE",
+      "sha256": "e0037aa12d9271bbc8cfc0fe167f8edd94a5411d6841ab2764c508eefbc8dbc9"
+    },
+    "artifact_sha256": "7d544689711382617994858f38a13f5edfbb463753c6ae9e918e3b13847aee8a"
+  }
+}

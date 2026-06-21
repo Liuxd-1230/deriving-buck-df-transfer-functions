@@ -1,0 +1,36 @@
+{
+  "classification_version": "0.4",
+  "topology": "buck",
+  "conduction_mode": "CCM",
+  "phases": 1,
+  "control_family": "V-COT",
+  "unsupported_effects": [],
+  "path": "SAMPLED_DATA_REGISTERED",
+  "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
+  "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+  "target_transfer": "Gvc",
+  "model_match": {
+    "known_model": true,
+    "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
+    "confidence": "medium"
+  },
+  "action": "use_sampled_data_registered_model",
+  "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "missing_information": [],
+  "workflow": {
+    "version": "0.4",
+    "intent": "paper-benchmark",
+    "state": "MODEL_CLASSIFY",
+    "history": [
+      "INTENT_CLASSIFY",
+      "PREFLIGHT_INTAKE",
+      "MODEL_CLASSIFY"
+    ],
+    "predecessor": {
+      "artifact_type": "intake_status",
+      "state": "PREFLIGHT_INTAKE",
+      "sha256": "e1fba7578a79830bf846d42fedb5eadabc05a8ea0c84be26fc7efa4988062ac9"
+    },
+    "artifact_sha256": "1c699ab277505e1bc8c380faffc48913c9ae8fc968f30231ffa0981c4ba715b4"
+  }
+}
