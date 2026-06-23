@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "C-COT",
-    "target": "Tloop",
-    "target_transfer": "Tloop",
+    "target": "Tc",
+    "target_transfer": "Tc",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -23,6 +23,14 @@
       "negative": "reference"
     },
     "sampled_variable": "is",
+    "sensing_layer": {
+      "type": "direct_current_sense",
+      "input_variable": "iL",
+      "output_variable": "is",
+      "gain": "registered",
+      "time_constants": [],
+      "validation": "registered"
+    },
     "has_external_ramp": false,
     "has_internal_ramp": false,
     "has_delay": false,
@@ -42,8 +50,7 @@
       "m1": 1.0,
       "m2": 4.0,
       "Hi": 0.1,
-      "H": 0.1,
-      "SidebandPulse": 0.05
+      "H": 0.1
     },
     "sideband": {
       "mode": "TRUNCATED_SUM_M",
@@ -60,6 +67,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "d79f2af884ce83cb2d4882fd2bf9d08ffb468b9a6bbbd4dc7b8a48c66c64d448"
+    "artifact_sha256": "506761b7b198854ec181680eb696e7ba797fdee6213df113ac1fde31caf23364"
   }
 }

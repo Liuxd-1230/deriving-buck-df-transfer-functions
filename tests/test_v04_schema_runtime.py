@@ -38,6 +38,19 @@ class V04SchemaRuntimeTests(unittest.TestCase):
         proof = ROOT / "tests" / "fixtures" / "valid_li_lee_2009_direct.json"
         self.assertEqual(self.run_validator("proof_object.schema.json", proof).returncode, 0)
 
+    def test_formula_origin_requires_full_formula_fingerprints(self):
+        weak_origin = {
+            "source": "formula_registry.yaml",
+            "formula_ids": ["yan-2022-part-ii.ccot-gpwm"],
+            "handwritten_formula_variants": False,
+        }
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "weak_formula_origin.json"
+            path.write_text(json.dumps(weak_origin), encoding="utf-8")
+            result = self.run_validator("formula_origin.schema.json", path)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("formulas", result.stdout + result.stderr)
+
     def test_all_sampled_benchmark_artifacts_and_hash_chain_validate(self):
         result = subprocess.run(
             [sys.executable, str(VALIDATOR), "--all-benchmarks"],

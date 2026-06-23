@@ -7,9 +7,106 @@
     "yan-2022-part-i.gpwm",
     "yan-2022-part-i.gid-buck",
     "yan-2022-part-i.ti",
-    "yan-2022-part-i.tloop-current",
-    "yan-2022-part-i.tc-current",
-    "yan-2022-part-i.gvc-current"
+    "yan-2022-part-i.tc-current"
+  ],
+  "formulas": [
+    {
+      "formula_id": "yan-2022-part-i.dirichlet-value",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-sampling",
+      "canonical_sympy_expr": "(x_left+x_right)/2",
+      "dimension_signature": "sampled-variable",
+      "numeric_probe_values": {
+        "x_left": 1.0,
+        "x_right": 3.0
+      },
+      "source_equation": "Yan-2022-Part-I-Dirichlet-condition",
+      "approximation": "exact-sampling-definition"
+    },
+    {
+      "formula_id": "yan-2022-part-i.pcm-fm-zero-ramp",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-modulator",
+      "canonical_sympy_expr": "1/(((m1-m2)/2+mc)*Ts)",
+      "dimension_signature": "1/slope_time",
+      "numeric_probe_values": {
+        "m1": 4.0,
+        "m2": 1.0,
+        "mc": 0.0,
+        "Ts": 2e-06
+      },
+      "source_equation": "Yan-2022-Part-I-Eq5",
+      "approximation": "zero-ramp-mc-retained"
+    },
+    {
+      "formula_id": "yan-2022-part-i.sideband-value",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-sideband",
+      "canonical_sympy_expr": "SumG",
+      "dimension_signature": "plant-sideband-sum",
+      "numeric_probe_values": {
+        "SumG": 0.05
+      },
+      "source_equation": "Yan-2022-Part-I-sideband-sum-nonzero-indices",
+      "approximation": "symbolic-full-sum"
+    },
+    {
+      "formula_id": "yan-2022-part-i.gpwm",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-modulator",
+      "canonical_sympy_expr": "Fm/(1+Fm*H*SumG)",
+      "dimension_signature": "duty/input",
+      "numeric_probe_values": {
+        "Fm": 3.0,
+        "H": 0.1,
+        "SumG": 0.05
+      },
+      "source_equation": "Yan-2022-Part-I-sampled-modulator",
+      "approximation": "registered-sideband-form"
+    },
+    {
+      "formula_id": "yan-2022-part-i.gid-buck",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-power-stage",
+      "canonical_sympy_expr": "Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "dimension_signature": "current/duty",
+      "numeric_probe_values": {
+        "Vin": 12,
+        "C": 0.0001,
+        "s": 1100,
+        "R": 1,
+        "L": 1e-05,
+        "rC": 0.01
+      },
+      "source_equation": "Yan-2022-Part-II-Eq9; same buck Gid used by Part-I current loop",
+      "approximation": "paper-esr-power-stage"
+    },
+    {
+      "formula_id": "yan-2022-part-i.ti",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "canonical_sympy_expr": "Hi*Gid*GPWM",
+      "dimension_signature": "return-ratio",
+      "numeric_probe_values": {
+        "Hi": 0.1,
+        "Gid": 5,
+        "GPWM": 2
+      },
+      "source_equation": "current-loop-block-composition",
+      "approximation": "exact-block-composition"
+    },
+    {
+      "formula_id": "yan-2022-part-i.tc-current",
+      "source_model_id": "yan-2022-part-i-pcm-buck",
+      "interface": "sampled-data-target-mapping",
+      "canonical_sympy_expr": "Ti/(1+Ti)",
+      "dimension_signature": "closed-loop",
+      "numeric_probe_values": {
+        "Ti": 2
+      },
+      "source_equation": "negative-feedback-closure",
+      "approximation": "exact-feedback-identity"
+    }
   ],
   "handwritten_formula_variants": false,
   "pdf_bundled": false,

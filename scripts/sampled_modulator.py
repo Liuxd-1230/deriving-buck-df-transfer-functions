@@ -21,7 +21,7 @@ def build_target_mapping(
     if requested_target in available_outputs and requested_target in direct_outputs:
         status = "REGISTERED_DIRECT"
         rule = rules.get(requested_target, "registered direct sampled-data output")
-    elif requested_target in rules:
+    elif requested_target in available_outputs and requested_target in rules:
         status = "REGISTERED_DERIVED"
         rule = rules[requested_target]
     else:
@@ -96,12 +96,9 @@ def build_sampled_modulator_proof(spec: dict[str, Any]) -> dict[str, Any]:
     sideband["sum_expression"] = get_formula(formula_objects["sideband"])["canonical_sympy_expr"]
     available_outputs = list(model["supported_targets"])
     loop_name = "Ti" if contract["control_contract"] == "current" else "Tv"
-    plant_name = "Gid" if contract["control_contract"] == "current" else "Gvd"
     rules = {
         loop_name: f"{loop_name}={'Hi*Gid*GPWM' if loop_name == 'Ti' else 'Hv*Gvd*GPWM'}",
-        "Tloop": f"Tloop={loop_name}",
         "Tc": f"Tc={loop_name}/(1+{loop_name})",
-        "Gvc": f"Gvc={plant_name}*GPWM/(1+{loop_name})",
     }
     mapping = build_target_mapping(
         available_outputs=available_outputs,

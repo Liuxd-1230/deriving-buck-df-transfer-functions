@@ -1,10 +1,37 @@
 {
   "report_version": "0.4",
   "case_id": "yan_2022_part_ii_vcot_time_constant_trend",
-  "format": "markdown",
-  "markdown_sha256": "71b2e222d9c1e4a0802d4075fa7915c6aa75595ca9ae4496b104661b8f36d735",
-  "source_derivation_sha256": "b69556f3d9e2d8542c489d17c754bb609a1cab6dce0568173ada71868d7c1416",
-  "source_checker_sha256": "5824d9df0cbe6dc597ee5fdaa67207bc2483f20e22ce2d4ebb0d64f3d3883e20",
+  "report": "report.md",
+  "artifacts": {
+    "intake": {
+      "path": "intake.json",
+      "purpose": "检查用户输入是否完整，以及是否触发 ASK_USER_ONLY。"
+    },
+    "classification": {
+      "path": "classification.json",
+      "purpose": "检查 model path、model_id、validation_level。"
+    },
+    "proof_object": {
+      "path": "proof_object.json",
+      "purpose": "检查 event、sampling、sensing_layer、pulse structure。"
+    },
+    "derivation": {
+      "path": "derivation.json",
+      "purpose": "检查代数消元和目标表达式。"
+    },
+    "formula_origin": {
+      "path": "formula_origin.json",
+      "purpose": "检查所有公式是否来自 registry 或被显式标记为未验证来源。"
+    },
+    "checker_result": {
+      "path": "checker_result.json",
+      "purpose": "检查 proof、formula、normalization、power-stage dynamics、forbidden claims。"
+    },
+    "bode_summary": {
+      "path": "bode_summary.json",
+      "purpose": "检查数值频响、有效频率和边界标记。"
+    }
+  },
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -21,8 +48,8 @@
     "predecessor": {
       "artifact_type": "checker_result",
       "state": "CHECKERS",
-      "sha256": "5824d9df0cbe6dc597ee5fdaa67207bc2483f20e22ce2d4ebb0d64f3d3883e20"
+      "sha256": "fa0995385916310b92730a2954d9cca1bf7b1b7378986f6c33c757c33d08d645"
     },
-    "artifact_sha256": "4200c8253a0696259fb95beb506eca736af0e24ec1e4b50339b7e74487d6176f"
+    "artifact_sha256": "a49b1d70e1c694382a1aa9b06ee36d7fbef9445e56cdb2828f964bc01709388d"
   }
 }

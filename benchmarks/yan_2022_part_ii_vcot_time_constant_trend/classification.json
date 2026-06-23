@@ -16,6 +16,32 @@
   },
   "action": "use_sampled_data_registered_model",
   "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "control_ontology": {
+    "control_mode": "voltage-mode",
+    "timing": "COT",
+    "modeling_method": "sampled-data",
+    "ramp": "zero-ramp",
+    "ripple_source": "sampled-voltage",
+    "phase_scope": "single-phase"
+  },
+  "source_index": {
+    "source_key": "yan-2022-part-ii",
+    "paper": "A General Approach to Sampled-Data Modeling for Ripple-Based Control Part II",
+    "evidence_scope": "two-pulse/sideband zero-ramp registered path partial"
+  },
+  "target_semantics": {
+    "requested_target": "Tc",
+    "response_kind": "transfer_function",
+    "margin_status": "NOT_APPLICABLE_NON_RETURN_RATIO"
+  },
+  "sensing_layer": {
+    "type": "output_ripple_sense",
+    "input_variable": "vo",
+    "output_variable": "vfb",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "missing_information": [],
   "workflow": {
     "version": "0.4",
@@ -29,8 +55,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "6c699489a79183bbdd370bf1de0022f47204cc533823db98db9e34aa98a38f4c"
+      "sha256": "abdba92a34d31b4ae66943cc2fbdf8b7839d078ca25dd3815de9e5fe2b72a941"
     },
-    "artifact_sha256": "43f9a531d36a7e9b4c492e4c606b2f65890b0e46ac79a2ca5274ffaf30e4c9e4"
+    "artifact_sha256": "f92d55a1b8b1ffe95d9c7a9412b9ab5d53224332aa1de34d67982a66d023efe4"
   }
 }

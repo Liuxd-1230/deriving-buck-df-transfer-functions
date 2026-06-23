@@ -23,6 +23,14 @@
         "negative": "reference"
       },
       "sampled_variable": "vfb",
+      "sensing_layer": {
+        "type": "output_ripple_sense",
+        "input_variable": "vo",
+        "output_variable": "vfb",
+        "gain": "registered",
+        "time_constants": [],
+        "validation": "registered"
+      },
       "has_external_ramp": false,
       "has_internal_ramp": false,
       "has_delay": false,
@@ -43,7 +51,6 @@
         "mc": 0.0,
         "Hv": 0.36,
         "H": 0.36,
-        "SidebandPulse": 0.05,
         "C": 0.0002,
         "rC": 0.01
       },
@@ -117,25 +124,11 @@
       "expression": "Hv*Gvd*GPWM"
     },
     {
-      "formula_id": "yan-2022-part-ii.vcot-tloop",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "return-ratio",
-      "expression": "Tv"
-    },
-    {
       "formula_id": "yan-2022-part-ii.vcot-tc",
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Tv/(1+Tv)"
-    },
-    {
-      "formula_id": "yan-2022-part-ii.vcot-gvc",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "output/control",
-      "expression": "Gvd*GPWM/(1+Tv)"
     }
   ],
   "formula_object_bindings": {
@@ -147,10 +140,9 @@
     "GPWM": "yan-2022-part-ii.vcot-gpwm",
     "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
     "Tv": "yan-2022-part-ii.vcot-tv",
-    "Tloop": "yan-2022-part-ii.vcot-tloop",
-    "Tc": "yan-2022-part-ii.vcot-tc",
-    "Gvc": "yan-2022-part-ii.vcot-gvc"
+    "Tc": "yan-2022-part-ii.vcot-tc"
   },
+  "control_contract": "voltage",
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "vfb",
@@ -208,9 +200,7 @@
     "available_registered_outputs": [
       "GPWM",
       "Tv",
-      "Tloop",
-      "Tc",
-      "Gvc"
+      "Tc"
     ],
     "requested_target": "Tc",
     "mapping_rule": "Tc=Tv/(1+Tv)",
@@ -247,6 +237,14 @@
       "switching-simulation"
     ]
   },
+  "sensing_layer": {
+    "type": "output_ripple_sense",
+    "input_variable": "vo",
+    "output_variable": "vfb",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -260,8 +258,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "43f9a531d36a7e9b4c492e4c606b2f65890b0e46ac79a2ca5274ffaf30e4c9e4"
+      "sha256": "f92d55a1b8b1ffe95d9c7a9412b9ab5d53224332aa1de34d67982a66d023efe4"
     },
-    "artifact_sha256": "96ff186017347eb86cf81eb1fef1b83146f23c617bf822821a7a4bc00732e7ce"
+    "artifact_sha256": "c6f68bc4c03cecd35b5e32f2d0b07d59ceda7c37e1feaeb0c34bf977f4dff9c9"
   }
 }

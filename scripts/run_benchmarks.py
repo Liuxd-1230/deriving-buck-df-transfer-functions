@@ -33,6 +33,8 @@ from df_model_classifier import classify_intake_status  # noqa: E402
 from sampled_derivation import derive_sampled_transfer  # noqa: E402
 from render_derivation_report import build_report_artifacts  # noqa: E402
 from artifact_workflow import attach_workflow  # noqa: E402
+from formula_registry import get_formula  # noqa: E402
+from report_manifest import ARTIFACT_PURPOSES  # noqa: E402
 
 
 LEGACY_BENCHMARK_NAMES = (
@@ -103,6 +105,14 @@ def _sampled_common_artifacts(
             "switching_events": [{"name": "sample", "equation": "input-reference=0"}],
             "comparator_inputs": {"positive": sampled_variable, "negative": "reference"},
             "sampled_variable": sampled_variable,
+            "sensing_layer": {
+                "type": "direct_current_sense" if sampled_variable in {"is", "iL"} else "output_ripple_sense",
+                "input_variable": "iL" if sampled_variable in {"is", "iL"} else "vo",
+                "output_variable": sampled_variable,
+                "gain": "registered",
+                "time_constants": [],
+                "validation": "registered",
+            },
             "has_external_ramp": False,
             "has_internal_ramp": False,
             "has_delay": False,
@@ -121,8 +131,8 @@ def _sampled_common_artifacts(
     checker = build_checker_artifact(derivation, proof)
     if checker["status"] != "PASS":
         raise RuntimeError("sampled benchmark derivation checker failed")
-    report_manifest, report_markdown = build_report_artifacts(derivation, checker)
-    transfer_functions = {target: derivation["expanded_target_expression"]}
+    _, report_markdown = build_report_artifacts(derivation, checker)
+    transfer_functions = {target: derivation.get("numeric_expanded_target_expression", derivation["expanded_target_expression"])}
     response_kinds = {target: derivation.get("response_kind", "transfer_function")}
 
     generated_case = {
@@ -135,9 +145,23 @@ def _sampled_common_artifacts(
         "response_kinds": response_kinds,
         "sideband": sideband,
     }
+    formulas = []
+    for item in proof["formula_bindings"]:
+        formula = get_formula(item["formula_id"])
+        formulas.append({
+            "formula_id": item["formula_id"],
+            "source_model_id": formula["source_model_id"],
+            "interface": formula["interface"],
+            "canonical_sympy_expr": formula["canonical_sympy_expr"],
+            "dimension_signature": formula["dimension_signature"],
+            "numeric_probe_values": formula.get("numeric_probe_values", {}),
+            "source_equation": formula.get("source_equation", ""),
+            "approximation": formula.get("approximation", ""),
+        })
     formula_origin = {
         "source": "formula_registry.yaml",
         "formula_ids": [item["formula_id"] for item in proof["formula_bindings"]],
+        "formulas": formulas,
         "handwritten_formula_variants": False,
         "pdf_bundled": False,
         "notes": "PDFs were used during development only; benchmark artifacts are self-contained.",
@@ -152,7 +176,7 @@ def _sampled_common_artifacts(
     _json(root / "proof_object.json", proof)
     _json(root / "derivation.json", derivation)
     _json(root / "checker_result.json", checker)
-    _json(root / "report_manifest.json", report_manifest)
+    (root / "report.md").write_text(report_markdown, encoding="utf-8")
     (root / "derivation_report.md").write_text(report_markdown, encoding="utf-8")
     _json(root / "formula_origin.json", formula_origin)
     _json(root / "generated_case.json", generated_case)
@@ -160,6 +184,22 @@ def _sampled_common_artifacts(
     if trends is not None:
         _json(root / "expected_trends.json", trends)
     (root / "notes.md").write_text(notes, encoding="utf-8")
+    report_manifest = {
+        "report_version": "0.4",
+        "case_id": name,
+        "report": "report.md",
+        "artifacts": {
+            "intake": {"path": "intake.json", "purpose": ARTIFACT_PURPOSES["intake"]},
+            "classification": {"path": "classification.json", "purpose": ARTIFACT_PURPOSES["classification"]},
+            "proof_object": {"path": "proof_object.json", "purpose": ARTIFACT_PURPOSES["proof_object"]},
+            "derivation": {"path": "derivation.json", "purpose": ARTIFACT_PURPOSES["derivation"]},
+            "formula_origin": {"path": "formula_origin.json", "purpose": ARTIFACT_PURPOSES["formula_origin"]},
+            "checker_result": {"path": "checker_result.json", "purpose": ARTIFACT_PURPOSES["checker_result"]},
+            "bode_summary": {"path": "bode_summary.json", "purpose": ARTIFACT_PURPOSES["bode_summary"]},
+        },
+    }
+    report_manifest = attach_workflow(report_manifest, state="REPORT", intent=proof["workflow"]["intent"], predecessor=checker)
+    _json(root / "report_manifest.json", report_manifest)
     _run_plot_bode(root / "generated_case.json", ",".join(transfer_functions), root)
     summary = json.loads((root / "bode_summary.json").read_text(encoding="utf-8"))
     first_target = next(iter(transfer_functions))
@@ -489,7 +529,7 @@ def _lu2023(root: Path) -> dict[str, Any]:
 
 
 def _yan_part_i_pcm(root: Path) -> dict[str, Any]:
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 100e3, "Ts": 10e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "mc": 0.0, "Hi": 0.1, "H": 0.1, "SumG": 0.05}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 100e3, "Ts": 10e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "mc": 0.0, "Hi": 0.1, "H": 0.1}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_i_pcm_buck",
@@ -508,14 +548,14 @@ def _yan_part_i_pcm(root: Path) -> dict[str, Any]:
 
 
 def _yan_part_ii_ccot(root: Path) -> dict[str, Any]:
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0, "Hi": 0.1, "H": 0.1, "SidebandPulse": 0.05}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 1.0, "m2": 4.0, "Hi": 0.1, "H": 0.1}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_ii_ccot_buck_zero_ramp",
         model_id="yan-2022-part-ii-ccot-buck-zero-ramp",
         part_family="SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
         control_family="C-COT",
-        target="Tloop",
+        target="Tc",
         parameters=parameters,
         sampled_variable="is",
         sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
@@ -527,14 +567,14 @@ def _yan_part_ii_ccot(root: Path) -> dict[str, Any]:
 
 
 def _yan_part_ii_vcot(root: Path) -> dict[str, Any]:
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": 3e-6, "T0": 3e-6, "L": 10e-6, "C": 100e-6, "R": 1.0, "rC": 0.01, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_ii_vcot_buck_zero_ramp",
         model_id="yan-2022-part-ii-vcot-buck-zero-ramp",
         part_family="SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
         control_family="V-COT",
-        target="Gvc",
+        target="Tc",
         parameters=parameters,
         sampled_variable="vfb",
         sideband={"mode": "TRUNCATED_SUM_M", "M": 10, "numeric_evaluable": True},
@@ -561,7 +601,7 @@ def _yan_vcot_trend(root: Path) -> dict[str, Any]:
         "increase_C": "stability_margin_increases",
         "increase_Ton": "stability_margin_decreases",
     }
-    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": base["Ton"], "T0": base["T0"], "L": 10e-6, "R": 1.0, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, "SidebandPulse": 0.05, **base}
+    parameters = {"Vin": 12.0, "Vo": 1.2, "fs": 98e3, "Ts": 1 / 98e3, "Ton": base["Ton"], "T0": base["T0"], "L": 10e-6, "R": 1.0, "m1": 4.0, "m2": 1.0, "D": 0.3, "mc": 0.0, "Hv": 0.36, "H": 0.36, **base}
     result = _sampled_common_artifacts(
         root=root,
         name="yan_2022_part_ii_vcot_time_constant_trend",

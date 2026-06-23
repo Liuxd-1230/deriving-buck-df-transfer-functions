@@ -8,7 +8,7 @@
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_VCOT_VCOFT",
   "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-  "target_transfer": "Gvc",
+  "target_transfer": "Tc",
   "model_match": {
     "known_model": true,
     "model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
@@ -16,6 +16,32 @@
   },
   "action": "use_sampled_data_registered_model",
   "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "control_ontology": {
+    "control_mode": "voltage-mode",
+    "timing": "COT",
+    "modeling_method": "sampled-data",
+    "ramp": "zero-ramp",
+    "ripple_source": "sampled-voltage",
+    "phase_scope": "single-phase"
+  },
+  "source_index": {
+    "source_key": "yan-2022-part-ii",
+    "paper": "A General Approach to Sampled-Data Modeling for Ripple-Based Control Part II",
+    "evidence_scope": "two-pulse/sideband zero-ramp registered path partial"
+  },
+  "target_semantics": {
+    "requested_target": "Tc",
+    "response_kind": "transfer_function",
+    "margin_status": "NOT_APPLICABLE_NON_RETURN_RATIO"
+  },
+  "sensing_layer": {
+    "type": "output_ripple_sense",
+    "input_variable": "vo",
+    "output_variable": "vfb",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "missing_information": [],
   "workflow": {
     "version": "0.4",
@@ -29,8 +55,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "e1fba7578a79830bf846d42fedb5eadabc05a8ea0c84be26fc7efa4988062ac9"
+      "sha256": "aba602b8c9b9ab86eb10ee0e3a363636330a3e871aefbffd1fcc7a2e8b066684"
     },
-    "artifact_sha256": "1c699ab277505e1bc8c380faffc48913c9ae8fc968f30231ffa0981c4ba715b4"
+    "artifact_sha256": "c26a10fc6b26e232634f6e8cb6c0b41871187f7467e47bbee84e97460110dfec"
   }
 }

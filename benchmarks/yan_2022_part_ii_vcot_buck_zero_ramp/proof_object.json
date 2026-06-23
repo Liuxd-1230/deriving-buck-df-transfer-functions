@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "V-COT",
-      "target": "Gvc",
-      "target_transfer": "Gvc",
+      "target": "Tc",
+      "target_transfer": "Tc",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -23,6 +23,14 @@
         "negative": "reference"
       },
       "sampled_variable": "vfb",
+      "sensing_layer": {
+        "type": "output_ripple_sense",
+        "input_variable": "vo",
+        "output_variable": "vfb",
+        "gain": "registered",
+        "time_constants": [],
+        "validation": "registered"
+      },
       "has_external_ramp": false,
       "has_internal_ramp": false,
       "has_delay": false,
@@ -44,8 +52,7 @@
         "D": 0.3,
         "mc": 0.0,
         "Hv": 0.36,
-        "H": 0.36,
-        "SidebandPulse": 0.05
+        "H": 0.36
       },
       "sideband": {
         "mode": "TRUNCATED_SUM_M",
@@ -117,25 +124,11 @@
       "expression": "Hv*Gvd*GPWM"
     },
     {
-      "formula_id": "yan-2022-part-ii.vcot-tloop",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "return-ratio",
-      "expression": "Tv"
-    },
-    {
       "formula_id": "yan-2022-part-ii.vcot-tc",
       "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Tv/(1+Tv)"
-    },
-    {
-      "formula_id": "yan-2022-part-ii.vcot-gvc",
-      "source_model_id": "yan-2022-part-ii-vcot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "output/control",
-      "expression": "Gvd*GPWM/(1+Tv)"
     }
   ],
   "formula_object_bindings": {
@@ -147,10 +140,9 @@
     "GPWM": "yan-2022-part-ii.vcot-gpwm",
     "Gvd": "yan-2022-part-ii.vcot-gvd-buck",
     "Tv": "yan-2022-part-ii.vcot-tv",
-    "Tloop": "yan-2022-part-ii.vcot-tloop",
-    "Tc": "yan-2022-part-ii.vcot-tc",
-    "Gvc": "yan-2022-part-ii.vcot-gvc"
+    "Tc": "yan-2022-part-ii.vcot-tc"
   },
+  "control_contract": "voltage",
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "vfb",
@@ -232,12 +224,10 @@
     "available_registered_outputs": [
       "GPWM",
       "Tv",
-      "Tloop",
-      "Tc",
-      "Gvc"
+      "Tc"
     ],
-    "requested_target": "Gvc",
-    "mapping_rule": "Gvc=Gvd*GPWM/(1+Tv)",
+    "requested_target": "Tc",
+    "mapping_rule": "Tc=Tv/(1+Tv)",
     "mapping_status": "REGISTERED_DERIVED"
   },
   "power_stage": {
@@ -254,9 +244,9 @@
     "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Gvc",
-    "formula_id": "yan-2022-part-ii.vcot-gvc",
-    "expression": "Gvd*GPWM/(1+Tv)",
+    "target_transfer": "Tc",
+    "formula_id": "yan-2022-part-ii.vcot-tc",
+    "expression": "Tv/(1+Tv)",
     "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
@@ -271,6 +261,14 @@
       "switching-simulation"
     ]
   },
+  "sensing_layer": {
+    "type": "output_ripple_sense",
+    "input_variable": "vo",
+    "output_variable": "vfb",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -284,8 +282,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "1c699ab277505e1bc8c380faffc48913c9ae8fc968f30231ffa0981c4ba715b4"
+      "sha256": "c26a10fc6b26e232634f6e8cb6c0b41871187f7467e47bbee84e97460110dfec"
     },
-    "artifact_sha256": "8d2287813c72a67ce09ffff76e40a6e65991ed001f183b49d839e367af309d7d"
+    "artifact_sha256": "51b7381803e7b52633588103380bc94b176fdad023887001438db7cf86eda695"
   }
 }

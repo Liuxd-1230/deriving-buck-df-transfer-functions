@@ -17,7 +17,6 @@
     "mc": 0.0,
     "Hv": 0.36,
     "H": 0.36,
-    "SidebandPulse": 0.05,
     "C": 0.0002,
     "rC": 0.01
   },
@@ -25,7 +24,7 @@
     "max_hz": 49000.0
   },
   "transfer_functions": {
-    "Tc": "2*C*Hv*R*Vin*(C*rC*s + 1)*(exp(T0*s) - 1)/(2*C**2*H*L*R*SidebandPulse*s**2*exp(T0*s) + 2*C**2*H*R*SidebandPulse*rC*s*exp(T0*s) + C**2*Hv*L*R*Ts*m1*rC*s**2*exp(T0*s) - C**2*Hv*L*R*Ts*m2*rC*s**2*exp(T0*s) + C**2*Hv*R*Ts*m1*rC**2*s*exp(T0*s) - C**2*Hv*R*Ts*m2*rC**2*s*exp(T0*s) + 2*C**2*Hv*R*Vin*rC*s*exp(T0*s) - 2*C**2*Hv*R*Vin*rC*s + 2*C**2*L*R*Ts*mc*s**2*exp(T0*s) + 2*C**2*R*Ts*mc*rC*s*exp(T0*s) + C*D*Hv*L*R*Ts**2*m1*s**2*exp(T0*s) + C*D*Hv*R*Ts**2*m1*rC*s*exp(T0*s) + 2*C*H*L*SidebandPulse*s*exp(T0*s) + 2*C*H*R*SidebandPulse*exp(T0*s) + C*Hv*L*Ts*m1*rC*s*exp(T0*s) - C*Hv*L*Ts*m2*rC*s*exp(T0*s) + C*Hv*R*Ts*m1*rC*exp(T0*s) - C*Hv*R*Ts*m2*rC*exp(T0*s) + 2*C*Hv*R*Vin*exp(T0*s) - 2*C*Hv*R*Vin + 2*C*L*Ts*mc*s*exp(T0*s) + 2*C*R*Ts*mc*exp(T0*s) + D*Hv*L*Ts**2*m1*s*exp(T0*s) + D*Hv*R*Ts**2*m1*exp(T0*s))"
+    "Tc": "Hv*Vin*(1 - exp(-T0*s))*(C*rC*s + 1)/((H*(1 - exp(-Ton*s))/(Hv*Ts*(rC*(m1 - m2)/2 + D*Ts*m1/(2*C)) + Ts*mc)**2 + 1)*(Hv*Ts*(rC*(m1 - m2)/2 + D*Ts*m1/(2*C)) + Ts*mc)*(Hv*Vin*(1 - exp(-T0*s))*(C*rC*s + 1)/((H*(1 - exp(-Ton*s))/(Hv*Ts*(rC*(m1 - m2)/2 + D*Ts*m1/(2*C)) + Ts*mc)**2 + 1)*(Hv*Ts*(rC*(m1 - m2)/2 + D*Ts*m1/(2*C)) + Ts*mc)*(C*L*s**2 + s*(C*rC + L/R) + 1)) + 1)*(C*L*s**2 + s*(C*rC + L/R) + 1))"
   },
   "response_kinds": {
     "Tc": "closed_loop"

@@ -23,6 +23,14 @@
       "negative": "reference"
     },
     "sampled_variable": "is",
+    "sensing_layer": {
+      "type": "direct_current_sense",
+      "input_variable": "iL",
+      "output_variable": "is",
+      "gain": "registered",
+      "time_constants": [],
+      "validation": "registered"
+    },
     "has_external_ramp": false,
     "has_internal_ramp": false,
     "has_delay": false,
@@ -41,8 +49,7 @@
       "m2": 1.0,
       "mc": 0.0,
       "Hi": 0.1,
-      "H": 0.1,
-      "SumG": 0.05
+      "H": 0.1
     },
     "sideband": {
       "mode": "PAPER_SIMPLIFIED_FORM",
@@ -59,6 +66,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "e0037aa12d9271bbc8cfc0fe167f8edd94a5411d6841ab2764c508eefbc8dbc9"
+    "artifact_sha256": "98a5ba3f6dbc8e5e2dae6de77e2aeed0cebe10c9ec092ac03c5d28fc7cf94255"
   }
 }

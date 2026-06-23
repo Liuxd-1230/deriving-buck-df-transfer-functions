@@ -9,8 +9,8 @@
       "conduction_mode": "CCM",
       "phases": 1,
       "control_family": "C-COT",
-      "target": "Tloop",
-      "target_transfer": "Tloop",
+      "target": "Tc",
+      "target_transfer": "Tc",
       "sampling_event": "modulator input intersection",
       "switching_events": [
         {
@@ -23,6 +23,14 @@
         "negative": "reference"
       },
       "sampled_variable": "is",
+      "sensing_layer": {
+        "type": "direct_current_sense",
+        "input_variable": "iL",
+        "output_variable": "is",
+        "gain": "registered",
+        "time_constants": [],
+        "validation": "registered"
+      },
       "has_external_ramp": false,
       "has_internal_ramp": false,
       "has_delay": false,
@@ -42,8 +50,7 @@
         "m1": 1.0,
         "m2": 4.0,
         "Hi": 0.1,
-        "H": 0.1,
-        "SidebandPulse": 0.05
+        "H": 0.1
       },
       "sideband": {
         "mode": "TRUNCATED_SUM_M",
@@ -115,25 +122,11 @@
       "expression": "Hi*Gid*GPWM"
     },
     {
-      "formula_id": "yan-2022-part-ii.ccot-tloop",
-      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "return-ratio",
-      "expression": "Ti"
-    },
-    {
       "formula_id": "yan-2022-part-ii.ccot-tc",
       "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
       "interface": "sampled-data-target-mapping",
       "dimension_signature": "closed-loop",
       "expression": "Ti/(1+Ti)"
-    },
-    {
-      "formula_id": "yan-2022-part-ii.ccot-gvc",
-      "source_model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-      "interface": "sampled-data-target-mapping",
-      "dimension_signature": "output/control",
-      "expression": "Gid*GPWM/(1+Ti)"
     }
   ],
   "formula_object_bindings": {
@@ -145,10 +138,9 @@
     "GPWM": "yan-2022-part-ii.ccot-gpwm",
     "Gid": "yan-2022-part-ii.ccot-gid-buck",
     "Ti": "yan-2022-part-ii.ccot-ti",
-    "Tloop": "yan-2022-part-ii.ccot-tloop",
-    "Tc": "yan-2022-part-ii.ccot-tc",
-    "Gvc": "yan-2022-part-ii.ccot-gvc"
+    "Tc": "yan-2022-part-ii.ccot-tc"
   },
+  "control_contract": "current",
   "sampling": {
     "sampling_instant": "modulator input intersection",
     "sampled_variable": "is",
@@ -231,12 +223,10 @@
       "Gm",
       "GPWM",
       "Ti",
-      "Tloop",
-      "Tc",
-      "Gvc"
+      "Tc"
     ],
-    "requested_target": "Tloop",
-    "mapping_rule": "Tloop=Ti",
+    "requested_target": "Tc",
+    "mapping_rule": "Tc=Ti/(1+Ti)",
     "mapping_status": "REGISTERED_DERIVED"
   },
   "power_stage": {
@@ -253,9 +243,9 @@
     "origin": "sampled_data_registered"
   },
   "transfer": {
-    "target_transfer": "Tloop",
-    "formula_id": "yan-2022-part-ii.ccot-tloop",
-    "expression": "Ti",
+    "target_transfer": "Tc",
+    "formula_id": "yan-2022-part-ii.ccot-tc",
+    "expression": "Ti/(1+Ti)",
     "origin": "sampled-data-registry-binding; final algebra belongs to derivation artifact"
   },
   "validation": {
@@ -270,6 +260,14 @@
       "switching-simulation"
     ]
   },
+  "sensing_layer": {
+    "type": "direct_current_sense",
+    "input_variable": "iL",
+    "output_variable": "is",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -283,8 +281,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "800214286e868b9e7d5a6e71dbba8545558d60b4ac295724d06be52d3b78537f"
+      "sha256": "3ca7700cf6e40081ff31b4cf8b76f68d46b066427addac78cce04189390cf6f5"
     },
-    "artifact_sha256": "e9c1320343e215edb9798bbe6eea0507d14311dce585d74ee06dc20f5988fd8e"
+    "artifact_sha256": "8c6be0d7b364e06424b12b1097310d5ee0d6c90c4a7f19c99c94183a85d5d612"
   }
 }

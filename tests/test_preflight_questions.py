@@ -67,6 +67,21 @@ class PreflightQuestionTests(unittest.TestCase):
         self.assertEqual(status["action"], "CONTINUE_TO_CLASSIFICATION")
         self.assertEqual(status["missing"], [])
 
+    def test_text_intake_preserves_multiple_targets_and_requires_tloop_loop_break(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            request = root / "request.txt"
+            output = root / "intake_status.json"
+            request.write_text("请推导 buck CCM 电路的 Gvc 和 Tloop", encoding="utf-8")
+            result = self.run_preflight("--text", str(request), "--out", str(output))
+            self.assertEqual(result.returncode, 2, result.stderr)
+            status = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(status["status"], "INCOMPLETE_TLOOP_INTAKE")
+        self.assertEqual(status["normalized"]["target_transfer"], ["Gvc", "Tloop"])
+        self.assertIn("loop_break", status["missing"])
+        self.assertEqual(status["action"], "ASK_USER_ONLY")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,8 +9,8 @@
     "conduction_mode": "CCM",
     "phases": 1,
     "control_family": "V-COT",
-    "target": "Gvc",
-    "target_transfer": "Gvc",
+    "target": "Tc",
+    "target_transfer": "Tc",
     "sampling_event": "modulator input intersection",
     "switching_events": [
       {
@@ -23,6 +23,14 @@
       "negative": "reference"
     },
     "sampled_variable": "vfb",
+    "sensing_layer": {
+      "type": "output_ripple_sense",
+      "input_variable": "vo",
+      "output_variable": "vfb",
+      "gain": "registered",
+      "time_constants": [],
+      "validation": "registered"
+    },
     "has_external_ramp": false,
     "has_internal_ramp": false,
     "has_delay": false,
@@ -44,8 +52,7 @@
       "D": 0.3,
       "mc": 0.0,
       "Hv": 0.36,
-      "H": 0.36,
-      "SidebandPulse": 0.05
+      "H": 0.36
     },
     "sideband": {
       "mode": "TRUNCATED_SUM_M",
@@ -62,6 +69,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "e1fba7578a79830bf846d42fedb5eadabc05a8ea0c84be26fc7efa4988062ac9"
+    "artifact_sha256": "aba602b8c9b9ab86eb10ee0e3a363636330a3e871aefbffd1fcc7a2e8b066684"
   }
 }

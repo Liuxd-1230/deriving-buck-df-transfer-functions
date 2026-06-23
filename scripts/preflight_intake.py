@@ -12,6 +12,7 @@ from typing import Any
 
 from artifact_workflow import WorkflowError, attach_workflow, verify_workflow
 from schema_validation import ArtifactSchemaError, validate_artifact
+from validation_policy import is_user_intent
 
 
 INTAKE_VERSION = "0.4"
@@ -49,13 +50,20 @@ def _text_normalization(text: str) -> dict[str, Any]:
     normalized: dict[str, Any] = {"request_text": text.strip()}
     lower = text.lower()
 
-    target_match = re.search(r"\b(gvc|gvg|zout|tloop|ti|tv|tc)\b", lower)
-    if target_match:
-        normalized["target_transfer"] = target_match.group(1).replace("zout", "Zout").replace(
-            "tloop", "Tloop"
-        )
-        if normalized["target_transfer"] not in {"Zout", "Tloop"}:
-            normalized["target_transfer"] = normalized["target_transfer"].capitalize()
+    target_matches = re.findall(r"\b(gvc|gvg|zout|tloop|ti|tv|tc)\b", lower)
+    if target_matches:
+        def normalize_target(value: str) -> str:
+            normalized_value = value.replace("zout", "Zout").replace("tloop", "Tloop")
+            if normalized_value not in {"Zout", "Tloop"}:
+                normalized_value = normalized_value.capitalize()
+            return normalized_value
+
+        targets = []
+        for match in target_matches:
+            target = normalize_target(match)
+            if target not in targets:
+                targets.append(target)
+        normalized["target_transfer"] = targets[0] if len(targets) == 1 else targets
 
     if "cot" in lower or "恒定导通" in text:
         if "谷值电压" in text or "valley voltage" in lower:
@@ -104,6 +112,15 @@ def _missing_groups(normalized: dict[str, Any]) -> list[str]:
         not any(name in parameters for name in aliases) for aliases in CORE_PARAMETER_GROUPS
     ):
         missing.append("parameters")
+    has_registered_or_protocol_contract = bool(normalized.get("model_id")) or isinstance(
+        normalized.get("df_relation"), dict
+    )
+    if (
+        is_user_intent(str(normalized.get("intent", "user-circuit-derivation")))
+        and not has_registered_or_protocol_contract
+        and not isinstance(normalized.get("sensing_layer"), dict)
+    ):
+        missing.append("sensing_layer")
     return missing
 
 

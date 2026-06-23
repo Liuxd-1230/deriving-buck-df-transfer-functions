@@ -8,7 +8,7 @@
   "path": "SAMPLED_DATA_REGISTERED",
   "part_family": "SAMPLED_DATA_REGISTERED_PART_II_CCOT_CCOFT",
   "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
-  "target_transfer": "Tloop",
+  "target_transfer": "Tc",
   "model_match": {
     "known_model": true,
     "model_id": "yan-2022-part-ii-ccot-buck-zero-ramp",
@@ -16,6 +16,32 @@
   },
   "action": "use_sampled_data_registered_model",
   "validation_level": "SAMPLED_DATA_REGISTERED_PARTIAL",
+  "control_ontology": {
+    "control_mode": "current-mode",
+    "timing": "COT",
+    "modeling_method": "sampled-data",
+    "ramp": "zero-ramp",
+    "ripple_source": "sampled-current",
+    "phase_scope": "single-phase"
+  },
+  "source_index": {
+    "source_key": "yan-2022-part-ii",
+    "paper": "A General Approach to Sampled-Data Modeling for Ripple-Based Control Part II",
+    "evidence_scope": "two-pulse/sideband zero-ramp registered path partial"
+  },
+  "target_semantics": {
+    "requested_target": "Tc",
+    "response_kind": "transfer_function",
+    "margin_status": "NOT_APPLICABLE_NON_RETURN_RATIO"
+  },
+  "sensing_layer": {
+    "type": "direct_current_sense",
+    "input_variable": "iL",
+    "output_variable": "is",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "missing_information": [],
   "workflow": {
     "version": "0.4",
@@ -29,8 +55,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "d79f2af884ce83cb2d4882fd2bf9d08ffb468b9a6bbbd4dc7b8a48c66c64d448"
+      "sha256": "506761b7b198854ec181680eb696e7ba797fdee6213df113ac1fde31caf23364"
     },
-    "artifact_sha256": "800214286e868b9e7d5a6e71dbba8545558d60b4ac295724d06be52d3b78537f"
+    "artifact_sha256": "3ca7700cf6e40081ff31b4cf8b76f68d46b066427addac78cce04189390cf6f5"
   }
 }
