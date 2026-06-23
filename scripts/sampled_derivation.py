@@ -139,6 +139,18 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
             "approximation": formula["approximation"],
             "dimension_signature": formula["dimension_signature"],
         })
+    derivation_steps = [
+        {
+            "step_id": step["object"],
+            "title": f"注册公式 {step['object']}",
+            "latex": f"{step['object']}={step['expression']}",
+            "explanation": f"该公式来自 formula_registry.yaml，source equation 为 {step['source_equation']}。",
+            "source_artifact": "formula_registry.yaml",
+            "latex_origin": "registry_binding",
+            "provenance": step["formula_id"],
+        }
+        for step in steps
+    ]
 
     artifact = {
         "derivation_version": "0.4",
@@ -176,6 +188,7 @@ def derive_sampled_transfer(proof: dict[str, Any]) -> dict[str, Any]:
             "dual_path_check": "independent step composition must match registry-bound expanded_target_expression",
         },
         "steps": steps,
+        "derivation_steps": derivation_steps,
         "approximation_policy": {
             "declared": True,
             "items": sorted({step["approximation"] for step in steps}),

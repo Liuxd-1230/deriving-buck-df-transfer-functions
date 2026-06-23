@@ -158,6 +158,89 @@
       "dimension_signature": "closed-loop"
     }
   ],
+  "derivation_steps": [
+    {
+      "step_id": "sampling",
+      "title": "注册公式 sampling",
+      "latex": "sampling=(x_left+x_right)/2",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-Dirichlet-condition。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-dirichlet-value"
+    },
+    {
+      "step_id": "Fm",
+      "title": "注册公式 Fm",
+      "latex": "Fm=1/((m2-m1)*Ts/2)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-zero-ramp-Fm。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-fm-zero-ramp"
+    },
+    {
+      "step_id": "pulse_relation",
+      "title": "注册公式 pulse_relation",
+      "latex": "pulse_relation=-exp(-s*T0)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-d2-delayed-inverse-d1。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-pulse-relation"
+    },
+    {
+      "step_id": "pulse_factor",
+      "title": "注册公式 pulse_factor",
+      "latex": "pulse_factor=1-exp(-s*T0)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-d1-plus-d2。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-pulse-factor"
+    },
+    {
+      "step_id": "sideband",
+      "title": "注册公式 sideband",
+      "latex": "sideband=SidebandPulse",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-nonzero-sideband-sum-with-pulse-factor。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-sideband-value"
+    },
+    {
+      "step_id": "GPWM",
+      "title": "注册公式 GPWM",
+      "latex": "GPWM=Fm*PulseFactor/(1+Fm*H*SidebandPulse)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-sampled-modulator。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-gpwm"
+    },
+    {
+      "step_id": "Gid",
+      "title": "注册公式 Gid",
+      "latex": "Gid=Vin*(C*s+1/R)/(L*C*s**2+(L/R+rC*C)*s+1)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 Yan-2022-Part-II-Eq9。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-gid-buck"
+    },
+    {
+      "step_id": "Ti",
+      "title": "注册公式 Ti",
+      "latex": "Ti=Hi*Gid*GPWM",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 current-loop-block-composition。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-ti"
+    },
+    {
+      "step_id": "Tc",
+      "title": "注册公式 Tc",
+      "latex": "Tc=Ti/(1+Ti)",
+      "explanation": "该公式来自 formula_registry.yaml，source equation 为 negative-feedback-closure。",
+      "source_artifact": "formula_registry.yaml",
+      "latex_origin": "registry_binding",
+      "provenance": "yan-2022-part-ii.ccot-tc"
+    }
+  ],
   "approximation_policy": {
     "declared": true,
     "items": [
@@ -229,6 +312,6 @@
       "state": "FORMULA_BINDING",
       "sha256": "8c6be0d7b364e06424b12b1097310d5ee0d6c90c4a7f19c99c94183a85d5d612"
     },
-    "artifact_sha256": "0f80648ccc523c04f571371a75f8234b3157891d67cdd3f2c74f5bd275486c15"
+    "artifact_sha256": "919415cde011637b80b13b7ebe405bfb53f040feade9a2acc6e4acf6e354813b"
   }
 }

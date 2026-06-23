@@ -278,6 +278,33 @@ def check_proof_object(proof: dict[str, Any]) -> dict[str, Any]:
                     "registered multiport transfer must come from Buck SymPy elimination"
                 ])
 
+    if (
+        path == "PROTOCOL_DERIVED_NEW"
+        and proof.get("proof_version") == "0.4"
+        and not proof.get("legacy_protocol_case")
+    ):
+        linear_system = proof.get("linear_equation_system")
+        if not isinstance(linear_system, dict):
+            return _result("FAIL_LINEAR_EQUATION_SYSTEM_REQUIRED", [
+                "v0.4 protocol-derived proof requires linear_equation_system"
+            ])
+        try:
+            validate_artifact(linear_system, "linear_equation_system.schema.json")
+        except ArtifactSchemaError as exc:
+            return _result("FAIL_LINEAR_EQUATION_SYSTEM_SCHEMA", [str(exc)])
+        if transfer.get("origin") != "linear-system-pending":
+            return _result("FAIL_HAND_WRITTEN_DENOMINATOR_IN_UNVERIFIED_PATH", [
+                "protocol-derived transfer must be pending linear_system_transfer.py generation"
+            ])
+        if transfer.get("expression") not in (None, "", "linear-system-pending"):
+            return _result("FAIL_HAND_WRITTEN_DENOMINATOR_IN_UNVERIFIED_PATH", [
+                "protocol-derived proof must not carry a hand-written candidate transfer expression"
+            ])
+        if proof.get("formula_bindings") not in ([], None):
+            return _result("FAIL_FORMULA_CONSISTENCY", [
+                "protocol-derived linear system proof must not bind registry formulas as evidence"
+            ])
+
     validation = proof.get("validation") or {}
     expected_level = (
         "PROTOCOL_DERIVED_UNVERIFIED" if path == "PROTOCOL_DERIVED_NEW"

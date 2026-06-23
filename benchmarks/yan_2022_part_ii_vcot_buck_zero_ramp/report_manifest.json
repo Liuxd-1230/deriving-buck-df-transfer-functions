@@ -48,8 +48,8 @@
     "predecessor": {
       "artifact_type": "checker_result",
       "state": "CHECKERS",
-      "sha256": "f419558171585c05649e02c124a3709d18d308352b58a89946d48d100a354f6f"
+      "sha256": "45a4334ca6503a82e1e04a9b2be98f3556d36af1ef2962c468c0a2aba4d939de"
     },
-    "artifact_sha256": "5bf6c7e4edd2a8176421d43a5b087b85a935f40f4bca4708bdae9f7ce3184719"
+    "artifact_sha256": "a4d60d980709d7aa6a6c5b66343423ee464ad33bc3a6ed0b3f53444faf8082ca"
   }
 }

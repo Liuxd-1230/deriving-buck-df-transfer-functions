@@ -478,6 +478,7 @@ def command_classify(args: argparse.Namespace) -> int:
 def command_make_protocol_case(args: argparse.Namespace) -> int:
     intake = load_case(args.intake)
     build_protocol_case(intake)  # compatibility validation; output is now a proof object
+    intake = {**intake, "legacy_protocol_case": True}
     intake_status = build_intake_status(intake=intake)
     classification = classify_intake_status(intake_status)
     case = build_proof_object(intake_status, classification)

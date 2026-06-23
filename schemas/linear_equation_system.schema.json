@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF v0.4.5 typed linear equation system",
+  "type": "object",
+  "required": ["system_version", "unknowns", "inputs", "blocks", "active_equations", "diagnostic_equations", "target"],
+  "properties": {
+    "system_version": {"const": "0.4.5"},
+    "case_id": {"type": "string"},
+    "symbols": {"type": "array", "items": {"type": "string"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "inputs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "diagnostic_outputs": {"type": "array", "items": {"type": "string"}},
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "block_type"],
+        "properties": {
+          "id": {"type": "string"},
+          "block_type": {
+            "enum": ["primitive_equation", "open_block", "closed_equivalent_block", "return_ratio_block"]
+          },
+          "input": {"type": "string"},
+          "output": {"type": "string"},
+          "input_expression": {"type": "string"},
+          "eliminated_variables": {"type": "array", "items": {"type": "string"}},
+          "eliminated_equations": {"type": "array", "items": {"type": "string"}},
+          "feedback_paths_already_closed": {"type": "array", "items": {"type": "string"}},
+          "feedback_path": {"type": "string"},
+          "loop_break": {
+            "type": "object",
+            "properties": {
+              "injection": {"type": "string"},
+              "return": {"type": "string"},
+              "sign_convention": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "active_equations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "role", "lhs", "rhs"],
+        "properties": {
+          "id": {"type": "string"},
+          "block_id": {"type": "string"},
+          "role": {"const": "active"},
+          "lhs": {"type": "string"},
+          "rhs": {"type": "string"}
+        }
+      }
+    },
+    "diagnostic_equations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "role"],
+        "properties": {
+          "id": {"type": "string"},
+          "role": {"const": "diagnostic"},
+          "lhs": {"type": "string"},
+          "rhs": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["name", "output", "input", "response_kind"],
+      "properties": {
+        "name": {"type": "string"},
+        "output": {"type": "string"},
+        "input": {"type": "string"},
+        "response_kind": {"enum": ["transfer_function", "return_ratio", "closed_loop"]}
+      }
+    },
+    "approximation_policy": {
+      "type": "object",
+      "properties": {
+        "declared": {"type": "boolean"},
+        "items": {"type": "array"},
+        "valid_frequency": {"type": "string"}
+      }
+    }
+  },
+  "not": {
+    "anyOf": [
+      {"required": ["transfer_function"]},
+      {"required": ["candidate_transfer_expression"]}
+    ]
+  }
+}

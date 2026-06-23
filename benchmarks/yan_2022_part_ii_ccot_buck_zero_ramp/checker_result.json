@@ -1,5 +1,5 @@
 {
-  "checker_version": "0.4.4",
+  "checker_version": "0.4.5",
   "status": "PASS",
   "errors": [],
   "blocking": false,
@@ -34,6 +34,30 @@
       "blocking": false,
       "artifact": "checker_result.json"
     },
+    "linear_equation_system_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
+    "variable_role_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
+    "block_shape_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
+    "denominator_provenance_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
     "normalization_check": {
       "status": "PASS",
       "reason": "Formula metadata does not indicate an embedded 1/Ri normalization.",
@@ -55,6 +79,12 @@
     "forbidden_claim_check": {
       "status": "PASS",
       "reason": "no forbidden wording at current validation level",
+      "blocking": false,
+      "artifact": "report.md"
+    },
+    "report_formula_rendering_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "report text not provided to checker",
       "blocking": false,
       "artifact": "report.md"
     },
@@ -87,8 +117,8 @@
     "predecessor": {
       "artifact_type": "derivation",
       "state": "DERIVATION",
-      "sha256": "0f80648ccc523c04f571371a75f8234b3157891d67cdd3f2c74f5bd275486c15"
+      "sha256": "919415cde011637b80b13b7ebe405bfb53f040feade9a2acc6e4acf6e354813b"
     },
-    "artifact_sha256": "3894a4950fb85f05d7bd5d90f3e97308553d073c72636247dec7d38754618eed"
+    "artifact_sha256": "69516b6e19eed8c7af230ccbceaccb40b3873536ca69a71d731f335942f85c8f"
   }
 }

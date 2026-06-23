@@ -38,6 +38,7 @@
         "modulator_io": {"type": "object", "required": ["input", "output", "definition", "sign_convention"]},
         "target_mapping": {"type": "object", "required": ["requested_target", "mapping_status"]},
         "power_stage": {"type": "object"},
+        "linear_equation_system": {"type": "object"},
         "modulator": {"type": "object", "required": ["model_type"]},
         "transfer": {"type": "object", "required": ["target_transfer", "expression"]},
         "validation": {"type": "object", "required": ["level", "completed", "missing"]}

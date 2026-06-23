@@ -1,6 +1,6 @@
 # Model ontology and source index
 
-v0.4.4 uses two indexes at the same time, followed by a registered-model applicability check:
+v0.4.5 uses two indexes at the same time, followed by a registered-model applicability check:
 
 1. **control ontology**: what physical/control mechanism the user has.
 2. **source index**: which paper or registry entry supplies the formulas.

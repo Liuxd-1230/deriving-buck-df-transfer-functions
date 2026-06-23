@@ -23,10 +23,15 @@ REQUIRED_CHECKS = (
     "model_applicability",
     "formula_consistency",
     "proof_object_check",
+    "linear_equation_system_check",
+    "variable_role_check",
+    "block_shape_check",
+    "denominator_provenance_check",
     "normalization_check",
     "power_stage_dynamics_check",
     "validation_policy_check",
     "forbidden_claim_check",
+    "report_formula_rendering_check",
     "mismatch_report_check",
     "rc_memory_factor_check",
 )
@@ -177,6 +182,34 @@ def _derivation_steps(artifacts: dict[str, dict[str, Any] | None], *, ask_only: 
     intake = artifacts.get("intake") or {}
     proof = artifacts.get("proof_object") or {}
     derivation = artifacts.get("derivation") or {}
+    strict_steps = derivation.get("derivation_steps")
+    if isinstance(strict_steps, list) and strict_steps:
+        lines: list[str] = []
+        reasoning = derivation.get("reasoning_method") if isinstance(derivation.get("reasoning_method"), dict) else {}
+        if reasoning:
+            lines.extend([
+                str(reasoning.get("name", "derivation reasoning")),
+                "Independent derivation path：" + _safe_json(reasoning.get("independent_derivation_path", [])),
+                "Registry formula path：" + _safe_json(reasoning.get("registry_formula_path", [])),
+                "",
+            ])
+        for step in strict_steps:
+            if not isinstance(step, dict):
+                continue
+            lines.extend([
+                f"### {step.get('title', step.get('step_id', '推导步骤'))}",
+                "",
+                "$$",
+                str(step.get("latex", "")),
+                "$$",
+                "",
+                str(step.get("explanation", "")),
+                "",
+                f"来源 artifact：`{step.get('source_artifact', '未提供')}`；latex_origin：`{step.get('latex_origin', '未提供')}`；provenance：`{step.get('provenance', '未提供')}`。",
+                "",
+            ])
+        if lines:
+            return lines
     normalized = intake.get("normalized") if isinstance(intake.get("normalized"), dict) else {}
     transfer = proof.get("transfer") if isinstance(proof.get("transfer"), dict) else {}
     lines = [

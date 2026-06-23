@@ -197,8 +197,20 @@ def build_proof_object(
         path = "PROTOCOL_DERIVED_NEW"
     if path != "PROTOCOL_DERIVED_NEW":
         raise ProofBuildError(f"Cannot build proof object for classification path {path!r}.")
+    linear_system = normalized.get("linear_equation_system")
     relation = normalized.get("df_relation")
-    if not isinstance(relation, dict) or not relation.get("form"):
+    legacy_protocol_case = bool(normalized.get("legacy_protocol_case"))
+    if v04 and not legacy_protocol_case:
+        if not isinstance(linear_system, dict):
+            raise ProofBuildError("Protocol-derived v0.4.5 proof requires linear_equation_system.")
+        if normalized.get("transfer_function"):
+            # Keep the raw text as intake evidence only; never promote it to a candidate expression.
+            linear_system = dict(linear_system)
+        try:
+            validate_artifact(linear_system, "linear_equation_system.schema.json")
+        except ArtifactSchemaError as exc:
+            raise ProofBuildError(str(exc)) from exc
+    elif not isinstance(relation, dict) or not relation.get("form"):
         raise ProofBuildError("Protocol-derived proof requires df_relation.form.")
     proof_classification = {"path": path, "model_id": None, "model_match": {"known_model": False}}
     if source_path:
@@ -209,11 +221,20 @@ def build_proof_object(
         "intake": {"status": "COMPLETE", "normalized": normalized},
         "classification": proof_classification,
         "formula_bindings": [],
-        "modulator": {"model_type": "protocol-derived", "relation": relation},
+        "modulator": {"model_type": "protocol-derived", "relation": relation or {"form": "linear-system-pending"}},
         "transfer": {
             "target_transfer": normalized["target_transfer"],
             "formula_id": None,
-            "expression": normalized.get("transfer_function", "candidate; derivation pending"),
+            "expression": (
+                "linear-system-pending"
+                if v04 and not legacy_protocol_case
+                else normalized.get("transfer_function", "candidate; derivation pending")
+            ),
+            "origin": (
+                "linear-system-pending"
+                if v04 and not legacy_protocol_case
+                else "protocol-derived-user-candidate"
+            ),
         },
         "validation": {
             "level": "PROTOCOL_DERIVED_UNVERIFIED",
@@ -229,6 +250,10 @@ def build_proof_object(
     }
     if isinstance(normalized.get("sensing_layer"), dict):
         proof["sensing_layer"] = normalized["sensing_layer"]
+    if v04 and not legacy_protocol_case:
+        proof["linear_equation_system"] = linear_system
+    if legacy_protocol_case:
+        proof["legacy_protocol_case"] = True
     for key in ("comparator_input_origin", "comparator_ramp_model"):
         if key in normalized:
             proof[key] = normalized[key]

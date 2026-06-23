@@ -63,7 +63,7 @@ JSON artifact 是机器证据源，中文 Markdown 报告是人工二次 checkou
 
 `ASK_USER_ONLY` 报告不得选择 `model_id`，不得展示候选传函。只能列出缺失字段、允许选择、禁止推导原因，以及为什么不能自动套用默认模型。
 
-## v0.4.4 unified checker visibility
+## v0.4.5 unified checker visibility
 
 `checker_result.json` 必须作为统一检查入口，至少包含：
 
@@ -72,11 +72,42 @@ JSON artifact 是机器证据源，中文 Markdown 报告是人工二次 checkou
 - `model_applicability`
 - `proof_object_check`
 - `formula_consistency`
+- `linear_equation_system_check`
+- `variable_role_check`
+- `block_shape_check`
+- `denominator_provenance_check`
 - `normalization_check`
 - `power_stage_dynamics_check`
 - `mismatch_report_check`
 - `forbidden_claim_check`
+- `report_formula_rendering_check`
 - `rc_memory_factor_check`
 - `validation_policy_check`
 
 每项必须有 `PASS` / `FAIL` / `WARN` / `NOT_APPLICABLE`、`reason`、`blocking` 和 `artifact`。存在 blocking `FAIL` 时，报告标题必须降级为“未完成推导：信息不足 / 检查失败报告”，不得把候选表达式写成最终结论。
+
+## v0.4.5 derivation_steps rendering
+
+报告中的核心推导公式必须来自 `derivation.json` 的 `derivation_steps[]`。每步必须包含：
+
+```json
+{
+  "step_id": "...",
+  "title": "...",
+  "latex": "...",
+  "explanation": "...",
+  "source_artifact": "linear_equation_system.json | derivation.json | formula_registry.yaml",
+  "latex_origin": "solver_generated | registry_binding | user_supplied_diagnostic",
+  "provenance": "..."
+}
+```
+
+`render_derivation_report.py` 只能把 `latex` 原样包裹为 Typora 块公式：
+
+```markdown
+$$
+...
+$$
+```
+
+它不得构造、改写、化简或补全核心传函。正文中裸写 `Gvc(s)=...`、`Tloop(s)=...`、`d_hat=...`、`vo_hat=...` 等未追踪公式必须触发 `FAIL_REPORT_CONTAINS_UNTRACKED_FORMULA` 或 `FAIL_FORMULA_NOT_BLOCK_MATH`。

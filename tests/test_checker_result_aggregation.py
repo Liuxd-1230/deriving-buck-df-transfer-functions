@@ -18,7 +18,7 @@ class CheckerResultAggregationTests(unittest.TestCase):
             report_text="候选传函，需要仿真确认",
         )
 
-        self.assertEqual(result["checker_version"], "0.4.4")
+        self.assertEqual(result["checker_version"], "0.4.5")
         self.assertEqual(set(REQUIRED_CHECKS), set(result["checks"]))
         for check in result["checks"].values():
             self.assertIn(check["status"], {"PASS", "FAIL", "WARN", "NOT_APPLICABLE"})
