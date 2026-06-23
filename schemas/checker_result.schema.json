@@ -4,8 +4,11 @@
   "type": "object",
   "required": ["checker_version", "status", "errors", "workflow"],
   "properties": {
-    "checker_version": {"const": "0.4"},
-    "status": {"enum": ["PASS", "FAIL_DERIVATION_PROVENANCE", "FAIL_DERIVATION_ORDER", "FAIL_DERIVATION_FORMULA_CONSISTENCY"]},
+    "checker_version": {"enum": ["0.4", "0.4.4"]},
+    "status": {"enum": ["PASS", "WARN", "FAIL", "FAIL_DERIVATION_PROVENANCE", "FAIL_DERIVATION_ORDER", "FAIL_DERIVATION_FORMULA_CONSISTENCY"]},
+    "blocking": {"type": "boolean"},
+    "checks": {"type": "object"},
+    "warnings": {"type": "array"},
     "errors": {"type": "array"},
     "workflow": {
       "type": "object",

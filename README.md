@@ -2,7 +2,7 @@
 
 面向单相 CCM Buck 的描述函数（describing function, DF）推导 skill，覆盖 COT current-mode、external ramp、V²/RBCOT 与 loop gain。
 
-v0.4.2 是 ESSF（Event–Sampling–Sideband Framework）的 Yan 2022 sampled-data registered path 最小闭环，并新增 sensing/validation policy 与中文 artifact-driven report contract。它先建立不可绕过的 intake、formula registry 和 proof object 闭环，再把 Yan/Ruan/Li 2022 Part I/II 的 Dirichlet、sideband、COT/COFT 双脉冲和 zero-ramp `Fm` proof fragment 固化成可检查 artifact：
+v0.4.4 是 ESSF（Event–Sampling–Sideband Framework）的 Yan 2022 sampled-data registered path 最小闭环，并新增 sensing/validation policy、registered model applicability contract、RC-derived comparator ramp memory checker 与中文 artifact-driven report contract。它先建立不可绕过的 intake、formula registry 和 proof object 闭环，再把 Yan/Ruan/Li 2022 Part I/II 的 Dirichlet、sideband、COT/COFT 双脉冲和 zero-ramp `Fm` proof fragment 固化成可检查 artifact：
 
 ```text
 INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY
@@ -12,9 +12,9 @@ INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY
 
 任一五问信息缺失时，固定返回 `INCOMPLETE → ASK_USER_ONLY`，不能推导、自选参数或画 Bode 图。对于 `workflow.intent == user-circuit-derivation`，缺少 `sensing_layer` 同样必须停在 `ASK_USER_ONLY`，不能自动选择 registered DF 或 `SAMPLED_DATA_REGISTERED`。显式 `custom_sensing_network`、`user_supplied`、`measured` 或未注册 sensing 只能进入 `NEAR_MODEL` / `AUDIT_REQUIRED` / `PROTOCOL_DERIVED_UNVERIFIED`，不得声明 paper-grounded。
 
-v0.4.2 继续使用“双索引”分类：先按控制机理/建模方法判断 `current-mode`、`voltage-mode`、`V² COT`、`RBCOT`、`sampled-data`、ramp/delay/filter/multiphase 等 ontology，再绑定 Li/Lee、Tian、Lu、Yan 等 paper source。实践是检验真理的唯一标准；`SUBFORMULA_VERIFIED`、`CHAIN_VERIFIED`、`FIGURE_REPRODUCED`、`SIMULATION_OR_MEASUREMENT_REPRODUCED` 必须分开声明。`REFERENCE_TARGET_SEMANTICS_UNCLEAR` 会阻断 `FIGURE_REPRODUCED`，即使数值曲线接近。
+v0.4.4 继续使用“双索引”分类：先按控制机理/建模方法判断 `current-mode`、`voltage-mode`、`V² COT`、`RBCOT`、`sampled-data`、ramp/delay/filter/multiphase 等 ontology，再绑定 Li/Lee、Tian、Lu、Yan 等 paper source，然后用 applicability contract 核对 sensing layer、comparator inputs、sampled variable、timing、target semantics、nonidealities 与 loop-break 语义。实践是检验真理的唯一标准；`SUBFORMULA_VERIFIED`、`CHAIN_VERIFIED`、`FIGURE_REPRODUCED`、`SIMULATION_OR_MEASUREMENT_REPRODUCED` 必须分开声明。`REFERENCE_TARGET_SEMANTICS_UNCLEAR` 会阻断 `FIGURE_REPRODUCED`，即使数值曲线接近。
 
-v0.4.2 的报告层只从既有 artifact 渲染中文 Markdown：`intake_status.json`、`classification.json`、`proof_object.json`、`derivation.json`、`formula_origin.json`、`checker_result.json`、`bode_summary.json` 和 `mismatch_report.json`。`report.md` 是人工二次 checkout 界面，不替代 JSON 证据源，也不能重新推导、补公式、推断隐藏默认值或升级 validation。
+v0.4.4 的报告层只从既有 artifact 渲染中文 Markdown：`intake_status.json`、`classification.json`、`proof_object.json`、`derivation.json`、`formula_origin.json`、`checker_result.json`、`bode_summary.json` 和 `mismatch_report.json`。`checker_result.json` 是统一检查入口，聚合 preflight、model classification、model applicability、proof/formula、normalization、power-stage dynamics、mismatch、forbidden claims、RC memory factor 和 validation policy。`report.md` 是人工二次 checkout 界面，不替代 JSON 证据源，也不能重新推导、补公式、推断隐藏默认值或升级 validation。
 
 ## 它解决什么问题
 
@@ -60,13 +60,13 @@ flowchart TD
 | `yan-2022-part-ii-ccot-buck-zero-ramp` | C-COT/C-COFT zero-ramp sampled-data | two pulse trains + `1-exp(-s*T0)` | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 | `yan-2022-part-ii-vcot-buck-zero-ramp` | V-COT/V-COFT zero-ramp sampled-data | `GPWM/Tv/Tc` mapping + trend boundary | `SAMPLED_DATA_REGISTERED_PARTIAL` |
 
-前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → derivation → checkers` 进入报告。v0.4.2 的 Yan registered path 只注册论文主链路 `Gm/GPWM → Gid/Gvd → Ti/Tv → Tc`；`Gvc/Tloop/Gvg/Zout` 未作为 Yan 2022 benchmark 交付目标，必须拒绝或标为 unverified。
+前三个 Yan 模型不是旧 `make-case` 的 a-star DF 生成器。它们只能通过 `preflight → classify → build_proof_object → derivation → checkers` 进入报告。v0.4.4 的 Yan registered path 只注册论文主链路 `Gm/GPWM → Gid/Gvd → Ti/Tv → Tc`；`Gvc/Tloop/Gvg/Zout` 未作为 Yan 2022 benchmark 交付目标，必须拒绝或标为 unverified。
 
 论文公式、适用范围和重排过程见 [DF coefficient library](references/df-coefficient-library.md)，来源与 DOI 见 [Zotero DF source map](references/zotero-df-source-map.md)，逐篇推理结构见 [paper proof skeletons](references/paper-proof-skeletons/)。
 
 ## 明确不支持
 
-v0.4.2 不支持或不宣称支持：
+v0.4.4 不支持或不宣称支持：
 
 - DCM、临界导通模式；
 - multiphase overlap 或相位管理参与开关事件；
@@ -79,9 +79,10 @@ v0.4.2 不支持或不宣称支持：
 - 多相 nonoverlap/overlap sampled-data；
 - 把新推公式直接标成 verified；
 - 在缺少 `sensing_layer`、比较器输入或目标语义时自动套用默认模型；
-- 把低阶功率级路径描述为 full power-stage `Gvc` 或 `FIGURE_REPRODUCED`。
+- 把低阶功率级路径描述为 full power-stage `Gvc` 或 `FIGURE_REPRODUCED`；
+- 把 switch-node RC、sense filter 或 RC-derived comparator ramp 的 local slope 当作完整 `Kmod`。
 
-Huang 2025 internal-ramp/DC-extractor 模型采用平均模型，因此在本 DF 注册库中标记为 `EXCLUDED_NON_DF`。Yan 2026 external-ramp 和多相论文属于 v0.5，不在 v0.4.2 半实现。
+Huang 2025 internal-ramp/DC-extractor 模型采用平均模型，因此在本 DF 注册库中标记为 `EXCLUDED_NON_DF`。Yan 2026 external-ramp 和多相论文属于 v0.5，不在 v0.4.4 半实现。
 
 ## 安装
 
@@ -149,7 +150,7 @@ python scripts/df_buck_sympy.py check --case legacy_case.json
 python scripts/df_buck_sympy.py plot-bode --case case.json --targets Gvc,Gvg,Zout,Tloop --out plots/
 ```
 
-`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不会伪装成 v0.4.2 proof。最终 ESSF 报告仍必须走 `derive --proof-object`。
+`check --case` 输出 JSON 代数/极限诊断；`derive --case` 只为 legacy case 渲染 `LEGACY_CASE_UNVERIFIED` Markdown，不会伪装成 v0.4.4 proof。最终 ESSF 报告仍必须走 `derive --proof-object`。
 
 ### 1. 已知论文模型
 
@@ -231,7 +232,7 @@ python scripts/df_buck_sympy.py plot-bode `
 
 每张图和 summary 必须标出 `fs`、`fs/2`、`valid_frequency_limit` 和 0 dB crossing。PM/GM 只对 `response_kind=return_ratio` 的 `Ti/Tv/Tloop` 计算；`Gm/GPWM/Gvc/Gvg/Zout/Tc` 返回 `NOT_APPLICABLE_NON_RETURN_RATIO`，其 0 dB crossing 不是稳定裕度。若 return ratio 交越超过有效边界，summary 标为 `EXTRAPOLATED_BEYOND_VALID_RANGE`。
 
-v0.4.2 sampled-data case 的 `plot-bode` 支持 `Gm/GPWM/Ti/Tv/Tc`、`exp(-s*T)`、`TRUNCATED_SUM_M` 和 `PAPER_SIMPLIFIED_FORM`。`SYMBOLIC_FULL_SUM` 不能数值画图，必须先选择截断项数或论文简化式。
+v0.4.4 sampled-data case 的 `plot-bode` 支持 `Gm/GPWM/Ti/Tv/Tc`、`exp(-s*T)`、`TRUNCATED_SUM_M` 和 `PAPER_SIMPLIFIED_FORM`。`SYMBOLIC_FULL_SUM` 不能数值画图，必须先选择截断项数或论文简化式。
 
 补偿器不要手写任意 `Gc(s)`，优先用 [compensator templates](references/compensator-templates.md)：`SIMPLIS_LAPLACE`、`OTA_GM_RO`、`PI`、`TYPE_II`、`TYPE_III` 或显式 `CUSTOM_EXPRESSION_UNVERIFIED`。SIMPLIS Laplace block 固定解释为：
 
@@ -252,9 +253,9 @@ KPZ*(s+F*wz1)/((s+F*wp1)*(s+F*wp2))
 1. agent 按 12 步协议推导候选事件敏感度、DF 关系和传函；
 2. proof object 保存候选式、formula ID、来源和未验证项；
 3. proof/formula checker 检查结构和 registry 一致性；
-4. 注册 v0.2/v0.3.1 DF 模型走现有 SymPy 功率级消元器；v0.4.2 sampled-data 模型走 registry-bound proof + independent derivation artifact。
+4. 注册 v0.2/v0.3.1 DF 模型走现有 SymPy 功率级消元器；v0.4.4 sampled-data 模型走 registry-bound proof + independent derivation artifact。
 
-把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.4.2 已实现能力。
+把任意 protocol case 的合法 `a_*` 自动桥接到 Buck 矩阵消元，是后续版本功能，不属于 v0.4.4 已实现能力。
 
 ## 中文报告与二次 checkout
 

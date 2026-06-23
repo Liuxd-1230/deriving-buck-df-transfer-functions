@@ -13,6 +13,7 @@ from check_formula_consistency import check_binding
 from formula_registry import FormulaRegistryError, formula_binding, get_paper_contract
 from schema_validation import ArtifactSchemaError, validate_artifact
 from sampled_derivation import expand_registered_expressions, numeric_sideband_overrides
+from run_validation_checks import build_unified_checker_result
 
 
 def _result(status: str, errors: list[str]) -> dict[str, Any]:
@@ -103,8 +104,19 @@ def build_checker_artifact(
     derivation: dict[str, Any], proof: dict[str, Any]
 ) -> dict[str, Any]:
     result = check_derivation_artifact(derivation, proof)
+    intake = proof.get("intake", {})
+    normalized = intake.get("normalized") if isinstance(intake, dict) else {}
+    classification = proof.get("classification", {})
+    unified = build_unified_checker_result(
+        intake={"status": intake.get("status", "COMPLETE"), "normalized": normalized},
+        classification=classification
+        | {"validation_level": (proof.get("validation") or {}).get("level")},
+        proof=proof,
+        derivation=derivation,
+        derivation_check=result,
+    )
     return attach_workflow(
-        {"checker_version": "0.4", **result},
+        {"checker_version": "0.4.4", **result, **unified},
         state="CHECKERS",
         intent=proof["workflow"]["intent"],
         predecessor=derivation,

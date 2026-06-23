@@ -62,3 +62,21 @@ JSON artifact 是机器证据源，中文 Markdown 报告是人工二次 checkou
 ## ASK_USER_ONLY
 
 `ASK_USER_ONLY` 报告不得选择 `model_id`，不得展示候选传函。只能列出缺失字段、允许选择、禁止推导原因，以及为什么不能自动套用默认模型。
+
+## v0.4.4 unified checker visibility
+
+`checker_result.json` 必须作为统一检查入口，至少包含：
+
+- `preflight_intake`
+- `model_classification`
+- `model_applicability`
+- `proof_object_check`
+- `formula_consistency`
+- `normalization_check`
+- `power_stage_dynamics_check`
+- `mismatch_report_check`
+- `forbidden_claim_check`
+- `rc_memory_factor_check`
+- `validation_policy_check`
+
+每项必须有 `PASS` / `FAIL` / `WARN` / `NOT_APPLICABLE`、`reason`、`blocking` 和 `artifact`。存在 blocking `FAIL` 时，报告标题必须降级为“未完成推导：信息不足 / 检查失败报告”，不得把候选表达式写成最终结论。

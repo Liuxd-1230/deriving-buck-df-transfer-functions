@@ -191,16 +191,23 @@ def build_proof_object(
             f"Target {normalized.get('target_transfer') or normalized.get('target')} is not registered "
             f"for {classification.get('model_id')}."
         )
+    source_path = None
+    if path == "NEAR_MODEL":
+        source_path = "NEAR_MODEL"
+        path = "PROTOCOL_DERIVED_NEW"
     if path != "PROTOCOL_DERIVED_NEW":
         raise ProofBuildError(f"Cannot build proof object for classification path {path!r}.")
     relation = normalized.get("df_relation")
     if not isinstance(relation, dict) or not relation.get("form"):
         raise ProofBuildError("Protocol-derived proof requires df_relation.form.")
+    proof_classification = {"path": path, "model_id": None, "model_match": {"known_model": False}}
+    if source_path:
+        proof_classification["source_path"] = source_path
     proof = {
         "proof_version": "0.3.1",
         "case_id": normalized.get("case_id", "protocol-derived-case"),
         "intake": {"status": "COMPLETE", "normalized": normalized},
-        "classification": {"path": path, "model_id": None},
+        "classification": proof_classification,
         "formula_bindings": [],
         "modulator": {"model_type": "protocol-derived", "relation": relation},
         "transfer": {
@@ -213,9 +220,18 @@ def build_proof_object(
             "completed": ["protocol-completeness"],
             "missing": ["paper-benchmark", "switching-simulation"],
         },
+        "formula_origin": {
+            "origin": "protocol_derived",
+            "validation": "PROTOCOL_DERIVED_UNVERIFIED",
+            "formula_ids": [],
+            "notes": "NEAR_MODEL proof evidence was converted to a protocol-derived unverified proof object.",
+        },
     }
     if isinstance(normalized.get("sensing_layer"), dict):
         proof["sensing_layer"] = normalized["sensing_layer"]
+    for key in ("comparator_input_origin", "comparator_ramp_model"):
+        if key in normalized:
+            proof[key] = normalized[key]
     if v04:
         proof["proof_version"] = "0.4"
         proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)

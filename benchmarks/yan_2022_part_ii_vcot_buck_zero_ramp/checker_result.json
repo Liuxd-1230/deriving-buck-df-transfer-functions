@@ -1,7 +1,77 @@
 {
-  "checker_version": "0.4",
+  "checker_version": "0.4.4",
   "status": "PASS",
   "errors": [],
+  "blocking": false,
+  "checks": {
+    "preflight_intake": {
+      "status": "PASS",
+      "reason": "intake artifact is complete or intentionally supplied",
+      "blocking": true,
+      "artifact": "intake_status.json"
+    },
+    "model_classification": {
+      "status": "PASS",
+      "reason": "classification path=SAMPLED_DATA_REGISTERED",
+      "blocking": true,
+      "artifact": "classification.json"
+    },
+    "model_applicability": {
+      "status": "PASS",
+      "reason": "registered model applicability checked",
+      "blocking": false,
+      "artifact": "classification.json"
+    },
+    "proof_object_check": {
+      "status": "PASS",
+      "reason": "proof and derivation checks passed",
+      "blocking": false,
+      "artifact": "proof_object.json"
+    },
+    "formula_consistency": {
+      "status": "PASS",
+      "reason": "formula consistency passed",
+      "blocking": false,
+      "artifact": "checker_result.json"
+    },
+    "normalization_check": {
+      "status": "PASS",
+      "reason": "Formula metadata does not indicate an embedded 1/Ri normalization.",
+      "blocking": false,
+      "artifact": "formula_origin.json"
+    },
+    "power_stage_dynamics_check": {
+      "status": "PASS",
+      "reason": "FULL_POWER_STAGE",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
+    "mismatch_report_check": {
+      "status": "PASS",
+      "reason": "mismatch semantics do not block claims",
+      "blocking": false,
+      "artifact": "mismatch_report.json"
+    },
+    "forbidden_claim_check": {
+      "status": "PASS",
+      "reason": "no forbidden wording at current validation level",
+      "blocking": false,
+      "artifact": "report.md"
+    },
+    "rc_memory_factor_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "comparator ramp is not declared as RC-derived state",
+      "blocking": false,
+      "artifact": "proof_object.json"
+    },
+    "validation_policy_check": {
+      "status": "PASS",
+      "reason": "validation downgrade and claim policy applied",
+      "blocking": false,
+      "artifact": "classification.json"
+    }
+  },
+  "warnings": [],
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -19,6 +89,6 @@
       "state": "DERIVATION",
       "sha256": "d9ab55c70d7335265093c80dd8224efdb4ec5efdfd139fee1e8553eb38c23727"
     },
-    "artifact_sha256": "f59970de7252ae40f2095daff03048cab618d107561cbc209a2dcba2e884354a"
+    "artifact_sha256": "f419558171585c05649e02c124a3709d18d308352b58a89946d48d100a354f6f"
   }
 }

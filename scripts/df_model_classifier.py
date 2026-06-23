@@ -14,6 +14,7 @@ from fm_models import build_fm_model
 from artifact_workflow import attach_workflow, verify_workflow
 from schema_validation import validate_artifact
 from formula_registry import model_specs
+from model_applicability import check_model_applicability
 from validation_policy import near_model_classification, sensing_layer_status
 
 
@@ -156,6 +157,46 @@ def _registered_result(
     return result
 
 
+def _has_applicability_evidence(intake: dict[str, Any]) -> bool:
+    return any(
+        key in intake
+        for key in (
+            "sensing_layer",
+            "comparator_input_origin",
+            "sampled_variable",
+            "fixed_interval",
+            "movable_interval",
+            "loop_break",
+            "has_internal_ramp",
+            "has_delay",
+            "has_rc_injection",
+            "has_filter_in_sense_path",
+        )
+    )
+
+
+def _applicability_downgrade(
+    intake: dict[str, Any], model_id: str, applicability: dict[str, Any]
+) -> dict[str, Any]:
+    result = near_model_classification(
+        intake,
+        reason="registered model applicability contract failed: "
+        + "; ".join(applicability.get("errors") or ["unknown mismatch"]),
+    )
+    result["model_applicability"] = applicability
+    result["model_match"] = {"known_model": False, "model_id": model_id, "confidence": "low"}
+    return result
+
+
+def _check_registered_applicability(intake: dict[str, Any], model_id: str) -> dict[str, Any] | None:
+    if not _has_applicability_evidence(intake):
+        return None
+    applicability = check_model_applicability(intake, model_specs()[model_id])
+    if applicability["status"] != "PASS":
+        return _applicability_downgrade(intake, model_id, applicability)
+    return None
+
+
 def _ontology_model_candidate(intake: dict[str, Any]) -> str | None:
     family = _normalized_family(intake.get("control_family"))
     target = _target_name(intake).upper()
@@ -253,6 +294,9 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
     model_id = intake.get("model_id")
     modifications = intake.get("modifications") or []
     if model_id in MODEL_SPECS and not modifications:
+        downgraded = _check_registered_applicability(intake, str(model_id))
+        if downgraded:
+            return downgraded
         return _registered_result(
             intake=intake,
             base=base,
@@ -272,6 +316,9 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                     "validation_level": "REJECTED_UNSUPPORTED",
                     "unsupported_effects": [f"TARGET_NOT_REGISTERED:{target}"],
                     "missing_information": []}
+        downgraded = _check_registered_applicability(intake, ontology_candidate)
+        if downgraded:
+            return downgraded
         return _registered_result(
             intake=intake,
             base=base,
@@ -302,6 +349,11 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                     "unsupported_effects": [f"TARGET_NOT_REGISTERED:{target}"],
                     "missing_information": []}
         spec = model_specs()[model_id]
+        applicability = check_model_applicability(intake, spec)
+        if applicability["status"] != "PASS":
+            downgraded = _applicability_downgrade(intake, model_id, applicability)
+            downgraded["path"] = "NEAR_MODEL"
+            return downgraded
         return {**base, "path": "SAMPLED_DATA_REGISTERED",
                 "part_family": part_family, "model_id": model_id,
                 "target_transfer": target,

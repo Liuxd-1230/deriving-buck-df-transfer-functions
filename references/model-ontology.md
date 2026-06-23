@@ -1,9 +1,10 @@
 # Model ontology and source index
 
-v0.4.2 uses two indexes at the same time:
+v0.4.4 uses two indexes at the same time, followed by a registered-model applicability check:
 
 1. **control ontology**: what physical/control mechanism the user has.
 2. **source index**: which paper or registry entry supplies the formulas.
+3. **applicability contract**: whether sensing, comparator inputs, sampled variable, timing, target semantics, and nonidealities match that registry entry.
 
 Do not classify only by paper name. A paper can contain several mechanisms, and one mechanism can be checked against several papers.
 

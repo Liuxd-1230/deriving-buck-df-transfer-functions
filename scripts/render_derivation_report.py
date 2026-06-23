@@ -20,6 +20,7 @@ class ReportError(ValueError):
 REQUIRED_CHECKS = (
     "preflight_intake",
     "model_classification",
+    "model_applicability",
     "formula_consistency",
     "proof_object_check",
     "normalization_check",
@@ -27,6 +28,7 @@ REQUIRED_CHECKS = (
     "validation_policy_check",
     "forbidden_claim_check",
     "mismatch_report_check",
+    "rc_memory_factor_check",
 )
 
 
@@ -69,6 +71,22 @@ def _validation_level(artifacts: dict[str, dict[str, Any] | None]) -> str:
 
 def _is_ask_user_only(intake: dict[str, Any] | None) -> bool:
     return isinstance(intake, dict) and intake.get("action") == "ASK_USER_ONLY"
+
+
+def _has_blocking_fail(checker: dict[str, Any] | None) -> bool:
+    if not isinstance(checker, dict):
+        return False
+    if checker.get("status") == "FAIL" and checker.get("blocking"):
+        return True
+    checks = checker.get("checks")
+    if not isinstance(checks, dict):
+        return False
+    return any(
+        isinstance(item, dict)
+        and item.get("status") == "FAIL"
+        and bool(item.get("blocking"))
+        for item in checks.values()
+    )
 
 
 def _safe_json(value: Any) -> str:
@@ -206,9 +224,10 @@ def build_chinese_report(
 ) -> str:
     intake = artifacts.get("intake")
     ask_only = _is_ask_user_only(intake)
+    blocking_fail = _has_blocking_fail(artifacts.get("checker_result"))
     case_id = _case_id(artifacts)
     validation_level = _validation_level(artifacts)
-    title = "未完成推导：信息不足 / 检查失败报告" if ask_only else f"{case_id} 中文审查报告"
+    title = "未完成推导：信息不足 / 检查失败报告" if ask_only or blocking_fail else f"{case_id} 中文审查报告"
     normalized = (intake or {}).get("normalized") if isinstance((intake or {}).get("normalized"), dict) else {}
     classification = artifacts.get("classification") or {}
     proof = artifacts.get("proof_object") or {}
@@ -224,7 +243,11 @@ def build_chinese_report(
         (
             f"本次输入缺少 {', '.join(intake.get('missing', []))}，因此未进入推导阶段。"
             if ask_only and isinstance(intake, dict)
-            else f"本报告基于已存在 artifact 渲染，validation level 为 `{validation_level}`。报告不执行新推导、不补公式、不升级验证等级。"
+            else (
+                "checker_result.json 存在 blocking FAIL，因此本报告停止在审查层，不输出最终结论。"
+                if blocking_fail
+                else f"本报告基于已存在 artifact 渲染，validation level 为 `{validation_level}`。报告不执行新推导、不补公式、不升级验证等级。"
+            )
         ),
         "",
         "## 2. 输入信息与目标传函",

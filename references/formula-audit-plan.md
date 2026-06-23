@@ -34,7 +34,7 @@ The goal is to make registered formulas useful to agents without letting agents 
 
 ## Zotero/Yanna development source map
 
-The local Zotero collection `Yanna` (`525GRVBQ`) was checked during v0.4.2 development. It contains:
+The local Zotero collection `Yanna` (`525GRVBQ`) was checked during 0.4-series development. It contains:
 
 - Yan/Ruan/Li 2022 Part I: peak/valley current-mode and voltage-mode sampled-data modeling.
 - Yan/Ruan/Li 2022 Part II: constant ON-time and constant OFF-time sampled-data modeling.
