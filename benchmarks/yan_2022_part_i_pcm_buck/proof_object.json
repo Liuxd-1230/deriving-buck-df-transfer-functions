@@ -23,6 +23,14 @@
         "negative": "reference"
       },
       "sampled_variable": "is",
+      "sensing_layer": {
+        "type": "direct_current_sense",
+        "input_variable": "iL",
+        "output_variable": "is",
+        "gain": "registered",
+        "time_constants": [],
+        "validation": "registered"
+      },
       "has_external_ramp": false,
       "has_internal_ramp": false,
       "has_delay": false,
@@ -204,6 +212,14 @@
       "switching-simulation"
     ]
   },
+  "sensing_layer": {
+    "type": "direct_current_sense",
+    "input_variable": "iL",
+    "output_variable": "is",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "workflow": {
     "version": "0.4",
     "intent": "paper-benchmark",
@@ -217,8 +233,8 @@
     "predecessor": {
       "artifact_type": "classification",
       "state": "MODEL_CLASSIFY",
-      "sha256": "d54a55b88ef781cf5ea08274ab6a8bc8385927e4205bd9a0cc66f6c48d641071"
+      "sha256": "6bb85b2d01187fbfdff32735cb979d121c86c9bcefa500db7d75c1a10ff7fd1b"
     },
-    "artifact_sha256": "4fa29d06a453a16efb1ca054d42c022fcb4cc46150b87a1f48b051d7aa047c4f"
+    "artifact_sha256": "6dc4b38b1e44e01fa4612ae16121c03775dbda32826b61df056202cfccad23b2"
   }
 }

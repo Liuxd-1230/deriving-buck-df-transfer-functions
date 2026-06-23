@@ -34,6 +34,14 @@
     "response_kind": "transfer_function",
     "margin_status": "NOT_APPLICABLE_NON_RETURN_RATIO"
   },
+  "sensing_layer": {
+    "type": "direct_current_sense",
+    "input_variable": "iL",
+    "output_variable": "is",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "missing_information": [],
   "workflow": {
     "version": "0.4",
@@ -47,8 +55,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "dd401178f45b9bf2de8d1dd2044f581ea63262e3776269d26e1836ae65defef3"
+      "sha256": "506761b7b198854ec181680eb696e7ba797fdee6213df113ac1fde31caf23364"
     },
-    "artifact_sha256": "8ba54866e2d362cf0d4801227303eb5f6b8abb793af0c872816294c825688ed6"
+    "artifact_sha256": "3ca7700cf6e40081ff31b4cf8b76f68d46b066427addac78cce04189390cf6f5"
   }
 }

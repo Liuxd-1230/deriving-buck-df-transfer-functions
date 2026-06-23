@@ -67,6 +67,8 @@ def _registered_proof(
             "missing": ["switching-simulation"],
         },
     }
+    if isinstance(normalized.get("sensing_layer"), dict):
+        proof["sensing_layer"] = normalized["sensing_layer"]
     if classification["path"] == "DF_REGISTERED_DIRECT":
         transfer_binding = next(
             item for item in case["formula_bindings"]
@@ -175,6 +177,8 @@ def build_proof_object(
                 "missing": ["paper-figure-reproduction", "switching-simulation"],
             },
         }
+        if isinstance(normalized.get("sensing_layer"), dict):
+            proof["sensing_layer"] = normalized["sensing_layer"]
         if v04:
             proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)
         validate_artifact(proof, "proof_object.schema.json")
@@ -210,6 +214,8 @@ def build_proof_object(
             "missing": ["paper-benchmark", "switching-simulation"],
         },
     }
+    if isinstance(normalized.get("sensing_layer"), dict):
+        proof["sensing_layer"] = normalized["sensing_layer"]
     if v04:
         proof["proof_version"] = "0.4"
         proof = attach_workflow(proof, state="FORMULA_BINDING", intent=intake_artifact["workflow"]["intent"], predecessor=classification)

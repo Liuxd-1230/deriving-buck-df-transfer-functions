@@ -12,6 +12,7 @@ from typing import Any
 
 from artifact_workflow import WorkflowError, attach_workflow, verify_workflow
 from schema_validation import ArtifactSchemaError, validate_artifact
+from validation_policy import is_user_intent
 
 
 INTAKE_VERSION = "0.4"
@@ -111,6 +112,15 @@ def _missing_groups(normalized: dict[str, Any]) -> list[str]:
         not any(name in parameters for name in aliases) for aliases in CORE_PARAMETER_GROUPS
     ):
         missing.append("parameters")
+    has_registered_or_protocol_contract = bool(normalized.get("model_id")) or isinstance(
+        normalized.get("df_relation"), dict
+    )
+    if (
+        is_user_intent(str(normalized.get("intent", "user-circuit-derivation")))
+        and not has_registered_or_protocol_contract
+        and not isinstance(normalized.get("sensing_layer"), dict)
+    ):
+        missing.append("sensing_layer")
     return missing
 
 

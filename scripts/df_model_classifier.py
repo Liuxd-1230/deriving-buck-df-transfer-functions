@@ -14,6 +14,7 @@ from fm_models import build_fm_model
 from artifact_workflow import attach_workflow, verify_workflow
 from schema_validation import validate_artifact
 from formula_registry import model_specs
+from validation_policy import near_model_classification, sensing_layer_status
 
 
 BASE_PARAMETERS = ("Vin", "Vo", "L", "C", "R", "rC")
@@ -148,6 +149,8 @@ def _registered_result(
         "source_index": spec.get("source_index", {}),
         "target_semantics": _target_semantics(target),
     }
+    if isinstance(intake.get("sensing_layer"), dict):
+        result["sensing_layer"] = intake["sensing_layer"]
     if target:
         result["target_transfer"] = target
     return result
@@ -240,6 +243,13 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                 "model_id": None, "confidence": "high"}, "action": "reject_unsupported",
                 "validation_level": "REJECTED_UNSUPPORTED", "missing_information": []}
 
+    sensing_status = sensing_layer_status(intake)
+    if sensing_status["status"] == "UNREGISTERED":
+        return near_model_classification(
+            intake,
+            reason="sensing_layer is unknown, custom, user supplied, measured, or unverified",
+        )
+
     model_id = intake.get("model_id")
     modifications = intake.get("modifications") or []
     if model_id in MODEL_SPECS and not modifications:
@@ -301,6 +311,7 @@ def classify_intake(intake: dict[str, Any]) -> dict[str, Any]:
                 "control_ontology": spec.get("control_ontology", {}),
                 "source_index": spec.get("source_index", {}),
                 "target_semantics": _target_semantics(str(target)),
+                "sensing_layer": intake.get("sensing_layer"),
                 "missing_information": []}
 
     similar = intake.get("similar_model") or (model_id if model_id in MODEL_SPECS else None)

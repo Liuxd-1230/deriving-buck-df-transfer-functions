@@ -23,6 +23,14 @@
       "negative": "reference"
     },
     "sampled_variable": "vfb",
+    "sensing_layer": {
+      "type": "output_ripple_sense",
+      "input_variable": "vo",
+      "output_variable": "vfb",
+      "gain": "registered",
+      "time_constants": [],
+      "validation": "registered"
+    },
     "has_external_ramp": false,
     "has_internal_ramp": false,
     "has_delay": false,
@@ -61,6 +69,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "d4ccfb25855195c21e0aa80aa84fc1f005acab5ab794a92ea9e1c637f2f688fc"
+    "artifact_sha256": "aba602b8c9b9ab86eb10ee0e3a363636330a3e871aefbffd1fcc7a2e8b066684"
   }
 }

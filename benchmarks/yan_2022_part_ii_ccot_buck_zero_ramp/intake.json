@@ -23,6 +23,14 @@
       "negative": "reference"
     },
     "sampled_variable": "is",
+    "sensing_layer": {
+      "type": "direct_current_sense",
+      "input_variable": "iL",
+      "output_variable": "is",
+      "gain": "registered",
+      "time_constants": [],
+      "validation": "registered"
+    },
     "has_external_ramp": false,
     "has_internal_ramp": false,
     "has_delay": false,
@@ -59,6 +67,6 @@
       "PREFLIGHT_INTAKE"
     ],
     "predecessor": null,
-    "artifact_sha256": "dd401178f45b9bf2de8d1dd2044f581ea63262e3776269d26e1836ae65defef3"
+    "artifact_sha256": "506761b7b198854ec181680eb696e7ba797fdee6213df113ac1fde31caf23364"
   }
 }

@@ -175,8 +175,8 @@
     "predecessor": {
       "artifact_type": "proof_object",
       "state": "FORMULA_BINDING",
-      "sha256": "4fa29d06a453a16efb1ca054d42c022fcb4cc46150b87a1f48b051d7aa047c4f"
+      "sha256": "6dc4b38b1e44e01fa4612ae16121c03775dbda32826b61df056202cfccad23b2"
     },
-    "artifact_sha256": "d5bd994ee0403c724957d4d6d7815abd22b6d3e5688925b2cdf956a4a27c4b23"
+    "artifact_sha256": "dae496f50d51e511f0071a6dfbd6e692d3310cc872423aca3ea208340c7b0743"
   }
 }

@@ -34,6 +34,7 @@ from sampled_derivation import derive_sampled_transfer  # noqa: E402
 from render_derivation_report import build_report_artifacts  # noqa: E402
 from artifact_workflow import attach_workflow  # noqa: E402
 from formula_registry import get_formula  # noqa: E402
+from report_manifest import ARTIFACT_PURPOSES  # noqa: E402
 
 
 LEGACY_BENCHMARK_NAMES = (
@@ -104,6 +105,14 @@ def _sampled_common_artifacts(
             "switching_events": [{"name": "sample", "equation": "input-reference=0"}],
             "comparator_inputs": {"positive": sampled_variable, "negative": "reference"},
             "sampled_variable": sampled_variable,
+            "sensing_layer": {
+                "type": "direct_current_sense" if sampled_variable in {"is", "iL"} else "output_ripple_sense",
+                "input_variable": "iL" if sampled_variable in {"is", "iL"} else "vo",
+                "output_variable": sampled_variable,
+                "gain": "registered",
+                "time_constants": [],
+                "validation": "registered",
+            },
             "has_external_ramp": False,
             "has_internal_ramp": False,
             "has_delay": False,
@@ -122,7 +131,7 @@ def _sampled_common_artifacts(
     checker = build_checker_artifact(derivation, proof)
     if checker["status"] != "PASS":
         raise RuntimeError("sampled benchmark derivation checker failed")
-    report_manifest, report_markdown = build_report_artifacts(derivation, checker)
+    _, report_markdown = build_report_artifacts(derivation, checker)
     transfer_functions = {target: derivation.get("numeric_expanded_target_expression", derivation["expanded_target_expression"])}
     response_kinds = {target: derivation.get("response_kind", "transfer_function")}
 
@@ -167,7 +176,7 @@ def _sampled_common_artifacts(
     _json(root / "proof_object.json", proof)
     _json(root / "derivation.json", derivation)
     _json(root / "checker_result.json", checker)
-    _json(root / "report_manifest.json", report_manifest)
+    (root / "report.md").write_text(report_markdown, encoding="utf-8")
     (root / "derivation_report.md").write_text(report_markdown, encoding="utf-8")
     _json(root / "formula_origin.json", formula_origin)
     _json(root / "generated_case.json", generated_case)
@@ -175,6 +184,22 @@ def _sampled_common_artifacts(
     if trends is not None:
         _json(root / "expected_trends.json", trends)
     (root / "notes.md").write_text(notes, encoding="utf-8")
+    report_manifest = {
+        "report_version": "0.4",
+        "case_id": name,
+        "report": "report.md",
+        "artifacts": {
+            "intake": {"path": "intake.json", "purpose": ARTIFACT_PURPOSES["intake"]},
+            "classification": {"path": "classification.json", "purpose": ARTIFACT_PURPOSES["classification"]},
+            "proof_object": {"path": "proof_object.json", "purpose": ARTIFACT_PURPOSES["proof_object"]},
+            "derivation": {"path": "derivation.json", "purpose": ARTIFACT_PURPOSES["derivation"]},
+            "formula_origin": {"path": "formula_origin.json", "purpose": ARTIFACT_PURPOSES["formula_origin"]},
+            "checker_result": {"path": "checker_result.json", "purpose": ARTIFACT_PURPOSES["checker_result"]},
+            "bode_summary": {"path": "bode_summary.json", "purpose": ARTIFACT_PURPOSES["bode_summary"]},
+        },
+    }
+    report_manifest = attach_workflow(report_manifest, state="REPORT", intent=proof["workflow"]["intent"], predecessor=checker)
+    _json(root / "report_manifest.json", report_manifest)
     _run_plot_bode(root / "generated_case.json", ",".join(transfer_functions), root)
     summary = json.loads((root / "bode_summary.json").read_text(encoding="utf-8"))
     first_target = next(iter(transfer_functions))

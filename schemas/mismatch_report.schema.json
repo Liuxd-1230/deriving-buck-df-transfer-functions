@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ESSF mismatch report",
+  "type": "object",
+  "required": ["case_id", "target", "model_path", "reference_source", "measurement_semantics", "region_classification", "final_classification"],
+  "properties": {
+    "case_id": {"type": "string"},
+    "target": {"type": "string"},
+    "model_path": {"type": "string"},
+    "reference_source": {"type": "string"},
+    "measurement_semantics": {"type": "object"},
+    "key_points": {"type": "array"},
+    "region_classification": {"type": "object"},
+    "missing_semantics": {"type": "array"},
+    "final_classification": {
+      "enum": [
+        "MATCHED",
+        "TARGET_SEMANTICS_UNCLEAR",
+        "REFERENCE_TARGET_SEMANTICS_UNCLEAR",
+        "SENSING_LAYER_MISMATCH",
+        "LOW_ORDER_MODEL_MISMATCH",
+        "PROTOCOL_DERIVED_UNVERIFIED",
+        "UNKNOWN"
+      ]
+    }
+  }
+}

@@ -34,6 +34,14 @@
     "response_kind": "transfer_function",
     "margin_status": "NOT_APPLICABLE_NON_RETURN_RATIO"
   },
+  "sensing_layer": {
+    "type": "output_ripple_sense",
+    "input_variable": "vo",
+    "output_variable": "vfb",
+    "gain": "registered",
+    "time_constants": [],
+    "validation": "registered"
+  },
   "missing_information": [],
   "workflow": {
     "version": "0.4",
@@ -47,8 +55,8 @@
     "predecessor": {
       "artifact_type": "intake_status",
       "state": "PREFLIGHT_INTAKE",
-      "sha256": "d4ccfb25855195c21e0aa80aa84fc1f005acab5ab794a92ea9e1c637f2f688fc"
+      "sha256": "aba602b8c9b9ab86eb10ee0e3a363636330a3e871aefbffd1fcc7a2e8b066684"
     },
-    "artifact_sha256": "363192b043f330576e8a56c5bab5af1a3046e822d65734ddd2da42ef2df94866"
+    "artifact_sha256": "c26a10fc6b26e232634f6e8cb6c0b41871187f7467e47bbee84e97460110dfec"
   }
 }
