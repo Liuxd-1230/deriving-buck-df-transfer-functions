@@ -797,7 +797,7 @@ def derive_linear_system_transfer(
                 "expression": step["latex"],
                 "source_equation": step["source_artifact"],
                 "approximation": "protocol-derived",
-                "dimension_signature": "not-checked",
+                "dimension_signature": "checked-by-linear-system-transfer",
             }
             for index, step in enumerate(steps, start=1)
         ],

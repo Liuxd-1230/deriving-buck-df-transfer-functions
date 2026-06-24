@@ -27,16 +27,22 @@ def _nested_payload(artifact: dict[str, Any]) -> dict[str, Any]:
         return normalized
     intake = artifact.get("intake")
     if isinstance(intake, dict) and isinstance(intake.get("normalized"), dict):
-        return intake["normalized"]
+        merged = dict(intake["normalized"])
+        for key in ("comparator_ramp_model", "comparator_input_origin", "switching", "parameters"):
+            if key in artifact:
+                merged[key] = artifact[key]
+        return merged
     return artifact
 
 
 def _is_rc_case(payload: dict[str, Any]) -> bool:
     ramp = payload.get("comparator_ramp_model") if isinstance(payload.get("comparator_ramp_model"), dict) else {}
     sensing = payload.get("sensing_layer") if isinstance(payload.get("sensing_layer"), dict) else {}
+    sensing_ramp = sensing.get("comparator_ramp_model") if isinstance(sensing.get("comparator_ramp_model"), dict) else {}
     return (
         str(payload.get("comparator_input_origin", "")).lower() in RC_ORIGINS
         or str(ramp.get("type", "")).lower() == "rc_derived_state"
+        or str(sensing_ramp.get("type", "")).lower() == "rc_derived_state"
         or str(sensing.get("type", "")).lower() in RC_ORIGINS
         or str(sensing.get("network_type", "")).lower() == "rc_lowpass"
     )
@@ -67,8 +73,10 @@ def check_rc_memory_factor(artifact: dict[str, Any]) -> dict[str, Any]:
             "artifact": "proof_object.json",
         }
 
-    ramp = payload.get("comparator_ramp_model") if isinstance(payload.get("comparator_ramp_model"), dict) else {}
     sensing = payload.get("sensing_layer") if isinstance(payload.get("sensing_layer"), dict) else {}
+    ramp = payload.get("comparator_ramp_model") if isinstance(payload.get("comparator_ramp_model"), dict) else {}
+    if not ramp and isinstance(sensing.get("comparator_ramp_model"), dict):
+        ramp = sensing["comparator_ramp_model"]
     switching = payload.get("switching") if isinstance(payload.get("switching"), dict) else {}
     parameters = payload.get("parameters") if isinstance(payload.get("parameters"), dict) else {}
     errors: list[str] = []

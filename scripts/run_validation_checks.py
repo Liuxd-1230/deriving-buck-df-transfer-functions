@@ -26,6 +26,7 @@ REQUIRED_CHECKS = (
     "variable_role_check",
     "block_shape_check",
     "denominator_provenance_check",
+    "dimension_signature_check",
     "normalization_check",
     "power_stage_dynamics_check",
     "mismatch_report_check",
@@ -66,6 +67,7 @@ def build_unified_checker_result(
     derivation: dict[str, Any] | None = None,
     mismatch_report: dict[str, Any] | None = None,
     report_text: str | None = None,
+    report_path: str | Path | None = None,
     derivation_check: dict[str, Any] | None = None,
     formula_metadata: dict[str, Any] | None = None,
     target_semantics: dict[str, Any] | None = None,
@@ -76,6 +78,10 @@ def build_unified_checker_result(
     proof = proof or {}
     derivation = derivation or {}
     claims = claims or []
+    if report_text is None and report_path is not None:
+        report_file = Path(report_path)
+        if report_file.exists():
+            report_text = report_file.read_text(encoding="utf-8")
     checks: dict[str, dict[str, Any]] = {}
 
     intake_status = intake.get("status")
@@ -150,12 +156,25 @@ def build_unified_checker_result(
             blocking=not denom_ok,
             artifact="derivation.json",
         )
+        dimension_signatures = [
+            str(step.get("dimension_signature", ""))
+            for step in derivation.get("steps", []) or []
+            if isinstance(step, dict)
+        ]
+        dimension_ok = bool(dimension_signatures) and "not-checked" not in dimension_signatures
+        checks["dimension_signature_check"] = _check(
+            "PASS" if dimension_ok else "FAIL",
+            "derivation steps carry checked dimension signatures" if dimension_ok else "derivation steps contain dimension_signature=not-checked or omit checked dimensions",
+            blocking=not dimension_ok,
+            artifact="derivation.json",
+        )
     else:
         for name in (
             "linear_equation_system_check",
             "variable_role_check",
             "block_shape_check",
             "denominator_provenance_check",
+            "dimension_signature_check",
         ):
             checks[name] = _check("NOT_APPLICABLE", "not a v0.4.5 linear-system derivation", blocking=False, artifact="derivation.json")
 
@@ -261,6 +280,7 @@ def main() -> int:
         derivation=_load(args.derivation),
         mismatch_report=_load(args.mismatch_report),
         report_text=Path(args.report).read_text(encoding="utf-8") if args.report else None,
+        report_path=args.report,
     )
     if args.out:
         Path(args.out).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")

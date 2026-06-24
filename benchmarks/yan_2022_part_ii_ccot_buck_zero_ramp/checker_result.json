@@ -58,6 +58,12 @@
       "blocking": false,
       "artifact": "derivation.json"
     },
+    "dimension_signature_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
     "normalization_check": {
       "status": "PASS",
       "reason": "Formula metadata does not indicate an embedded 1/Ri normalization.",
@@ -119,6 +125,6 @@
       "state": "DERIVATION",
       "sha256": "919415cde011637b80b13b7ebe405bfb53f040feade9a2acc6e4acf6e354813b"
     },
-    "artifact_sha256": "69516b6e19eed8c7af230ccbceaccb40b3873536ca69a71d731f335942f85c8f"
+    "artifact_sha256": "a8c713644c639498835dcc76307fddf6208eed5cfd283a04f1e0dc5c136701a4"
   }
 }
