@@ -58,6 +58,12 @@
       "blocking": false,
       "artifact": "derivation.json"
     },
+    "feedback_path_uniqueness_check": {
+      "status": "NOT_APPLICABLE",
+      "reason": "not a v0.4.5 linear-system derivation",
+      "blocking": false,
+      "artifact": "derivation.json"
+    },
     "dimension_signature_check": {
       "status": "NOT_APPLICABLE",
       "reason": "not a v0.4.5 linear-system derivation",
@@ -125,6 +131,6 @@
       "state": "DERIVATION",
       "sha256": "b2f133f644e607ae65ce4b55569efc925098618f41bc073627c4e12b593678b4"
     },
-    "artifact_sha256": "9b474beba443b1ca75241b36b5a3e343e64c6d73af1fd3872822a9853ae1e0ec"
+    "artifact_sha256": "089cecf939b630e3155fd32ff5590381f35f8425f2286725eca3ea8901c5754e"
   }
 }

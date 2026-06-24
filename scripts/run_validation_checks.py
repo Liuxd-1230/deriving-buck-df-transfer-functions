@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from check_forbidden_claims import scan_forbidden_claims, scan_report_formula_rendering
+from check_feedback_path_uniqueness import check_feedback_path_uniqueness
 from check_power_stage_dynamics import diagnose_expression
 from check_rc_memory_factor import check_rc_memory_factor
 from model_applicability import check_model_applicability
@@ -26,6 +27,7 @@ REQUIRED_CHECKS = (
     "variable_role_check",
     "block_shape_check",
     "denominator_provenance_check",
+    "feedback_path_uniqueness_check",
     "dimension_signature_check",
     "normalization_check",
     "power_stage_dynamics_check",
@@ -156,6 +158,13 @@ def build_unified_checker_result(
             blocking=not denom_ok,
             artifact="derivation.json",
         )
+        feedback = check_feedback_path_uniqueness(derivation)
+        checks["feedback_path_uniqueness_check"] = _check(
+            feedback["status"],
+            feedback["reason"],
+            blocking=bool(feedback["blocking"]),
+            artifact=feedback["artifact"],
+        )
         dimension_signatures = [
             str(step.get("dimension_signature", ""))
             for step in derivation.get("steps", []) or []
@@ -174,6 +183,7 @@ def build_unified_checker_result(
             "variable_role_check",
             "block_shape_check",
             "denominator_provenance_check",
+            "feedback_path_uniqueness_check",
             "dimension_signature_check",
         ):
             checks[name] = _check("NOT_APPLICABLE", "not a v0.4.5 linear-system derivation", blocking=False, artifact="derivation.json")
@@ -233,7 +243,7 @@ def build_unified_checker_result(
             artifact="report.md",
         )
 
-    rc_source = normalized or proof
+    rc_source = normalized or proof or classification
     rc = check_rc_memory_factor(rc_source)
     checks["rc_memory_factor_check"] = _check(rc["status"], rc["reason"], blocking=bool(rc["blocking"]), artifact=rc["artifact"])
 

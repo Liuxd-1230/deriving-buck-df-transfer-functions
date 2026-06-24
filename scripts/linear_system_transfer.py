@@ -40,6 +40,8 @@ SEMANTIC_ERROR_CODES = {
     "FAIL_CLOSED_EQUIVALENT_USED_AS_OPEN_BLOCK",
     "FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE",
     "FAIL_DIMENSION_SIGNATURE_MISMATCH",
+    "FAIL_DOUBLE_CLOSED_FEEDBACK_PATH",
+    "FAIL_DUPLICATE_SENSING_PATH_ALIAS",
     "FAIL_GVC_MISLABELED_AS_TLOOP",
     "FAIL_TLOOP_REQUIRES_LOOP_BREAK",
 }
@@ -154,6 +156,7 @@ def _blocks(system: dict[str, Any]) -> dict[str, dict[str, Any]]:
                 ("eliminated_variables", "eliminated_variables"),
                 ("eliminated_equations", "eliminated_equations"),
                 ("feedback_paths_already_closed", "feedback_paths_already_closed"),
+                ("feedback_path", "feedback_path"),
             ):
                 if block_field not in normalized and coefficient.get(coefficient_field) is not None:
                     normalized[block_field] = deepcopy(coefficient.get(coefficient_field))
@@ -302,6 +305,36 @@ def _validate_eliminated_not_active(
             )
 
 
+def _validate_feedback_path_uniqueness(
+    block_map: dict[str, dict[str, Any]],
+    active_equations: list[dict[str, Any]],
+) -> None:
+    active_block_ids = {str(equation["block_id"]) for equation in active_equations}
+    aliases: dict[tuple[str, str, str], list[str]] = {}
+    for block_id, block in block_map.items():
+        if block_id not in active_block_ids:
+            continue
+        feedback_path = block.get("feedback_path")
+        if not feedback_path:
+            continue
+        key = (
+            str(feedback_path),
+            str(block.get("input") or block.get("from") or ""),
+            str(block.get("output") or block.get("to") or ""),
+        )
+        aliases.setdefault(key, []).append(str(block.get("coefficient") or block_id))
+    duplicates = {
+        key: sorted(set(names))
+        for key, names in aliases.items()
+        if len(set(names)) > 1
+    }
+    if duplicates:
+        raise LinearSystemError(
+            "FAIL_DUPLICATE_SENSING_PATH_ALIAS",
+            f"multiple active coefficient aliases close the same feedback path: {duplicates}",
+        )
+
+
 def _validate_coefficient_block_semantics(
     system: dict[str, Any],
     block_map: dict[str, dict[str, Any]],
@@ -355,6 +388,21 @@ def _validate_coefficient_block_semantics(
                     "FAIL_MIMO_CLOSED_EQUIVALENT_NOT_SUPPORTED_V045",
                     f"{coefficient_name} closed-equivalent use is not SISO",
                 )
+            locals_map = _symbol_table(system)
+            rhs = _sympify(equation.get("rhs"), locals_map)
+            expected_input = block.get("input") or coefficient.get("from")
+            if expected_input:
+                expected = locals_map[str(coefficient_name)] * locals_map[str(expected_input)]
+                if sp.simplify(rhs - expected) != 0:
+                    code = (
+                        "FAIL_DOUBLE_CLOSED_FEEDBACK_PATH"
+                        if coefficient.get("feedback_paths_already_closed") or block.get("feedback_paths_already_closed")
+                        else "FAIL_CLOSED_EQUIVALENT_USED_AS_OPEN_BLOCK"
+                    )
+                    raise LinearSystemError(
+                        code,
+                        f"{coefficient_name} is closed-equivalent and may only be used as {equation.get('lhs')}={coefficient_name}*{expected_input}",
+                    )
 
 
 def _unit_signature_to_powers(signature: Any) -> dict[str, int]:
@@ -735,6 +783,7 @@ def derive_linear_system_transfer(
     active = _active_equations(system, block_map)
     diagnostic = _diagnostic_equations(system)
     _validate_active_coefficients_not_diagnostic_only(system, active, diagnostic)
+    _validate_feedback_path_uniqueness(block_map, active)
     _validate_coefficient_block_semantics(system, block_map, active)
     eliminated = _eliminated_variables(block_map)
     unknowns, inputs, target = _validate_variable_roles(system, eliminated)
