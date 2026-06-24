@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -32,6 +33,15 @@ DERIVATION_STEP_REQUIRED = {
     "source_artifact",
     "latex_origin",
     "provenance",
+}
+
+SEMANTIC_ERROR_CODES = {
+    "FAIL_ACTIVE_COEFFICIENT_DEFINED_ONLY_AS_DIAGNOSTIC",
+    "FAIL_CLOSED_EQUIVALENT_USED_AS_OPEN_BLOCK",
+    "FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE",
+    "FAIL_DIMENSION_SIGNATURE_MISMATCH",
+    "FAIL_GVC_MISLABELED_AS_TLOOP",
+    "FAIL_TLOOP_REQUIRES_LOOP_BREAK",
 }
 
 
@@ -105,20 +115,54 @@ def _target(system: dict[str, Any]) -> dict[str, Any]:
     return target
 
 
+def _coefficient_definitions(system: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    definitions = system.get("coefficient_definitions") or []
+    if not isinstance(definitions, list):
+        raise LinearSystemError("FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE", "coefficient_definitions must be a list")
+    by_symbol: dict[str, dict[str, Any]] = {}
+    for item in definitions:
+        if not isinstance(item, dict) or not item.get("symbol"):
+            raise LinearSystemError("FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE", "each coefficient definition requires symbol")
+        symbol = str(item["symbol"])
+        if symbol in by_symbol:
+            raise LinearSystemError("FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE", f"duplicate coefficient {symbol}")
+        by_symbol[symbol] = item
+    return by_symbol
+
+
 def _blocks(system: dict[str, Any]) -> dict[str, dict[str, Any]]:
     blocks = system.get("blocks") or []
     if not isinstance(blocks, list):
         raise LinearSystemError("FAIL_BLOCK_SHAPE", "blocks must be a list")
+    coefficients = _coefficient_definitions(system)
     by_id: dict[str, dict[str, Any]] = {}
     for block in blocks:
         if not isinstance(block, dict) or not block.get("id"):
             raise LinearSystemError("FAIL_BLOCK_SHAPE", "each block requires id")
-        block_type = block.get("block_type")
+        normalized = deepcopy(block)
+        if "block_type" not in normalized and normalized.get("type"):
+            normalized["block_type"] = normalized["type"]
+        if "input" not in normalized and normalized.get("from"):
+            normalized["input"] = normalized["from"]
+        if "output" not in normalized and normalized.get("to"):
+            normalized["output"] = normalized["to"]
+        coefficient = coefficients.get(str(normalized.get("coefficient")))
+        if coefficient:
+            for block_field, coefficient_field in (
+                ("input", "from"),
+                ("output", "to"),
+                ("eliminated_variables", "eliminated_variables"),
+                ("eliminated_equations", "eliminated_equations"),
+                ("feedback_paths_already_closed", "feedback_paths_already_closed"),
+            ):
+                if block_field not in normalized and coefficient.get(coefficient_field) is not None:
+                    normalized[block_field] = deepcopy(coefficient.get(coefficient_field))
+        block_type = normalized.get("block_type")
         if block_type not in BLOCK_TYPES:
             raise LinearSystemError("FAIL_BLOCK_SHAPE", f"unsupported block_type {block_type!r}")
-        if block["id"] in by_id:
-            raise LinearSystemError("FAIL_BLOCK_SHAPE", f"duplicate block id {block['id']}")
-        by_id[str(block["id"])] = block
+        if normalized["id"] in by_id:
+            raise LinearSystemError("FAIL_BLOCK_SHAPE", f"duplicate block id {normalized['id']}")
+        by_id[str(normalized["id"])] = normalized
     return by_id
 
 
@@ -146,6 +190,77 @@ def _diagnostic_equations(system: dict[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(equations, list):
         raise LinearSystemError("FAIL_BLOCK_SHAPE", "diagnostic_equations must be a list")
     return [equation for equation in equations if isinstance(equation, dict)]
+
+
+def _signal_variables(system: dict[str, Any]) -> set[str]:
+    names = set(_require_list(system, "unknowns")) | set(_require_list(system, "inputs"))
+    names.update(str(item) for item in system.get("diagnostic_outputs") or [])
+    variables = system.get("variables") or []
+    if isinstance(variables, list):
+        for variable in variables:
+            if isinstance(variable, dict) and variable.get("name"):
+                names.add(str(variable["name"]))
+    return names
+
+
+def _active_core_symbols(system: dict[str, Any], active_equations: list[dict[str, Any]]) -> set[str]:
+    signal_vars = _signal_variables(system)
+    declared_symbols = set(str(item) for item in system.get("symbols") or [])
+    core: set[str] = set()
+    for equation in active_equations:
+        core.update(_identifiers(equation.get("lhs")) | _identifiers(equation.get("rhs")))
+    return core - signal_vars - declared_symbols - {"s"}
+
+
+def _validate_active_coefficients_not_diagnostic_only(
+    system: dict[str, Any],
+    active_equations: list[dict[str, Any]],
+    diagnostic_equations: list[dict[str, Any]],
+) -> None:
+    coefficients = _coefficient_definitions(system)
+    if not coefficients:
+        return
+    diagnostic_lhs = {
+        str(equation.get("lhs"))
+        for equation in diagnostic_equations
+        if equation.get("lhs") not in (None, "")
+    }
+    for symbol in sorted(_active_core_symbols(system, active_equations)):
+        if symbol not in coefficients and symbol in diagnostic_lhs:
+            raise LinearSystemError(
+                "FAIL_ACTIVE_COEFFICIENT_DEFINED_ONLY_AS_DIAGNOSTIC",
+                f"active equation uses {symbol}, but it is defined only in diagnostic_equations",
+            )
+
+
+def _validate_target_semantics(system: dict[str, Any], target: dict[str, Any]) -> None:
+    name = str(target.get("name", ""))
+    response_kind = str(target.get("response_kind", ""))
+    if name == "Gvc" and response_kind == "return_ratio":
+        raise LinearSystemError(
+            "FAIL_GVC_MISLABELED_AS_TLOOP",
+            "Gvc is a transfer_function target and cannot be labeled return_ratio",
+        )
+    if name == "Tloop":
+        loop_break = system.get("loop_break")
+        required = (
+            "injection_point",
+            "return_point",
+            "measured_quantity",
+            "sign_convention",
+            "forward_path",
+            "feedback_path",
+            "H",
+        )
+        complete = isinstance(loop_break, dict) and bool(loop_break.get("enabled", True)) and all(
+            loop_break.get(field) not in (None, "", "unknown")
+            for field in required
+        )
+        if response_kind != "return_ratio" or not complete:
+            raise LinearSystemError(
+                "FAIL_TLOOP_REQUIRES_LOOP_BREAK",
+                "Tloop requires response_kind=return_ratio and an explicit loop_break contract",
+            )
 
 
 def _eliminated_variables(block_map: dict[str, dict[str, Any]]) -> set[str]:
@@ -184,6 +299,168 @@ def _validate_eliminated_not_active(
             raise LinearSystemError(
                 "FAIL_REINTRODUCED_ELIMINATED_INTERNAL_VARIABLE",
                 f"{equation.get('id')} reintroduces eliminated variables: {', '.join(repeated)}",
+            )
+
+
+def _validate_coefficient_block_semantics(
+    system: dict[str, Any],
+    block_map: dict[str, dict[str, Any]],
+    active_equations: list[dict[str, Any]],
+) -> None:
+    coefficients = _coefficient_definitions(system)
+    if not coefficients:
+        return
+    for equation in active_equations:
+        block = block_map[str(equation["block_id"])]
+        coefficient_name = block.get("coefficient")
+        if not coefficient_name:
+            continue
+        coefficient = coefficients.get(str(coefficient_name))
+        if not coefficient:
+            continue
+        block_type = str(block.get("block_type"))
+        coefficient_block_type = str(coefficient.get("block_type"))
+        if coefficient_block_type == "closed_equivalent_block" and block_type != "closed_equivalent_block":
+            raise LinearSystemError(
+                "FAIL_CLOSED_EQUIVALENT_USED_AS_OPEN_BLOCK",
+                f"{coefficient_name} is a closed-equivalent coefficient but block {block['id']} is {block_type}",
+            )
+        if coefficient_block_type != block_type and coefficient_block_type != "primitive_equation":
+            raise LinearSystemError(
+                "FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE",
+                f"{coefficient_name} declares {coefficient_block_type} but is used in {block_type}",
+            )
+        if block.get("input") and coefficient.get("from") and str(block["input"]) != str(coefficient["from"]):
+            raise LinearSystemError(
+                "FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE",
+                f"{coefficient_name} from={coefficient['from']} does not match block input={block['input']}",
+            )
+        if block.get("output") and coefficient.get("to") and str(block["output"]) != str(coefficient["to"]):
+            raise LinearSystemError(
+                "FAIL_COEFFICIENT_SEMANTICS_CONTRADICT_BLOCK_USE",
+                f"{coefficient_name} to={coefficient['to']} does not match block output={block['output']}",
+            )
+        if coefficient_block_type == "closed_equivalent_block":
+            used = _identifiers(equation.get("rhs"))
+            closed_inputs = set(str(item) for item in coefficient.get("eliminated_variables") or [])
+            if used & closed_inputs:
+                raise LinearSystemError(
+                    "FAIL_CLOSED_EQUIVALENT_USED_AS_OPEN_BLOCK",
+                    f"{coefficient_name} reuses eliminated variables in its active equation",
+                )
+            rhs_signals = used & _signal_variables(system)
+            rhs_signals.discard(str(equation.get("lhs")))
+            if len(rhs_signals) > 1:
+                raise LinearSystemError(
+                    "FAIL_MIMO_CLOSED_EQUIVALENT_NOT_SUPPORTED_V045",
+                    f"{coefficient_name} closed-equivalent use is not SISO",
+                )
+
+
+def _unit_signature_to_powers(signature: Any) -> dict[str, int]:
+    text = str(signature or "1").strip()
+    if text in {"", "1", "dimensionless"}:
+        return {}
+    powers: dict[str, int] = {}
+
+    def add_token(token: str, sign: int) -> None:
+        token = token.strip()
+        if not token or token == "1":
+            return
+        if "^" in token:
+            base, exponent = token.split("^", 1)
+            power = int(exponent)
+        else:
+            base, power = token, 1
+        powers[base] = powers.get(base, 0) + sign * power
+        if powers[base] == 0:
+            powers.pop(base)
+
+    numerator, *denominators = text.split("/")
+    for token in numerator.split("*"):
+        add_token(token, 1)
+    for denominator in denominators:
+        for token in denominator.split("*"):
+            add_token(token, -1)
+    return powers
+
+
+def _add_units(left: dict[str, int], right: dict[str, int], scale: int = 1) -> dict[str, int]:
+    result = dict(left)
+    for key, value in right.items():
+        result[key] = result.get(key, 0) + scale * value
+        if result[key] == 0:
+            result.pop(key)
+    return result
+
+
+def _unit_maps(system: dict[str, Any]) -> tuple[dict[str, dict[str, int]], dict[str, dict[str, int]]]:
+    variable_units: dict[str, dict[str, int]] = {}
+    variables = system.get("variables") or []
+    if isinstance(variables, list):
+        for variable in variables:
+            if isinstance(variable, dict) and variable.get("name"):
+                variable_units[str(variable["name"])] = _unit_signature_to_powers(variable.get("unit_signature"))
+    coefficient_units = {
+        symbol: _unit_signature_to_powers(definition.get("unit_signature"))
+        for symbol, definition in _coefficient_definitions(system).items()
+    }
+    return variable_units, coefficient_units
+
+
+def _expression_unit(expr: Any, variable_units: dict[str, dict[str, int]], coefficient_units: dict[str, dict[str, int]]) -> dict[str, int]:
+    if expr.is_Number:
+        return {}
+    if expr.is_Symbol:
+        name = str(expr)
+        if name in variable_units:
+            return variable_units[name]
+        if name in coefficient_units:
+            return coefficient_units[name]
+        return {}
+    if expr.is_Add:
+        units = [_expression_unit(arg, variable_units, coefficient_units) for arg in expr.args]
+        if not units:
+            return {}
+        first = units[0]
+        if any(unit != first for unit in units[1:]):
+            raise LinearSystemError(
+                "FAIL_DIMENSION_SIGNATURE_MISMATCH",
+                f"incompatible units in additive expression {expr}",
+            )
+        return first
+    if expr.is_Mul:
+        unit: dict[str, int] = {}
+        for arg in expr.args:
+            unit = _add_units(unit, _expression_unit(arg, variable_units, coefficient_units))
+        return unit
+    if expr.is_Pow:
+        exponent = expr.exp
+        if not exponent.is_Integer:
+            return {}
+        return {key: value * int(exponent) for key, value in _expression_unit(expr.base, variable_units, coefficient_units).items()}
+    if getattr(expr, "is_Function", False):
+        return {}
+    return {}
+
+
+def _validate_dimension_signatures(
+    system: dict[str, Any],
+    active_equations: list[dict[str, Any]],
+    locals_map: dict[str, Any],
+) -> None:
+    if not system.get("variables") or not system.get("coefficient_definitions"):
+        return
+    variable_units, coefficient_units = _unit_maps(system)
+    for equation in active_equations:
+        lhs = _sympify(equation["lhs"], locals_map)
+        rhs = _sympify(equation["rhs"], locals_map)
+        lhs_unit = _expression_unit(lhs, variable_units, coefficient_units)
+        rhs_unit = _expression_unit(rhs, variable_units, coefficient_units)
+        if lhs_unit != rhs_unit:
+            raise LinearSystemError(
+                "FAIL_DIMENSION_SIGNATURE_MISMATCH",
+                f"{equation['id']} lhs unit {lhs_unit} does not match rhs unit {rhs_unit}",
             )
 
 
@@ -284,7 +561,6 @@ def _solve_transfer(
 def _source_equations_for_denominator(
     active_equations: list[dict[str, Any]], block_map: dict[str, dict[str, Any]]
 ) -> tuple[list[str], str]:
-    source_ids = [str(equation["id"]) for equation in active_equations]
     feedback_candidates: list[str] = []
     for equation in active_equations:
         block = block_map[str(equation["block_id"])]
@@ -294,7 +570,42 @@ def _source_equations_for_denominator(
             feedback_candidates.append(str(block["id"]))
         for path in block.get("feedback_paths_already_closed") or []:
             feedback_candidates.append(str(path))
-    return source_ids, (feedback_candidates[0] if feedback_candidates else "active_equation_feedback")
+    feedback_path = feedback_candidates[0] if feedback_candidates else "active_equation_feedback"
+    source_ids = [
+        str(equation["id"])
+        for equation in active_equations
+        if str(block_map[str(equation["block_id"])].get("feedback_path", "")) == feedback_path
+    ]
+    if not source_ids:
+        source_ids = [str(equation["id"]) for equation in active_equations]
+    return source_ids, feedback_path
+
+
+def _latex_symbol_as_transfer(symbol: Any) -> str:
+    text = str(symbol)
+    match = re.match(r"^([A-Za-z]+)([0-9]*)$", text)
+    if not match:
+        return sp.latex(symbol)
+    head, suffix = match.groups()
+    if suffix:
+        return f"{head}_{{{suffix}}}(s)"
+    if len(head) > 1:
+        return f"{head[0]}_{{{head[1:]}}}(s)"
+    return f"{head}(s)"
+
+
+def _denominator_display_latex(denominator: Any) -> str:
+    expanded = sp.expand(denominator)
+    terms = list(expanded.as_ordered_terms()) if expanded.is_Add else [expanded]
+    one_terms = [term for term in terms if sp.simplify(term - 1) == 0]
+    other_terms = [term for term in terms if sp.simplify(term - 1) != 0]
+    if len(one_terms) == 1 and len(other_terms) == 1:
+        coefficient, factors = other_terms[0].as_coeff_mul()
+        rendered = "".join(_latex_symbol_as_transfer(factor) for factor in sorted(factors, key=str))
+        if coefficient not in (1, sp.Integer(1)):
+            rendered = sp.latex(coefficient) + rendered
+        return "1+" + rendered
+    return sp.latex(denominator)
 
 
 def _denominator_provenance(
@@ -311,6 +622,7 @@ def _denominator_provenance(
         "source_equations": source_ids,
         "feedback_path": feedback_path,
         "generated_by_solver": True,
+        "display_latex": _denominator_display_latex(denominator),
     }]
 
 
@@ -422,11 +734,15 @@ def derive_linear_system_transfer(
     block_map = _blocks(system)
     active = _active_equations(system, block_map)
     diagnostic = _diagnostic_equations(system)
+    _validate_active_coefficients_not_diagnostic_only(system, active, diagnostic)
+    _validate_coefficient_block_semantics(system, block_map, active)
     eliminated = _eliminated_variables(block_map)
     unknowns, inputs, target = _validate_variable_roles(system, eliminated)
+    _validate_target_semantics(system, target)
     _validate_eliminated_not_active(active, eliminated)
     _validate_block_shapes(system, block_map, active)
     locals_map = _symbol_table(system)
+    _validate_dimension_signatures(system, active, locals_map)
     symbolic_equations = _active_symbolic_equations(active, locals_map)
     transfer = _solve_transfer(
         symbolic_equations,
@@ -464,6 +780,8 @@ def derive_linear_system_transfer(
         "linear_equation_system": deepcopy(system),
         "generated_by": "linear_system_transfer.py",
         "generated_expression": str(transfer),
+        "generated_expression_latex": sp.latex(transfer),
+        "generated_expression_sha256": hashlib.sha256(str(transfer).encode("utf-8")).hexdigest(),
         "expanded_target_expression": str(transfer),
         "expressions": {target["name"]: str(transfer)},
         "reasoning_method": {
@@ -484,7 +802,13 @@ def derive_linear_system_transfer(
             for index, step in enumerate(steps, start=1)
         ],
         "derivation_steps": steps,
+        "derivation_steps_sha256": hashlib.sha256(
+            json.dumps(steps, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
         "elimination_metadata": {
+            "unknowns_eliminated": eliminated_for_solution,
+            "active_equations_used": [equation["id"] for equation in active],
+            "diagnostic_equations_used": [],
             "active_equations": [equation["id"] for equation in active],
             "diagnostic_equations": [equation.get("id") for equation in diagnostic],
             "eliminated_variables": eliminated_for_solution,
@@ -500,10 +824,13 @@ def derive_linear_system_transfer(
             ],
         },
         "denominator_provenance": denominator_provenance,
-        "approximation_policy": deepcopy(
-            system.get("approximation_policy")
-            or {"declared": False, "items": [], "valid_frequency": "not_declared"}
-        ),
+        "approximation_policy": {
+            "declared": bool((system.get("approximation_policy") or {}).get("declared", False)),
+            "items": list((system.get("approximation_policy") or {}).get("items", [])),
+            "valid_frequency": str((system.get("approximation_policy") or {}).get("valid_frequency", "not_declared")),
+            **({"level": (system.get("approximation_policy") or {}).get("level")} if (system.get("approximation_policy") or {}).get("level") else {}),
+            **({"notes": (system.get("approximation_policy") or {}).get("notes")} if (system.get("approximation_policy") or {}).get("notes") is not None else {}),
+        },
         "validation": {
             "level": validation_level,
             "completed": ["linear-system-solver-generation"],
@@ -538,6 +865,12 @@ def derive_linear_system_from_proof(proof: dict[str, Any]) -> dict[str, Any]:
             "proof carries a hand-written transfer expression",
         )
     return derive_linear_system_transfer(system, proof=proof)
+
+
+def solve_linear_system(system: dict[str, Any]) -> dict[str, Any]:
+    """Compatibility wrapper for v0.4.5 typed transfer solving."""
+
+    return derive_linear_system_transfer(system)
 
 
 def main() -> int:

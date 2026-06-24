@@ -176,9 +176,25 @@ def _checkout_lines(artifacts: dict[str, dict[str, Any] | None], *, ask_only: bo
     return lines
 
 
-def _derivation_steps(artifacts: dict[str, dict[str, Any] | None], *, ask_only: bool) -> list[str]:
+def _blocking_fail_lines(checker: dict[str, Any] | None) -> list[str]:
+    lines = ["checker_result.json 存在 blocking FAIL，推导候选表达式不在报告中渲染。"]
+    checks = checker.get("checks") if isinstance(checker, dict) else {}
+    if isinstance(checks, dict):
+        for name, item in checks.items():
+            if isinstance(item, dict) and item.get("status") == "FAIL" and item.get("blocking"):
+                lines.append(
+                    f"- {name}：{item.get('reason', 'FAIL')}；artifact：`{item.get('artifact', 'checker_result.json')}`"
+                )
+    if isinstance(checker, dict) and checker.get("errors"):
+        lines.append(f"- errors：`{_safe_json(checker.get('errors'))}`")
+    return lines
+
+
+def _derivation_steps(artifacts: dict[str, dict[str, Any] | None], *, ask_only: bool, blocking_fail: bool = False) -> list[str]:
     if ask_only:
         return ["本 case 为 INCOMPLETE_INTAKE，未进入推导阶段。"]
+    if blocking_fail:
+        return _blocking_fail_lines(artifacts.get("checker_result"))
     intake = artifacts.get("intake") or {}
     proof = artifacts.get("proof_object") or {}
     derivation = artifacts.get("derivation") or {}
@@ -315,14 +331,18 @@ def build_chinese_report(
         "",
         "## 6. 逐步推导过程",
         "",
-        *_derivation_steps(artifacts, ask_only=ask_only),
+        *_derivation_steps(artifacts, ask_only=ask_only, blocking_fail=blocking_fail),
         "",
         "## 7. 代数消元或传函生成过程",
         "",
         (
             "本 case 为 INCOMPLETE_INTAKE，未进入推导阶段。"
             if ask_only
-            else f"derivation.steps：`{_safe_json(derivation.get('steps', '未提供'))}`。expanded_target_expression：`{derivation.get('expanded_target_expression', '未提供')}`。"
+            else (
+                "checker_result.json 存在 blocking FAIL，因此本节不显示 candidate transfer expression。"
+                if blocking_fail
+                else f"derivation.steps：`{_safe_json(derivation.get('steps', '未提供'))}`。expanded_target_expression：`{derivation.get('expanded_target_expression', '未提供')}`。"
+            )
         ),
         "",
         "## 8. 近似、低阶模型与适用边界",

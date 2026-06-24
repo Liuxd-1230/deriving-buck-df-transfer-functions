@@ -8,6 +8,9 @@
     "case_id": {"type": "string"},
     "report": {"type": "string"},
     "report_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "source_derivation": {"type": "string"},
+    "generated_expression_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "derivation_steps_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "artifacts": {
       "type": "object",
       "additionalProperties": {

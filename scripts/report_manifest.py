@@ -39,13 +39,26 @@ def build_report_manifest(
             "purpose": ARTIFACT_PURPOSES.get(key, "证据 artifact。"),
             "sha256": _sha256(path),
         }
-    return {
+    manifest = {
         "report_version": "0.4",
         "case_id": case_id,
         "report": report_path.name,
         "report_sha256": _sha256(report_path),
         "artifacts": artifacts,
     }
+    derivation_path = artifact_paths.get("derivation")
+    if derivation_path and derivation_path.exists():
+        try:
+            derivation = json.loads(derivation_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            derivation = {}
+        if isinstance(derivation, dict):
+            for field in ("generated_expression_sha256", "derivation_steps_sha256"):
+                if derivation.get(field):
+                    manifest[field] = derivation[field]
+            if derivation_path.name:
+                manifest["source_derivation"] = derivation_path.name
+    return manifest
 
 
 def write_manifest(path: Path, manifest: dict[str, Any]) -> None:
