@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 Confirmable Circuit IR",
+  "$defs": {
+    "dimension": {
+      "type": "object",
+      "required": ["kg", "m", "s", "A", "K", "mol", "cd"],
+      "properties": {
+        "kg": {"type": "integer"}, "m": {"type": "integer"},
+        "s": {"type": "integer"}, "A": {"type": "integer"},
+        "K": {"type": "integer"}, "mol": {"type": "integer"},
+        "cd": {"type": "integer"}
+      },
+      "additionalProperties": false
+    },
+    "quantity": {
+      "type": "object",
+      "required": ["magnitude", "unit", "si_dimension", "source"],
+      "properties": {
+        "magnitude": {"type": "number"}, "unit": {"type": "string"},
+        "si_dimension": {"$ref": "#/$defs/dimension"},
+        "source": {"enum": ["image_label", "user_confirmed", "derived", "registry_fixture"]}
+      },
+      "additionalProperties": false
+    },
+    "bbox": {
+      "type": "array", "prefixItems": [
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {"type": "number", "minimum": 0, "maximum": 1}
+      ], "minItems": 4, "maxItems": 4
+    }
+  },
+  "type": "object",
+  "required": ["ir_version", "case_id", "status", "source_image", "ground_net", "nets", "components", "ports", "ambiguities"],
+  "properties": {
+    "ir_version": {"const": "0.5"},
+    "case_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["PROPOSED", "TOPOLOGY_CONFIRMED"]},
+    "source_image": {
+      "type": "object", "required": ["sha256", "width_px", "height_px"],
+      "properties": {
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "width_px": {"type": "integer", "minimum": 1},
+        "height_px": {"type": "integer", "minimum": 1},
+        "filename": {"type": "string"}
+      }
+    },
+    "ground_net": {"type": "string"},
+    "nets": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "required": ["id", "aliases", "evidence_regions"],
+        "properties": {
+          "id": {"type": "string"}, "aliases": {"type": "array", "items": {"type": "string"}},
+          "evidence_regions": {"type": "array", "items": {"$ref": "#/$defs/bbox"}}
+        }
+      }
+    },
+    "components": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["id", "type", "terminals", "bbox", "confidence", "source_evidence"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"enum": ["resistor", "capacitor", "inductor", "voltage_source", "current_source", "vccs", "vcvs", "ideal_switch", "diode", "comparator", "timer", "ramp", "lti_block"]},
+          "terminals": {"type": "object", "additionalProperties": {"type": "string"}, "minProperties": 1},
+          "value": {"$ref": "#/$defs/quantity"},
+          "parameters": {"type": "object"},
+          "orientation": {
+            "type": "object",
+            "required": ["voltage_positive", "voltage_negative", "current_from", "current_to"],
+            "properties": {
+              "voltage_positive": {"type": "string"}, "voltage_negative": {"type": "string"},
+              "current_from": {"type": "string"}, "current_to": {"type": "string"}
+            },
+            "additionalProperties": false
+          },
+          "bbox": {"$ref": "#/$defs/bbox"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "source_evidence": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "ports": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["name", "role", "quantity", "expression", "sign_convention"],
+        "properties": {
+          "name": {"type": "string"}, "role": {"enum": ["input", "output", "loop_injection", "loop_return"]},
+          "quantity": {"type": "string"}, "expression": {"type": "string"}, "sign_convention": {"type": "string"}
+        }
+      }
+    },
+    "ambiguities": {
+      "type": "array", "items": {
+        "type": "object", "required": ["id", "kind", "description", "blocking", "status"],
+        "properties": {
+          "id": {"type": "string"}, "kind": {"type": "string"}, "description": {"type": "string"},
+          "blocking": {"type": "boolean"}, "status": {"enum": ["OPEN", "RESOLVED"]}, "resolution": {"type": "string"}
+        }
+      }
+    },
+    "confirmation": {
+      "type": "object", "required": ["confirmed_content_sha256", "confirmed_by", "notes"],
+      "properties": {
+        "confirmed_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "confirmed_by": {"const": "user"}, "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "workflow": {"type": "object"}
+  },
+  "allOf": [{
+    "if": {"properties": {"status": {"const": "TOPOLOGY_CONFIRMED"}}},
+    "then": {"required": ["confirmation", "workflow"]}
+  }]
+}

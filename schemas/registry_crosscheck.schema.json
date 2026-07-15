@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 registry cross-check",
+  "type": "object",
+  "required": ["crosscheck_version", "case_id", "physics_checker_sha256", "status", "validation_status", "checks", "comparison", "provenance", "overrides", "authority_statement", "workflow"],
+  "properties": {
+    "crosscheck_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "physics_checker_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"enum": ["PASS", "FAIL", "NOT_APPLICABLE"]},
+    "validation_status": {"type": "string"}, "checks": {"type": "array"},
+    "comparison": {"type": "array"}, "provenance": {"type": "object"},
+    "overrides": {"type": "array"}, "authority_statement": {"type": "string"},
+    "workflow": {"type": "object"}
+  }
+}

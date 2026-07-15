@@ -1,4 +1,38 @@
-# Buck DF Skill v0.4.2 Validation
+# Buck physical-first and DF skill validation
+
+## v0.5 validation passport
+
+- Validation date: 2026-07-15
+- Scope: confirmed Circuit IR, component-stamped Hybrid MNA/DAE, periodic orbit, saltation/Poincaré linearization, independent switching finite differences, continuous baseband/sidebands, sensitivities, registry cross-check, and paper-style report
+- Physical authority: confirmed Circuit IR + confirmed Physics Spec + event-to-event Poincaré model
+- External simulator policy: the skill does not launch SIMPLIS
+
+| v0.5 check | Status | Evidence |
+|---|---|---|
+| Image/Circuit IR trust boundary | VERIFIED_STATIC | SHA-256/dimensions, stable IDs, terminals, orientations, SI dimensions, ambiguity gate, deterministic SVG/raster checkout, and two confirmations |
+| Schematic forward-test set | REVIEWED_STATIC | V², current-mode, external-ramp, ESR-ripple RBCOT, synchronous QH/QL, and an ambiguous crossing were visually checked; the finite set does not claim arbitrary-image recognition accuracy |
+| R/L/C, sources, controlled sources, switches/diodes, ramp, timer, LTI stamps | VERIFIED | unit tests exercise descriptor stamps and exact switch constraints |
+| Index-1 descriptor reduction | VERIFIED | every golden mode retains descriptor/algebraic matrices and reconstructs full variables |
+| Periodic orbit | VERIFIED_NUMERIC | four golden families solve by exact affine flow + guard root + shooting |
+| KCL/KVL and fixed-point residuals | VERIFIED_NUMERIC | golden residuals remain below `1e-7` |
+| Volt-second, charge, and power/energy balance | VERIFIED_NUMERIC | component-port reconstruction and independent quadrature remain below `1e-7` |
+| CCM gate | VERIFIED_NUMERIC | all four goldens retain positive minimum inductor current; negative boundary remains blocking/overridable only after solve |
+| Saltation and Poincaré semantics | VERIFIED | artifacts preserve both `Xi/Xi_u` and event-endpoint `Pi/Pi_u` instead of conflating them |
+| Independent Poincaré Jacobian | VERIFIED_NUMERIC | `solve_ivp(DOP853)` central finite differences do not reuse affine flow/guard root; golden relative errors are about `1e-9`, below `1e-3` |
+| z-domain and continuous baseband | VERIFIED_NUMERIC | section response uses `z=exp(jωT)`; analog baseband is independently lifted through piecewise variational flow |
+| Sideband convergence | VERIFIED_NUMERIC | `M=3,6,12,24,48,64`; all declared golden probes satisfy `0.1 dB/1°` |
+| Parameter sensitivity | VERIFIED_NUMERIC | each nonzero L/C/load/ESR/gain/ramp/timing parameter rebuilds MNA, orbit, and event linearization at both perturbations |
+| Floquet interpretation | VERIFIED_STATIC | participation, residues, physical energy-state amplitude, sensitivities, and evidence-limited zero attribution are emitted |
+| Four registry goldens | CROSSCHECKED | V² and current-mode use absolute transfer; external-ramp and RBCOT use explicitly labeled normalized trend; each declared band is within `3 dB/15°` |
+| Registry authority boundary | VERIFIED_STATIC | registry never replaces `Ad/Bd` and never upgrades validation |
+| Override/regularization policy | VERIFIED_STATIC | only named post-solve checks may be overridden; gmin/rmin and grazing secant candidates remain permanently unverified |
+| V² schematic-to-report golden | VERIFIED_NUMERIC | real SVG → checkout → two confirmations → MNA/orbit/Poincaré → Gvc/baseband/sidebands → report |
+
+The v0.5 tests are deterministic software/numerical evidence, not laboratory measurement. `PHYSICS_DERIVED_EXTERNAL_CROSSCHECKED` requires a user-supplied independent switching simulation or measurement dataset with complete metadata.
+
+Regression result: all 255 retained v0.4.5 tests plus 40 v0.5 tests pass (`295` total across `tests/` and `scripts/`).
+
+## v0.4.2 retained material passport
 
 ## Material passport
 

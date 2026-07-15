@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 physics report manifest",
+  "type": "object",
+  "required": ["manifest_version", "case_id", "registry_crosscheck_sha256", "report_sha256", "validation_status", "artifacts", "workflow"],
+  "properties": {
+    "manifest_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "registry_crosscheck_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "validation_status": {"type": "string"}, "artifacts": {"type": "object"},
+    "workflow": {"type": "object"}
+  }
+}
