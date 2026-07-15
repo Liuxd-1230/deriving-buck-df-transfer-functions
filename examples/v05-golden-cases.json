@@ -1,0 +1,51 @@
+{
+  "catalog_version": "0.5",
+  "authority": "confirmed Circuit IR plus Hybrid Poincare model",
+  "goldens": [
+    {
+      "family": "v2-cot",
+      "schematic": "v05-v2-cot/schematic.svg",
+      "guard": "v_vo-v_control",
+      "target": "Gvc",
+      "registry_model": "v2-cot-li-lee-2009",
+      "comparison_kind": "absolute-transfer",
+      "declared_band_hz": [250, 10000]
+    },
+    {
+      "family": "current-mode-cot",
+      "schematic": "v05-current-mode-cot/schematic.svg",
+      "guard": "0.1*i_L-v_control",
+      "target": "Gvc",
+      "registry_model": "cot-cm-li-lee-2010",
+      "comparison_kind": "absolute-transfer",
+      "declared_band_hz": [250, 10000]
+    },
+    {
+      "family": "external-ramp-cot",
+      "schematic": "v05-external-ramp-cot/schematic.svg",
+      "guard": "0.1*i_L+v_vramp-v_control",
+      "target": "Gvc",
+      "registry_model": "cot-cm-external-ramp-tian-2015",
+      "comparison_kind": "normalised-trend",
+      "declared_band_hz": [250, 1500]
+    },
+    {
+      "family": "esr-ripple-rbcot",
+      "schematic": "v05-esr-ripple-rbcot/schematic.svg",
+      "guard": "v_vo-v_control",
+      "target": "Gvc",
+      "registry_model": "rbcot-esr-lu-2023",
+      "comparison_kind": "normalised-trend",
+      "declared_band_hz": [250, 10000]
+    }
+  ],
+  "acceptance": {
+    "scaled_physics_residual_max": 1e-7,
+    "poincare_finite_difference_relative_error_max": 1e-3,
+    "registry_magnitude_error_db_max": 3.0,
+    "registry_phase_error_deg_max": 15.0,
+    "sideband_adjacent_magnitude_db_max": 0.1,
+    "sideband_adjacent_phase_deg_max": 1.0,
+    "sideband_max_M": 64
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 Hybrid MNA mode descriptor artifact",
+  "type": "object",
+  "required": ["mode_dae_version", "case_id", "circuit_ir_sha256", "physics_spec_sha256", "variables", "inputs", "ports", "modes", "energy_states", "component_inventory", "ground_net", "physical_explanation", "workflow"],
+  "properties": {
+    "mode_dae_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "circuit_ir_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "physics_spec_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "variables": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "inputs": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "ports": {"type": "array"},
+    "modes": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "required": ["id", "E", "A", "B", "b", "reduced", "equations", "component_provenance", "rank"],
+        "properties": {
+          "id": {"type": "string"}, "E": {"type": "array"}, "A": {"type": "array"},
+          "B": {"type": "array"}, "b": {"type": "array"}, "reduced": {"type": "object"},
+          "equations": {"type": "array"}, "component_provenance": {"type": "array"},
+          "rank": {"type": "object", "required": ["descriptor", "dynamic", "algebraic"]}
+        }
+      }
+    },
+    "energy_states": {"type": "array"}, "component_inventory": {"type": "array"},
+    "ground_net": {"type": "string"}, "regularization": {"type": ["object", "null"]},
+    "physical_explanation": {"type": "object"},
+    "workflow": {"type": "object"}
+  }
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="white"/>
+  <style>
+    .wire{stroke:#1f2937;stroke-width:3;fill:none}.part{stroke:#0f4c81;stroke-width:2.5;fill:white}
+    .label{font:18px sans-serif;fill:#111827}.small{font:14px sans-serif;fill:#374151}.node{fill:#111827}
+  </style>
+  <text x="32" y="38" class="label">V² COT synchronous Buck — golden schematic</text>
+  <circle cx="85" cy="250" r="38" class="part"/><text x="59" y="256" class="label">VIN</text>
+  <path d="M85 212V115H250" class="wire"/><path d="M85 288V445H820" class="wire"/>
+  <rect x="250" y="88" width="90" height="54" class="part"/><text x="278" y="122" class="label">QH</text>
+  <path d="M340 115H410V220" class="wire"/><circle cx="410" cy="220" r="6" class="node"/>
+  <rect x="365" y="285" width="90" height="54" class="part"/><text x="393" y="319" class="label">QL</text>
+  <path d="M410 220V285M410 339V445" class="wire"/>
+  <path d="M410 220H455" class="wire"/>
+  <path d="M455 220c12-32 24 32 36 0s24 32 36 0s24 32 36 0" class="wire"/><text x="492" y="190" class="label">L</text>
+  <path d="M563 220H665" class="wire"/><circle cx="665" cy="220" r="6" class="node"/><text x="645" y="199" class="small">VO</text>
+  <path d="M665 220V260" class="wire"/><rect x="635" y="260" width="60" height="45" class="part"/><text x="641" y="289" class="small">RESR</text>
+  <path d="M665 305V335" class="wire"/><path d="M630 335H700M630 350H700" class="wire"/><text x="712" y="349" class="label">C</text><path d="M665 350V445" class="wire"/>
+  <path d="M770 220V270" class="wire"/><rect x="742" y="270" width="56" height="90" class="part"/><text x="750" y="320" class="small">LOAD</text><path d="M770 360V445" class="wire"/>
+  <path d="M820 445h55m-43 12h31m-20 12h9" class="wire"/>
+  <path d="M665 220H850V130H790" class="wire"/>
+  <path d="M610 95l90 45-90 45z" class="part"/><text x="625" y="146" class="small">CMP</text>
+  <text x="596" y="119" class="label">+</text><text x="596" y="171" class="label">−</text>
+  <path d="M520 110H610" class="wire"/><circle cx="520" cy="110" r="28" class="part"/><text x="501" y="116" class="small">UC</text>
+  <path d="M700 140H735V70H295V88" class="wire"/><text x="742" y="106" class="small">COT timer / gate</text>
+  <text x="44" y="505" class="small">Comparator polarity: UC at (+), output ripple VO at (−); QH on-time fixed, QL conducts during off interval.</text>
+</svg>

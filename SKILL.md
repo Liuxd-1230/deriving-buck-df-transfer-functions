@@ -1,107 +1,122 @@
 ---
 name: deriving-buck-df-transfer-functions
-description: Use when deriving or checking CCM Buck small-signal transfer functions with describing-function or sampled-data methods, especially COT, RBCOT, Yan Part I/II, Dirichlet sampling, sidebands, loop gain, or output impedance.
+description: Derive and check single-phase CCM Buck small-signal models from schematics or confirmed circuit data using a physical-first Circuit IR, Hybrid MNA/DAE, periodic-orbit shooting, saltation/Poincare linearization, z-domain response, and sidebands. Use for COT, current-mode COT, external-ramp COT, V2 COT, ESR-ripple RBCOT, Gvc/Gvg/Zout/Tloop, circuit-physics interpretation, or legacy registered DF/sampled-data paper benchmarks.
 ---
 
 # Deriving Buck DF Transfer Functions
 
-## Core rule
+## Route first
 
-v0.4.5 是 ESSF 的 typed linear equation transfer 版本：Yan 2022 sampled-data registered path 继续保持闭环，sensing/validation policy、registered model applicability contract、RC-derived comparator ramp memory checker 与中文 artifact-driven report contract 继续有效，并新增未验证 / protocol-derived 路径的 `linear_system_transfer.py` 候选传函生成层。This skill does not trust free-form LLM derivations.
+Choose exactly one path.
 
-v0.3.1 direct-transfer、a-star、补偿器、Tloop 与 legacy CLI 仍保持兼容；它们不能绕过 v0.4.5 的 sampled-data、sensing、applicability、checker、linear-system 和 report artifact 链。
+- For a user schematic, uploaded circuit image, netlist-like description, or a request to understand the actual circuit, use the v0.5 physical path.
+- For an existing registered paper benchmark or a request to reproduce a legacy v0.4.5 artifact, use the legacy registry path.
+- Never replace a user circuit with the nearest paper formula. A registry result is cross-check evidence only.
 
-每次传函推导必须先产生 `intake_status.json`。缺少目标传函、工作模式、采样/开关事件、比较器输入或核心参数时，必须停在 `INCOMPLETE → ASK_USER_ONLY`；`workflow.intent == user-circuit-derivation` 缺少 `sensing_layer` 时也必须停在 `ASK_USER_ONLY`。不得补“典型参数”、推导、消元或画图。没有 `classification.json` 和通过 checker 的 `proof_object.json`，不得生成报告。
+## v0.5 physical path
 
-注册公式的唯一真源是 `registries/formula_registry.yaml`。Markdown 只是说明层。`DF_REGISTERED_DIRECT` 只能输出 registry 允许的 direct transfer，严禁伪造 `a_c/a_g/a_o/a_i`。`DF_REGISTERED_MULTIPORT` 的每个 `a_*` 必须绑定 formula ID。`SAMPLED_DATA_REGISTERED` 只能使用 registry 绑定的 Yan 2022 proof fragment，并必须带 `sampling/Fm/sideband/pulse_structure/modulator_io/target_mapping`。新推导仍必须建立 `F(x,u,t)=0`，并标记 `UNVERIFIED_NEW_DF_MODEL` / `PROTOCOL_DERIVED_UNVERIFIED`。
-
-## State machine
+Use this hash-linked state machine:
 
 ```text
-START → INTENT_CLASSIFY → PREFLIGHT_INTAKE
-  ├─ INCOMPLETE → ASK_USER_ONLY
-  └─ COMPLETE → MODEL_CLASSIFY
-       ├─ DF_REGISTERED_DIRECT → registry direct contract
-       ├─ DF_REGISTERED_MULTIPORT → registry a-star contract
-       ├─ SAMPLED_DATA_REGISTERED → Yan 2022 sampled-data proof fragment
-     ├─ PROTOCOL_DERIVED_NEW → typed linear equation system + UNVERIFIED
-       └─ UNSUPPORTED → reject
-     → FORMULA_BINDING (`proof_object.json`)
-     → DERIVATION (`derivation.json`)
-     → CHECKERS (`checker_result.json`)
-     → REPORT (`report_manifest.json` + Markdown)
+IMAGE_INTAKE → CIRCUIT_IR_PROPOSED → TOPOLOGY_CONFIRMED
+→ PHYSICS_SPEC_CONFIRMED → MODE_DAE → PERIODIC_ORBIT
+→ HYBRID_LINEARIZATION → PHYSICS_CHECKERS
+→ REGISTRY_CROSSCHECK → REPORT
 ```
 
-## Required workflow
+### Trust boundaries
 
-1. 按 [circuit intake protocol](references/circuit-intake-protocol.md) 回答五问，运行 `scripts/preflight_intake.py`。
-2. 只对 `COMPLETE` artifact 运行 [model classification](references/model-classification.md)。
-3. 注册模型从 `model_registry + formula_registry + paper_contract_registry` 绑定；新模型按 [DF reasoning protocol](references/df-reasoning-protocol.md) 构建事件证据，不得复制相近论文的 `a_*`。
-4. 用 `build_proof_object.py` 生成 `FORMULA_BINDING` proof，并运行 proof/formula checker。
-5. sampled-data registered proof 必须用 `derive_transfer.py` 生成独立 `DERIVATION`；推理顺序见 [sampled-data protocol](references/sampled-data/sampled-data-protocol.md)。
-6. 用 `check_derivation.py` 复算公式、顺序和前驱 hash，生成 `CHECKERS` artifact。
-7. 只有统一 `checker_result.json` 无 blocking `FAIL` 时，才能用 `render_derivation_report.py` 进入可继续的 `REPORT`。Markdown 不能替代 proof 或 derivation。
+1. Let multimodal reasoning propose Circuit IR; do not let it author active equations.
+2. Run deterministic connectivity, terminal, orientation, dimension, Buck-topology, ambiguity, image-hash, and checkout-overlay checks.
+3. Stop at `ASK_USER_ONLY` for any unresolved wire, comparator polarity, switch semantic, missing value, or missing target/port meaning.
+4. Continue only after the user confirms the annotated Circuit IR.
+5. Confirm a separate Physics Spec containing working point, target, signs, mode order, guard direction, fixed/moving events, reset/delay semantics, Poincaré section, fidelity, and approximations.
+6. Treat component-stamped Hybrid MNA/DAE and the confirmed event specification as the physical source of truth.
 
-## Script interface
+Read [Circuit IR protocol](references/v05-circuit-ir-protocol.md) whenever an image or topology is involved. Read [Hybrid MNA protocol](references/v05-hybrid-mna-protocol.md) before accepting mode equations.
+
+### Derivation and validation
+
+1. Generate each mode as `E xdot = A x + B u + b`, retaining algebraic variables, KCL/KVL, constitutive equations, energy states, and component provenance.
+2. Solve the periodic orbit with exact affine flow, guard root finding, and shooting. Record event left/right limits and mode durations.
+3. Require scaled KCL/KVL, fixed-point, volt-second, charge, and power/energy residuals at or below `1e-7`.
+4. Require positive minimum inductor current for CCM. An unstable Floquet result is a valid physical result, not a derivation failure.
+5. Generate both the common-time saltation matrix and the event-to-event Poincaré projection. Use the event-to-event map for authoritative `Ad/Bd` and z-domain targets.
+6. Validate analytic `Ad/Bd` against an independent `solve_ivp` switching map with central finite differences. Require relative error at or below `1e-3`.
+7. Reconstruct continuous baseband and sidebands from piecewise variational flow. Start with `M=3`, double through at most `M=64`, and require adjacent truncations within `0.1 dB / 1 deg`.
+8. Rebuild MNA, orbit, and event linearization for normalized local sensitivities of declared L, C, load, ESR/DCR, gains, ramp, timing, and delay parameters.
+9. Explain modes with current paths, stored/dissipated/source energy, participation factors, residues, and sensitivities. Attribute a zero only when an explicit path decomposition supports it.
+
+Read [periodic-orbit protocol](references/v05-periodic-orbit-protocol.md), [event/Poincaré protocol](references/v05-event-poincare-protocol.md), [continuous/sideband protocol](references/v05-sideband-protocol.md), and [physics interpretation/report protocol](references/v05-physics-interpretation-report.md) for the corresponding stages.
+
+### Commands
 
 ```bash
-python scripts/df_buck_sympy.py list-models
+python scripts/circuit_ir.py image-intake --image schematic.png --case-id CASE --out image_intake.json
+python scripts/circuit_ir.py propose --ir proposed_ir.json --image-intake image_intake.json --out circuit_ir_proposed.json
+python scripts/circuit_ir.py validate --ir circuit_ir_proposed.json --image schematic.png --overlay circuit_checkout.png
+python scripts/circuit_ir.py confirm --ir circuit_ir_proposed.json --out circuit_ir.json
+python scripts/physics_spec.py --spec physics_spec_proposed.json --circuit-ir circuit_ir.json --out physics_spec.json
+python scripts/derive_physics_model.py --circuit-ir circuit_ir.json --physics-spec physics_spec.json --out result/
+```
+
+Create the V² COT golden inputs with:
+
+```bash
+python scripts/v05_golden_cases.py --family v2-cot --image examples/v05-v2-cot/schematic.svg --registry-crosscheck --out golden-inputs/
+```
+
+Supported v0.5 golden families are `v2-cot`, `current-mode-cot`, `external-ramp-cot`, and `esr-ripple-rbcot`.
+
+### Failure and override policy
+
+- Stop on unconfirmed topology, missing physical parameters, singular nominal topology, invalid event order/direction, absent event, absent periodic orbit, or non-transverse analytic event.
+- Run normalized `gmin/rmin` epsilon sweeps only in the explicit diagnostic branch. Run decreasing-step secant Poincaré sweeps for near grazing. Never add a hidden epsilon to a saltation denominator.
+- Keep every numerical diagnostic permanently `REGULARIZED_DIAGNOSTIC_UNVERIFIED`, even when it converges.
+- Allow only post-solve residual, CCM, sideband, independent-Jacobian, external-data, or registry-deviation checks to be individually overridden. Record check code, reason, and user confirmation; set `FORCED_PHYSICS_OVERRIDE_UNVERIFIED` permanently.
+- Do not launch SIMPLIS. Accept user-supplied external data only with frequency, magnitude, phase, target, port/sign, loop-break, working-point, and source metadata.
+
+Use only these successful validation states:
+
+- `PHYSICS_DERIVED_INTERNAL_VALIDATED`
+- `PHYSICS_DERIVED_EXTERNAL_CROSSCHECKED`
+- `FORCED_PHYSICS_OVERRIDE_UNVERIFIED`
+- `REGULARIZED_DIAGNOSTIC_UNVERIFIED`
+
+## v0.4.5 legacy registry path
+
+Keep legacy commands and artifacts compatible. Start with `intake_status.json`; stop at `INCOMPLETE → ASK_USER_ONLY` for missing target, mode, events, comparator inputs, sensing layer, or core parameters. Do not invent typical values.
+
+```text
+INTENT_CLASSIFY → PREFLIGHT_INTAKE → MODEL_CLASSIFY → FORMULA_BINDING
+→ DERIVATION → CHECKERS → REPORT
+```
+
+The machine-readable formula source remains `registries/formula_registry.yaml`. Registered direct models may emit only registered direct transfers; registered multiport models must bind every `a_*`; Yan sampled-data models must retain sampling, `Fm`, pulse, target mapping, and sideband evidence. New legacy-path equations remain explicitly unverified.
+
+Retain classifier branches `DF_REGISTERED_DIRECT`, `DF_REGISTERED_MULTIPORT`, `SAMPLED_DATA_REGISTERED`, and `PROTOCOL_DERIVED_NEW`. A new legacy-path model must still establish `F(x,u,t)=0` and carry `UNVERIFIED_NEW_DF_MODEL` or `PROTOCOL_DERIVED_UNVERIFIED`. Read [legacy circuit intake](references/circuit-intake-protocol.md) and [legacy DF reasoning](references/df-reasoning-protocol.md) for those artifacts.
+
+Use these commands for legacy work:
+
+```bash
 python scripts/preflight_intake.py --intake circuit.json --out intake_status.json
 python scripts/df_buck_sympy.py classify --intake-status intake_status.json --out classification.json
 python scripts/build_proof_object.py --intake-status intake_status.json --classification classification.json --out proof_object.json
-python scripts/check_proof_object.py --proof proof_object.json
-python scripts/check_formula_consistency.py --proof proof_object.json
 python scripts/derive_transfer.py --proof proof_object.json --out derivation.json
 python scripts/check_derivation.py --proof proof_object.json --derivation derivation.json --out checker_result.json
 python scripts/render_derivation_report.py --intake-status intake_status.json --classification classification.json --proof-object proof_object.json --derivation derivation.json --checker-result checker_result.json --out report.md --manifest report_manifest.json
-python scripts/linear_system_transfer.py --system linear_equation_system.json --out derivation.json
 python scripts/df_buck_sympy.py make-case --model MODEL --params params.json --out case.json
-python scripts/df_buck_sympy.py make-protocol-case --intake circuit.json --out protocol_case.json
-python scripts/df_buck_sympy.py derive --proof-object proof_object.json --out legacy-proof-rendering.md
-python scripts/df_buck_sympy.py derive --case legacy_case.json --out legacy-unverified.md
-python scripts/df_buck_sympy.py check --case case.json
-python scripts/df_buck_sympy.py plot-bode --case case.json --targets Gvc,Gvg,Zout,Tloop --out plots/
 python scripts/df_buck_sympy.py benchmark --all
 ```
 
-DF 生成器注册模型：`cot-cm-li-lee-2010`、`cot-cm-external-ramp-tian-2015`、`rbcot-esr-lu-2023`、`v2-cot-li-lee-2009`。
+Read [model ontology](references/model-ontology.md), [model applicability](references/model-applicability-contract.md), [sensing policy](references/sensing-layer-policy.md), and [DF versus sampled-data selection](references/df-vs-sampled-method-selection.md) when classifying a legacy case. Read [sampled-data protocol](references/sampled-data/sampled-data-protocol.md) for Yan Part I/II.
 
-v0.4.5 sampled-data 注册路径：`yan-2022-part-i-pcm-buck`、`yan-2022-part-ii-ccot-buck-zero-ramp`、`yan-2022-part-ii-vcot-buck-zero-ramp`。这些不是 `make-case` 的 a-star DF 生成器；它们只通过 intake/classify/proof/checker 进入报告。
+The retained v0.3.1/v0.4.5 generators are `cot-cm-li-lee-2010`, `cot-cm-external-ramp-tian-2015`, `rbcot-esr-lu-2023`, and `v2-cot-li-lee-2009`. Read [DF coefficient library](references/df-coefficient-library.md) for provenance. For audits, read [formula audit plan](references/formula-audit-plan.md), [paper Bode validation](references/paper-bode-validation-spec.md), and [Li/Lee 2010 Gvc boundary](references/li-lee-2010-current-mode-gvc.md).
 
-`check --case` 输出 JSON 代数/极限诊断。`df_buck_sympy.py derive` 是兼容渲染入口；v0.4.5 sampled-data 的权威路径必须经过 `derive_transfer.py → check_derivation.py → render_derivation_report.py`。v0.4.5 未验证 / protocol-derived 路径的候选传函表达式只能由 `linear_system_transfer.py` 从 `active_equations` 自动消元生成；报告只能渲染 `derivation_steps[].latex`，不得构造、改写或补全核心传函。
+## Universal guardrails
 
-旧模型输入见 [formula patterns](references/formula-patterns.md)，补偿器模板见 [compensator templates](references/compensator-templates.md)，v0.3 协议说明见 [protocol schema](references/protocol-case-schema.md)，来源索引见 [Zotero source map](references/zotero-df-source-map.md)。0.4 系列开发阶段阅读了 Yan 2022 Part I/II PDF；运行 skill 不依赖 Zotero 或论文 PDF，且 skill 不打包 PDF。
-
-旧 DF 论文公式的人类可读索引保留在 `references/df-coefficient-library.md`；它不是 machine-readable registry 的替代品。
-
-v0.4.5 uses a dual-index model selection rule plus a registered-model applicability contract. First classify the control ontology; then bind the paper/source index; then check sensing layer, comparator inputs, sampled variable, timing, target semantics, nonidealities, and loop-break semantics before allowing a registered path. Read `references/model-ontology.md`, `references/model-applicability-contract.md`, and `references/sensing-layer-policy.md` when a request may confuse current-mode, voltage-mode, V2 COT, RBCOT, sampled-data, external ramp, internal ramp, delay, filter, or multiphase mechanisms. Read `references/df-vs-sampled-method-selection.md` when both DF and sampled-data language could apply. Read `references/linear-equation-system-transfer.md` before accepting any unverified/protocol-derived candidate transfer expression.
-
-RC-derived comparator ramps are state variables with inter-cycle memory. Local crossing slope alone is insufficient to define Kmod. If no registered RC-memory model exists, such cases must be rejected, downgraded, or labeled PROTOCOL_DERIVED_UNVERIFIED with explicit memory-state proof and approximation metadata. Read `references/rc-derived-comparator-ramp.md` before handling switch-node RC, sense-filter, or custom comparator-ramp cases.
-
-For formula audits, read `references/formula-audit-plan.md` and `references/paper-bode-validation-spec.md`. Practice is the final arbiter: registry consistency and symbolic algebra are not enough for a verified claim. Use evidence levels `SUBFORMULA_VERIFIED`, `CHAIN_VERIFIED`, `FIGURE_REPRODUCED`, and `SIMULATION_OR_MEASUREMENT_REPRODUCED` honestly.
-
-For Li/Lee 2010 current-mode COT `Gvc`, read `references/li-lee-2010-current-mode-gvc.md` before generating or comparing Bode plots. The existing Li/Lee 2010 benchmark checks Eq. (9)-(10) subformulas; it does not yet claim full Eq. (16) `Gvc` figure reproduction.
-
-请求 `Tloop` 时必须有 `loop_break`：injection point、OUT/IN 定义、符号约定、forward/feedback path 和 `H`。只有明确声明默认负反馈时，才可用 `Tloop = Gc*H*Gvc`；这不等价于任意 SIMPLIS probe。`plot-bode` 必须标出 `fs`、`fs/2`、有效频率边界，并把超界交越标记为 `EXTRAPOLATED_BEYOND_VALID_RANGE`。
-
-sampled-data 的 `GPWM/Gm/Ti/Tv/Tc` 不能混称为 `Gvc/Tloop`。`target_mapping.mapping_status` 只能是 `REGISTERED_DIRECT`、`REGISTERED_DERIVED`、`PROTOCOL_DERIVED_UNVERIFIED` 或 `UNSUPPORTED`。`SYMBOLIC_FULL_SUM` 不可数值画图；Bode 必须使用 `TRUNCATED_SUM_M` 或 `PAPER_SIMPLIFIED_FORM`，并记录近似。
-
-PM/GM 只对 `response_kind=return_ratio` 的 `Ti/Tv/Tloop` 计算。`Gm/GPWM/Gvc/Gvg/Zout/Tc` 必须返回 `NOT_APPLICABLE_NON_RETURN_RATIO`，不得用 0 dB 交越伪装稳定裕度。
-
-## Output contract for protocol-derived models
-
-每次推导依次给出：
-
-依次输出分类、假设/失效边界、状态与开关方程、稳态轨迹、`F=0`、`delta_t=-delta_F/Fdot_0`、DF 关系、`a_*`/direct-transfer、功率级联立、候选传函、sanity checks、验证等级和逐项 provenance。章节名见 reasoning protocol。
-
-## Guardrails
-
-- 平均模型可作低频 sanity check，但绝不能包装成 DF；`rbcot-internal-ramp-huang-2025` 明确拒绝进入 DF 注册表。
-- 不把低频吻合等同于接近开关频率时仍然准确。
-- 不用单一 Bode 点验证完整模型；至少比较低频、交越附近及模型声明的最高有效频率。
-- 不把论文中的无限阶结果未经说明地替换为低阶多项式。
-- 多相 overlap、DCM、pulse skipping、burst 或非线性限流不得套用 v0.3。
-- Yan 2022 Part I/II 的 Dirichlet、sideband 和 COT/COFT 双脉冲只覆盖 zero-ramp sampled-data registered path；不能外推到 external/internal ramp、delay、sense filter、RC injection 或多相。
-- `fm_models.py` 是 zero-ramp only。external ramp 返回 `REJECT_DYNAMIC_FM_REQUIRED_V05`；internal ramp、delay、RC injection、sense filter 均硬拒绝，不是 warning。
-- 用户直接给 `a_*` 不能伪装成 registered formula；必须标记 `CUSTOM_COEFFICIENT_UNVERIFIED`。
-- v0.4.5 不实现 2026 external-ramp dynamic `Fm(s)`、internal ramp、comparator delay、RC injection、sense filter、multiphase nonoverlap/overlap、DCM、pulse skipping/burst 或 nonlinear current limit as registered models。RC-derived comparator ramps may only proceed as rejected, downgraded, or `PROTOCOL_DERIVED_UNVERIFIED` protocol evidence with explicit memory metadata and a typed linear equation system if a candidate transfer is requested.
+- Require an explicit loop break for `Tloop`: injection point, OUT/IN, sign, forward path, feedback path, and `H`.
+- Do not report PM/GM for `Gvc`, `Gvg`, `Zout`, `Gm`, or `GPWM`; margins apply only to an explicit return ratio.
+- Do not label an averaged model as DF or Poincaré physics. Use averaging only as a low-frequency cross-check.
+- Do not extrapolate single-phase CCM results to multiphase overlap, DCM, pulse skipping, burst, or nonlinear current limit.
+- Keep formula provenance, image provenance, confirmation hashes, predecessor hashes, signs, units, approximations, valid bands, failures, and evidence boundaries visible in the final report.

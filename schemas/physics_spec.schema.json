@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 Confirmed Physics Spec",
+  "type": "object",
+  "required": ["spec_version", "case_id", "status", "circuit_ir_sha256", "topology", "operating_mode", "target", "inputs", "modes", "mode_sequence", "poincare_section", "fidelity", "approximations", "confirmation", "workflow"],
+  "properties": {
+    "spec_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "status": {"const": "PHYSICS_SPEC_CONFIRMED"},
+    "circuit_ir_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "topology": {"const": "single-phase-buck"}, "operating_mode": {"const": "CCM"},
+    "target": {
+      "type": "object", "required": ["name", "output", "input", "response_kind"],
+      "properties": {
+        "name": {"enum": ["Gvc", "Gvg", "Zout", "Tloop", "inner-current"]},
+        "output": {"type": "string"}, "input": {"type": "string"},
+        "response_kind": {"enum": ["transfer_function", "return_ratio"]},
+        "scale": {"type": "number"}
+      }
+    },
+    "inputs": {"type": "object", "additionalProperties": {"type": "number"}, "minProperties": 1},
+    "parameters": {"type": "object", "additionalProperties": {"type": "number"}},
+    "initial_state": {"type": "object", "additionalProperties": {"type": "number"}},
+    "modes": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "required": ["id", "switch_states"],
+        "properties": {"id": {"type": "string"}, "switch_states": {"type": "object", "additionalProperties": {"enum": ["ON", "OFF"]}}}
+      }
+    },
+    "mode_sequence": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "required": ["mode", "termination"],
+        "properties": {
+          "mode": {"type": "string"},
+          "termination": {
+            "type": "object", "required": ["type"],
+            "properties": {
+              "type": {"enum": ["fixed_duration", "guard"]}, "duration": {"type": "number", "exclusiveMinimum": 0},
+              "expression": {"type": "string"}, "direction": {"enum": [-1, 0, 1]},
+              "min_duration": {"type": "number", "minimum": 0}, "max_duration": {"type": "number", "exclusiveMinimum": 0},
+              "reset": {"type": "object"}
+            }
+          }
+        }
+      }
+    },
+    "poincare_section": {
+      "type": "object", "required": ["mode", "position", "definition"],
+      "properties": {
+        "mode": {"type": "string"}, "position": {"const": "immediately_after_transition"},
+        "definition": {"enum": ["period_start_after_turn_on", "custom"]}, "notes": {"type": "string"}
+      }
+    },
+    "loop_break": {"type": "object"},
+    "fidelity": {"enum": ["ideal_baseline", "declared_nonideal"]},
+    "approximations": {"type": "array"},
+    "overrides": {"type": "array", "items": {"type": "object", "required": ["check_code", "reason", "confirmed_by"]}},
+    "regularization": {"type": "object"},
+    "analysis": {"type": "object"},
+    "sensitivity_parameters": {"type": "array", "items": {"type": "object"}},
+    "registry_crosscheck": {
+      "type": "object",
+      "required": ["model_id", "parameters", "approximation"],
+      "properties": {
+        "model_id": {"type": "string"}, "parameters": {"type": "object"},
+        "approximation": {"type": "string"}, "comparison_kind": {"enum": ["absolute-transfer", "normalised-trend"]},
+        "valid_min_hz": {"type": "number", "exclusiveMinimum": 0},
+        "valid_max_hz": {"type": "number", "exclusiveMinimum": 0}, "feedback": {"type": "object"}
+      }
+    },
+    "confirmation": {"type": "object", "required": ["confirmed_content_sha256", "confirmed_by"], "properties": {"confirmed_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "confirmed_by": {"const": "user"}}},
+    "workflow": {"type": "object"}
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 physics checker result",
+  "type": "object",
+  "required": ["checker_version", "case_id", "hybrid_linearization_sha256", "status", "validation_status", "checks", "overrides", "independent_poincare", "workflow"],
+  "properties": {
+    "checker_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "hybrid_linearization_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "validation_status": {"enum": ["PHYSICS_DERIVED_INTERNAL_VALIDATED", "PHYSICS_DERIVED_EXTERNAL_CROSSCHECKED", "FORCED_PHYSICS_OVERRIDE_UNVERIFIED", "REGULARIZED_DIAGNOSTIC_UNVERIFIED", "PHYSICS_DERIVED_INTERNAL_FAILED"]},
+    "checks": {"type": "array"}, "overrides": {"type": "array"},
+    "independent_poincare": {"type": "object"}, "workflow": {"type": "object"}
+  }
+}

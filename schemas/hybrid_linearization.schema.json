@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 Hybrid Poincare linearization",
+  "type": "object",
+  "required": ["linearization_version", "case_id", "periodic_orbit_sha256", "physical_provenance", "state_space", "saltation_monodromy", "floquet", "event_linearization", "target", "frequency_response", "sampled_frequency_response", "continuous_baseband_response", "frequency_response_semantics", "within_cycle_response", "modal_interpretation", "low_frequency_approximation", "parameter_sensitivities", "workflow"],
+  "properties": {
+    "linearization_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "periodic_orbit_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "physical_provenance": {
+      "type": "object",
+      "required": ["mode_dae_sha256", "physics_spec_sha256", "variables", "inputs", "ports", "component_inventory"],
+      "properties": {
+        "mode_dae_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "physics_spec_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "variables": {"type": "array", "items": {"type": "string"}},
+        "inputs": {"type": "array", "items": {"type": "string"}},
+        "ports": {"type": "array"},
+        "component_inventory": {"type": "array"}
+      }
+    },
+    "state_space": {"type": "object", "required": ["Ad", "Bd", "Cd", "Dd", "inputs", "outputs"]},
+    "saltation_monodromy": {"type": "object", "required": ["A", "B", "multipliers", "authority"]},
+    "floquet": {"type": "object", "required": ["multipliers", "spectral_radius", "stable"]},
+    "event_linearization": {"type": "array"},
+    "target": {"type": "object", "required": ["name", "z_expression", "numerator", "denominator", "poles", "zeros"]},
+    "frequency_response": {"type": "array"}, "sampled_frequency_response": {"type": "array"},
+    "continuous_baseband_response": {"type": "array"}, "frequency_response_semantics": {"type": "object"},
+    "within_cycle_response": {"type": "object"},
+    "modal_interpretation": {"type": "object"},
+    "low_frequency_approximation": {"type": "object"}, "parameter_sensitivities": {"type": "array"},
+    "workflow": {"type": "object"}
+  }
+}

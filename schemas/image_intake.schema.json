@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 image intake provenance",
+  "type": "object",
+  "required": ["intake_version", "case_id", "source_image", "rule", "workflow"],
+  "properties": {
+    "intake_version": {"const": "0.5"},
+    "case_id": {"type": "string", "minLength": 1},
+    "source_image": {
+      "type": "object",
+      "required": ["filename", "sha256", "width_px", "height_px"],
+      "properties": {
+        "filename": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "width_px": {"type": "integer", "minimum": 1},
+        "height_px": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "rule": {"type": "string"},
+    "workflow": {"type": "object"}
+  },
+  "additionalProperties": false
+}

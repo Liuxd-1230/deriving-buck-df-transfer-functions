@@ -1,6 +1,38 @@
 # Buck DF Transfer Functions
 
-面向单相 CCM Buck 的描述函数（describing function, DF）推导 skill，覆盖 COT current-mode、external ramp、V²/RBCOT 与 loop gain。
+面向单相 CCM Buck 的物理优先小信号建模与论文公式审计 skill，覆盖 current-mode COT、external-ramp COT、V² COT、ESR-ripple RBCOT、`Gvc/Gvg/Zout/Tloop`、连续基波与边带。
+
+## v0.5：从确认电路到 Hybrid Poincaré 模型
+
+v0.5 与 v0.4.5 并行存在。用户原理图默认进入新的物理路径；旧 paper benchmark 继续走原 registry/proof 路径，命令与 artifact 保持兼容。
+
+```text
+IMAGE_INTAKE → CIRCUIT_IR_PROPOSED → TOPOLOGY_CONFIRMED
+→ PHYSICS_SPEC_CONFIRMED → MODE_DAE → PERIODIC_ORBIT
+→ HYBRID_LINEARIZATION → PHYSICS_CHECKERS
+→ REGISTRY_CROSSCHECK → REPORT
+```
+
+v0.5 的物理真源是“用户确认且有内容哈希的 Circuit IR + Physics Spec”。模式方程由元件 stamping 自动生成 `E xdot = A x + B u + b`，保留 KCL/KVL、代数变量、储能状态和元件 provenance；周期轨道由分段仿射矩阵指数、guard root finding 与 shooting 求得；事件同时保存 common-time saltation matrix 与 event-to-event Poincaré projection。权威 `Ad/Bd` 使用后者，并由独立 `solve_ivp` 开关时域周期映射的中心有限差分复核。
+
+物理硬门禁包括：缩放 KCL/KVL、周期固定点、伏秒、电荷和功率/能量残差 `<=1e-7`，解析/独立有限差分 Poincaré Jacobian 相对误差 `<=1e-3`，以及边带 `M=3→6→…→64` 的相邻截断变化 `<=0.1 dB/1°`。CCM 要求最小电感电流为正；Floquet 不稳定是可报告的真实物理结果，不是推导失败。
+
+采样频响严格沿 `z=exp(jωTs)` 计算；模拟输出的连续基波由周期内分段变分方程提升并 Fourier 投影，边带频率为 `f+k*fs`。低频 s 域只由显式级数展开产生。L/C、负载、ESR/DCR、采样增益、ramp、Ton/Ts 与 delay 的灵敏度会在每个扰动点重新生成 MNA、重求轨道和事件线性化。
+
+V² COT 首个金样使用 [原理图](examples/v05-v2-cot/schematic.svg)，四个确定性金样由 `scripts/v05_golden_cases.py` 生成。[图片 forward-test 清单](examples/v05-forward-tests.json) 另覆盖 current-mode、external-ramp、ESR-ripple RBCOT、同步 QH/QL 和无连接点的歧义交叉线。Li/Lee、Tian、Lu、Yan registry 只做公式、趋势、有效频段或边带交叉检查，不能替代用户电路的物理模型，也不会提升验证等级。
+
+```powershell
+python scripts/v05_golden_cases.py --family v2-cot `
+  --image examples/v05-v2-cot/schematic.svg --registry-crosscheck `
+  --out golden-inputs
+
+python scripts/derive_physics_model.py `
+  --circuit-ir golden-inputs/circuit_ir.json `
+  --physics-spec golden-inputs/physics_spec.json `
+  --out golden-result
+```
+
+成功结果使用 `PHYSICS_DERIVED_INTERNAL_VALIDATED` 或 `PHYSICS_DERIVED_EXTERNAL_CROSSCHECKED`。逐项强制继续会永久降级为 `FORCED_PHYSICS_OVERRIDE_UNVERIFIED`；显式 `gmin/rmin` 或 near-grazing secant 扫描始终为 `REGULARIZED_DIAGNOSTIC_UNVERIFIED`。skill 不会自动启动 SIMPLIS；用户上传外部数据时必须同时给出频率、幅值、相位、target、端口/符号、loop break、工作点和来源元数据。
 
 v0.4.5 是 ESSF（Event–Sampling–Sideband Framework）的 typed linear equation transfer 版本。它继承 v0.4.4 的 Yan 2022 sampled-data registered path、sensing/validation policy、registered model applicability contract、RC-derived comparator ramp memory checker 与中文 artifact-driven report contract，并新增未验证 / protocol-derived 路径的线性方程系统生成层。它先建立不可绕过的 intake、formula registry 和 proof object 闭环，再把 Yan/Ruan/Li 2022 Part I/II 的 Dirichlet、sideband、COT/COFT 双脉冲和 zero-ramp `Fm` proof fragment 固化成可检查 artifact：
 
@@ -111,7 +143,7 @@ git -C "$HOME\.codex\skills\deriving-buck-df-transfer-functions" pull
 
 ### Python 依赖
 
-核心符号工具需要 Python 和 SymPy；离线 benchmark 还使用 NumPy 与 Matplotlib：
+v0.5 数值内核需要 Python、NumPy、SciPy 和 SymPy，图像 checkout/旧版 benchmark 还使用 Matplotlib：
 
 ```powershell
 python -m pip install -r requirements.txt

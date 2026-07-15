@@ -1,0 +1,15 @@
+{
+  "forward_test_version": "0.5",
+  "method": "human multimodal proposal followed by deterministic Circuit IR checkout",
+  "review_status": "HUMAN_VISUAL_CHECKOUT_COMPLETE",
+  "cases": [
+    {"family": "v2-cot", "image": "v05-v2-cot/schematic.svg", "expected_guard": "v_vo-v_control", "expected_result": "TOPOLOGY_CONFIRMED_AFTER_USER_CHECK"},
+    {"family": "current-mode-cot", "image": "v05-current-mode-cot/schematic.svg", "expected_guard": "0.1*i_L-v_control", "expected_result": "TOPOLOGY_CONFIRMED_AFTER_USER_CHECK"},
+    {"family": "external-ramp-cot", "image": "v05-external-ramp-cot/schematic.svg", "expected_guard": "0.1*i_L+v_vramp-v_control", "expected_result": "TOPOLOGY_CONFIRMED_AFTER_USER_CHECK"},
+    {"family": "esr-ripple-rbcot", "image": "v05-esr-ripple-rbcot/schematic.svg", "expected_guard": "v_vo-v_control", "expected_result": "TOPOLOGY_CONFIRMED_AFTER_USER_CHECK"},
+    {"family": "ambiguous-crossing", "image": "v05-ambiguous-crossing/schematic.svg", "expected_ambiguity": "wire-crossing-01", "expected_result": "ASK_USER_ONLY"}
+  ],
+  "coverage": ["V2", "current-mode", "external-ramp", "RBCOT", "synchronous-Buck", "ambiguous-wire-crossing"],
+  "authority_boundary": "The images are recognition forward-test evidence only; only a user-confirmed content hash can become circuit authority.",
+  "limitation": "This finite fixture review does not measure recognition accuracy on arbitrary user schematics."
+}

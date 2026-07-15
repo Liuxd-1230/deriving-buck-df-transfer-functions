@@ -1,4 +1,4 @@
 interface:
-  display_name: "Buck DF Transfer Functions"
-  short_description: "Registry-bound Buck DF models with intake/proof gates."
-  default_prompt: "Use $deriving-buck-df-transfer-functions. Run the intake preflight first; if anything is missing, ask only for it. Otherwise bind registered formulas into a checked proof object, never invent direct-model a_* coefficients, and keep new event-derived models explicitly unverified."
+  display_name: "Physical-First Buck Models"
+  short_description: "Circuit IR to Hybrid Poincare Buck transfer models."
+  default_prompt: "Use $deriving-buck-df-transfer-functions to turn my confirmed Buck schematic into a checked Hybrid MNA/Poincare transfer model and physics report."

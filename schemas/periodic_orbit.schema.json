@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v0.5 periodic hybrid orbit",
+  "type": "object",
+  "required": ["orbit_version", "case_id", "mode_dae_sha256", "inputs", "reduced_state_names", "fixed_point", "mode_intervals", "events", "balances", "checks", "workflow"],
+  "properties": {
+    "orbit_version": {"const": "0.5"}, "case_id": {"type": "string"},
+    "mode_dae_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inputs": {"type": "object"}, "reduced_state_names": {"type": "array"},
+    "fixed_point": {"type": "object", "required": ["initial", "final", "scaled_residual", "solver_success"]},
+    "mode_intervals": {"type": "array", "minItems": 2}, "events": {"type": "array", "minItems": 2},
+    "balances": {"type": "object"}, "checks": {"type": "array"}, "workflow": {"type": "object"}
+  }
+}
